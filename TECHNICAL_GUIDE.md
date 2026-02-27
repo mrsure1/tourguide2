@@ -78,4 +78,22 @@
 - `components/ui/`: 공통 UI 컴포넌트
 
 ---
+
+## 🛠 테스트 모드 및 배포 복구 가이드
+
+현재 서비스 런칭 전 자유로운 테스트를 위해 **일시적으로 제약 조건이 완화(테스트 모드)**되어 있습니다.
+
+### 테스트 모드 적용 사항:
+1. **검색 페이지:** 상세 정보가 없는 가이드도 리스트에 노출됩니다.
+2. **예약 버튼:** 프로필 미비 가이드라도 예약 위젯이 강제로 활성화됩니다.
+3. **API 검증:** 예약 생성 시 가이드 상세 정보 체크를 건너뜁니다.
+4. **DB 제약:** `bookings` 테이블이 `guides_detail`이 아닌 `profiles`를 참조합니다.
+
+### 🚀 실제 배포 시 복구 절차 (중요):
+1. **DB 제약 복구:** `lib/db/restore_bookings_fk.sql` 스크립트를 실행합니다.
+2. **API 활성화:** `app/api/bookings/create/route.ts`의 상세 프로필 체크 주석을 해제합니다.
+3. **검색 필터 복구:** `app/traveler/search/page.tsx`의 쿼리에서 `guides_detail!inner`로 다시 변경합니다.
+4. **UI 제어 원복:** `app/traveler/guides/[id]/page.tsx`에서 `isProfileComplete={true}` 부분을 원래의 필수 항목 체크 로직으로 되돌립니다.
+
+---
 *본 문서는 기술적 변경 사항이 있을 때마다 업데이트됩니다.*

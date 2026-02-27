@@ -37,12 +37,13 @@ export async function POST(request: Request) {
             .eq('id', guide_id)
             .single();
 
-        if (guideCheckError || !guideExists) {
-            console.error('Guide detailed profile not found:', guideCheckError);
-            return NextResponse.json({
-                error: '예약 실패: 해당 가이드가 아직 상세 프로필을 등록하지 않았거나 승인 대기 중입니다.'
-            }, { status: 400 });
-        }
+        // [테스트 모드] 상세 프로필 체크 완화
+        // if (guideCheckError || !guideExists) {
+        //     console.error('Guide detailed profile not found:', guideCheckError);
+        //     return NextResponse.json({
+        //         error: '예약 실패: 해당 가이드가 아직 상세 프로필을 등록하지 않았거나 승인 대기 중입니다.'
+        //     }, { status: 400 });
+        // }
 
         // Insert booking
         const { data, error } = await supabase.from('bookings').insert([

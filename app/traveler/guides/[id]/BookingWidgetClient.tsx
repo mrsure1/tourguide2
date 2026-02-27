@@ -1,16 +1,18 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { useRouter } from "next/navigation"
+import { Calendar } from "@/components/ui/Calendar"
+import { Ban } from "lucide-react"
 
 export default function BookingWidgetClient({
     guideId,
     isProfileComplete,
     rateType,
     hourlyRate,
-    unavailableDates
+    unavailableDates = []
 }: {
     guideId: string,
     isProfileComplete: boolean,
@@ -20,18 +22,19 @@ export default function BookingWidgetClient({
 }) {
     const router = useRouter()
     const [isPending, startTransition] = useTransition()
-    const [startDate, setStartDate] = useState("")
-    const [endDate, setEndDate] = useState("")
+    const [dateRange, setDateRange] = useState<{ from: string; to: string }>({ from: "", to: "" })
     const [durationHours, setDurationHours] = useState(4) // Default 4 hours for hourly booking
     const [guests, setGuests] = useState(1)
 
     // Calculate total price based on rateType
-    const start = new Date(startDate)
-    const end = new Date(endDate)
+    const start = dateRange.from ? new Date(dateRange.from) : null
+    const end = dateRange.to ? new Date(dateRange.to) : null
     let days = 0
-    if (startDate && endDate && end >= start) {
+    if (start && end && end >= start) {
         const diffTime = Math.abs(end.getTime() - start.getTime());
         days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    } else if (start && !end) {
+        days = 1;
     }
 
     const totalPrice = rateType === 'hourly'
@@ -43,16 +46,16 @@ export default function BookingWidgetClient({
             alert("이 가이드는 아직 상세 정보를 등록하지 않았습니다.");
             return;
         }
-        if (!startDate || !endDate) {
-            alert("시작일과 종료일을 선택해주세요.")
+        if (!dateRange.from) {
+            alert("투어 날짜를 선택해주세요.")
             return
         }
 
         startTransition(async () => {
             const formData = new FormData()
             formData.append('guide_id', guideId)
-            formData.append('start_date', startDate)
-            formData.append('end_date', endDate)
+            formData.append('start_date', dateRange.from)
+            formData.append('end_date', dateRange.to || dateRange.from)
             formData.append('total_price', totalPrice.toString())
 
             const res = await fetch('/api/bookings/create', {
@@ -79,33 +82,35 @@ export default function BookingWidgetClient({
             <CardContent className="pt-6 space-y-6">
 
                 <div className={`space-y-4 ${!isProfileComplete ? 'opacity-50 pointer-events-none' : ''}`}>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="block text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wider">시작일</label>
-                            <div className="relative">
-                                <input
-                                    type="date"
-                                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm focus:bg-white focus:ring-4 focus:ring-accent/10 focus:border-accent transition-all outline-none"
-                                    value={startDate}
-                                    onChange={e => {
-                                        setStartDate(e.target.value);
-                                        if (!endDate || e.target.value > endDate) setEndDate(e.target.value);
-                                    }}
-                                />
+                    <div className="space-y-4">
+                        <label className="block text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wider">투어 일정 선택</label>
+                        <Calendar
+                            mode="range"
+                            selected={dateRange}
+                            onSelect={setDateRange}
+                            minDate={new Date().toISOString().split('T')[0]}
+                            disabledDates={unavailableDates.map(u => u.start_date.split('T')[0])}
+                            renderDay={(fullDate, isCurrentMonth) => {
+                                const isBlocked = unavailableDates.some(u => {
+                                    const d = u.start_date.split('T')[0];
+                                    return d === fullDate;
+                                });
+                                if (isBlocked && isCurrentMonth) {
+                                    return (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-slate-100/50 rounded-xl pointer-events-none">
+                                            <Ban className="w-4 h-4 text-slate-300" />
+                                        </div>
+                                    )
+                                }
+                                return null;
+                            }}
+                        />
+                        {dateRange.from && (
+                            <div className="flex gap-2 text-xs font-bold text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                <div className="flex-1">시작: {dateRange.from}</div>
+                                {dateRange.to && <div className="flex-1">종료: {dateRange.to}</div>}
                             </div>
-                        </div>
-                        <div>
-                            <label className="block text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wider">종료일</label>
-                            <div className="relative">
-                                <input
-                                    type="date"
-                                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm focus:bg-white focus:ring-4 focus:ring-accent/10 focus:border-accent transition-all outline-none"
-                                    value={endDate}
-                                    min={startDate}
-                                    onChange={e => setEndDate(e.target.value)}
-                                />
-                            </div>
-                        </div>
+                        )}
                     </div>
 
                     {rateType === 'hourly' && (
@@ -167,7 +172,7 @@ export default function BookingWidgetClient({
                     <Button
                         className="w-full h-14 rounded-2xl bg-accent hover:bg-accent/90 text-white font-bold text-lg shadow-lg shadow-accent/20 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
                         onClick={handleBooking}
-                        disabled={isPending || !startDate || !endDate || !isProfileComplete}
+                        disabled={isPending || !dateRange.from || !isProfileComplete}
                     >
                         {isPending ? "처리 중..." : !isProfileComplete ? "프로필 준비 중" : "예약 신청하기"}
                     </Button>

@@ -19,6 +19,26 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
         setReviewModalOpen(false);
     };
 
+    const handleCancelBooking = async (bookingId: string) => {
+        if (!confirm("정말로 이 예약을 취소하시겠습니까?")) return;
+
+        try {
+            const res = await fetch(`/api/bookings/cancel?id=${bookingId}`, {
+                method: 'POST'
+            });
+            if (res.ok) {
+                alert("예약이 취소되었습니다.");
+                window.location.reload();
+            } else {
+                const data = await res.json();
+                alert(`취소 실패: ${data.error}`);
+            }
+        } catch (error) {
+            console.error("Error cancelling booking:", error);
+            alert("처리 중 오류가 발생했습니다.");
+        }
+    };
+
     const upcomingBookings = bookings.filter(b => b.status === "pending" || b.status === "confirmed");
     const pastBookings = bookings.filter(b => b.status === "completed" || (b.status === "confirmed" && new Date(b.end_date) < new Date()));
     // Let's adjust past logic: if end_date < now, it's past.
@@ -88,7 +108,7 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
                     </div>
                 )}
                 {filteredBookings.map((booking) => {
-                    const guide = booking.guide_id; // we joined it
+                    const guide = booking.guide; // 가이드 정보 (별칭으로 'guide' 사용)
                     if (!guide) return null;
                     const gd = guide.guides_detail || {};
 
@@ -183,7 +203,20 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
                                     {activeStatus === 'upcoming' && (
                                         <>
                                             {booking.status === 'pending' && (
-                                                <Button variant="outline" className="bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50">
+                                                <Button
+                                                    variant="outline"
+                                                    className="bg-white border-slate-200 text-slate-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors"
+                                                    onClick={() => handleCancelBooking(booking.id)}
+                                                >
+                                                    예약 취소
+                                                </Button>
+                                            )}
+                                            {booking.status === 'confirmed' && (
+                                                <Button
+                                                    variant="outline"
+                                                    className="bg-white border-slate-200 text-slate-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors"
+                                                    onClick={() => handleCancelBooking(booking.id)}
+                                                >
                                                     예약 취소
                                                 </Button>
                                             )}

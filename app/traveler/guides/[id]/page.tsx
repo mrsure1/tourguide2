@@ -98,9 +98,9 @@ export default async function GuideDetail({ params }: { params: Promise<{ id: st
                     <div className="sticky top-24">
                         <BookingWidgetClient
                             guideId={guide.id}
-                            isProfileComplete={!!gd && !!gd.location && Number(gd.hourly_rate) > 0 && !!gd.bio}
+                            isProfileComplete={true} // [테스트 모드] 상세 프로필 여부와 상관없이 예약 활성화
                             rateType={gd?.rate_type || 'daily'}
-                            hourlyRate={Number(gd?.hourly_rate || 0)}
+                            hourlyRate={Number(gd?.hourly_rate || 150000)} // 요금 정보가 없으면 기본값(15만) 적용
                             unavailableDates={unavailabilities || []}
                         />
                     </div>

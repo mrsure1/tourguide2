@@ -15,7 +15,7 @@ export default async function TravelerSearch() {
             id,
             full_name,
             avatar_url,
-            guides_detail!inner (
+            guides_detail (
                 id,
                 location,
                 languages,

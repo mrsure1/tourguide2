@@ -10,36 +10,61 @@ export default async function TravelerBookings() {
         redirect('/login');
     }
 
-    // Fetch bookings along with the guide profile details
-    const { data: bookings, error } = await supabase
+    // 1. Fetch bookings first
+    const { data: rawBookings, error: bookingsError } = await supabase
         .from('bookings')
-        .select(`
-            *,
-            guide_id:profiles!bookings_guide_id_fkey (
+        .select('*')
+        .eq('traveler_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (bookingsError) {
+        console.error("Error fetching bookings table:", bookingsError);
+    }
+
+    let processedBookings: any[] = [];
+
+    if (rawBookings && rawBookings.length > 0) {
+        // 2. Extract unique guide IDs
+        const guideIds = Array.from(new Set(rawBookings.map(b => b.guide_id)));
+
+        // 3. Fetch guide profiles and details for these IDs
+        const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select(`
                 id,
                 full_name,
+                avatar_url,
                 guides_detail (
                     rating,
                     location,
                     languages
                 )
-            )
-        `)
-        .eq('traveler_id', user.id)
-        .order('created_at', { ascending: false });
+            `)
+            .in('id', guideIds);
 
-    if (error) {
-        console.error("Error fetching traveler bookings:", error);
-    }
-
-    // Process bookings to handle array relation return in supabase
-    const processedBookings = (bookings || []).map(b => {
-        const guide = b.guide_id as any;
-        if (guide && Array.isArray(guide.guides_detail)) {
-            guide.guides_detail = guide.guides_detail[0] || {};
+        if (profilesError) {
+            console.error("Error fetching guide profiles for bookings:", profilesError);
         }
-        return b;
-    });
+
+        // 4. Manual Join: Merge profiles into bookings
+        processedBookings = rawBookings.map(booking => {
+            const profile = profiles?.find(p => p.id === booking.guide_id);
+            if (profile) {
+                const detail = Array.isArray(profile.guides_detail)
+                    ? profile.guides_detail[0]
+                    : profile.guides_detail;
+
+                return {
+                    ...booking,
+                    guide: {
+                        ...profile,
+                        guides_detail: detail || {}
+                    }
+                };
+            }
+            return { ...booking, guide: null };
+        });
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20">

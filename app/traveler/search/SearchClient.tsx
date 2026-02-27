@@ -4,9 +4,10 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Search, MapPin, Calendar, Globe, Tag, Star, Clock, Filter, SlidersHorizontal, User, Heart } from "lucide-react";
+import { Search, MapPin, Globe, Tag, Star, Clock, Filter, SlidersHorizontal, User, Heart, Calendar as CalendarIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Calendar } from "@/components/ui/Calendar";
 
 export default function SearchClient({ guides }: { guides: any[] }) {
     const router = useRouter();
@@ -16,9 +17,10 @@ export default function SearchClient({ guides }: { guides: any[] }) {
     const [selectedRegion, setSelectedRegion] = useState("전체");
     const [selectedLanguage, setSelectedLanguage] = useState("상관없음");
     const [sortBy, setSortBy] = useState("추천순");
-    const [currentDate, setCurrentDate] = useState(new Date(2026, 1, 1));
-    const [startDate, setStartDate] = useState<Date | null>(new Date(2026, 1, 24));
-    const [endDate, setEndDate] = useState<Date | null>(new Date(2026, 1, 26));
+    const [dateRange, setDateRange] = useState<{ from: string; to: string }>({
+        from: "2026-02-24",
+        to: "2026-02-26"
+    });
     const [searchKeyword, setSearchKeyword] = useState(searchParams.get('q') || "");
 
     const filteredGuides = useMemo(() => {
@@ -113,64 +115,24 @@ export default function SearchClient({ guides }: { guides: any[] }) {
                     {/* Date Filter */}
                     <div className="space-y-4 bg-white/60 backdrop-blur-sm p-5 rounded-2xl border border-white shadow-sm relative z-30">
                         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-slate-500" /> 여행 날짜
+                            <CalendarIcon className="w-4 h-4 text-slate-500" /> 여행 날짜
                         </h3>
                         <div className="grid grid-cols-2 gap-3 relative">
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-[1px] bg-slate-300 z-10" />
-                            <Input onClick={() => setIsCalendarOpen(!isCalendarOpen)} readOnly value={startDate ? `${startDate.getFullYear()}.${String(startDate.getMonth() + 1).padStart(2, '0')}.${String(startDate.getDate()).padStart(2, '0')}` : "가는 날"} className="text-xs bg-white border-slate-200 shadow-sm rounded-xl py-2 px-3 focus:border-blue-500 cursor-pointer text-center" />
-                            <Input onClick={() => setIsCalendarOpen(!isCalendarOpen)} readOnly value={endDate ? `${endDate.getFullYear()}.${String(endDate.getMonth() + 1).padStart(2, '0')}.${String(endDate.getDate()).padStart(2, '0')}` : "오는 날"} className="text-xs bg-white border-slate-200 shadow-sm rounded-xl py-2 px-3 focus:border-blue-500 cursor-pointer text-center" />
+                            <Input onClick={() => setIsCalendarOpen(!isCalendarOpen)} readOnly value={dateRange.from ? dateRange.from.replace(/-/g, '.') : "가는 날"} className="text-xs bg-white border-slate-200 shadow-sm rounded-xl py-2 px-3 focus:border-blue-500 cursor-pointer text-center" />
+                            <Input onClick={() => setIsCalendarOpen(!isCalendarOpen)} readOnly value={dateRange.to ? dateRange.to.replace(/-/g, '.') : "오는 날"} className="text-xs bg-white border-slate-200 shadow-sm rounded-xl py-2 px-3 focus:border-blue-500 cursor-pointer text-center" />
 
                             {isCalendarOpen && (
-                                <div className="absolute top-full mt-2 left-0 w-[280px] bg-white border border-slate-200 shadow-xl rounded-2xl z-50 p-4 animate-fade-in">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <button onClick={(e) => { e.preventDefault(); setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)); }} className="text-slate-400 hover:text-slate-900 p-1">&lt;</button>
-                                        <div className="text-sm font-bold text-slate-900">{currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월</div>
-                                        <button onClick={(e) => { e.preventDefault(); setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)); }} className="text-slate-400 hover:text-slate-900 p-1">&gt;</button>
-                                    </div>
-                                    <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium mb-1">
-                                        {['일', '월', '화', '수', '목', '금', '토'].map((d, i) => <div key={d} className={i === 0 ? 'text-red-500' : i === 6 ? 'text-blue-500' : 'text-slate-500'}>{d}</div>)}
-                                    </div>
-                                    <div className="grid grid-cols-7 gap-1 text-center text-xs">
-                                        {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay() }).map((_, i) => (
-                                            <div key={`empty-${i}`} className="py-1.5" />
-                                        ))}
-                                        {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate() }).map((_, i) => {
-                                            const day = i + 1;
-                                            const currentItemDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-
-                                            // isSelected Logic
-                                            let isSelected = false;
-                                            if (startDate && endDate) {
-                                                isSelected = currentItemDate >= startDate && currentItemDate <= endDate;
-                                            } else if (startDate) {
-                                                isSelected = currentItemDate.getTime() === startDate.getTime();
-                                            }
-
-                                            return (
-                                                <div
-                                                    key={i}
-                                                    onClick={() => {
-                                                        if (!startDate || (startDate && endDate)) {
-                                                            setStartDate(currentItemDate);
-                                                            setEndDate(null);
-                                                        } else {
-                                                            if (currentItemDate < startDate) {
-                                                                setStartDate(currentItemDate);
-                                                                setEndDate(null);
-                                                            } else {
-                                                                setEndDate(currentItemDate);
-                                                            }
-                                                        }
-                                                    }}
-                                                    className={`relative py-1.5 cursor-pointer rounded-lg transition-colors ${isSelected ? 'bg-blue-600 text-white font-bold shadow-sm' : 'text-slate-700 hover:bg-slate-100'}`}
-                                                >
-                                                    {day}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                    <div className="mt-4 flex justify-end">
-                                        <Button size="sm" onClick={() => setIsCalendarOpen(false)} className="text-xs">적용</Button>
+                                <div className="absolute top-full mt-2 left-0 w-[300px] bg-white border border-slate-200 shadow-xl rounded-2xl z-50 p-2 animate-fade-in">
+                                    <Calendar
+                                        mode="range"
+                                        selected={dateRange}
+                                        onSelect={setDateRange}
+                                        minDate={new Date().toISOString().split('T')[0]}
+                                        className="border-0 shadow-none"
+                                    />
+                                    <div className="p-3 border-t border-slate-50 flex justify-end">
+                                        <Button size="sm" onClick={() => setIsCalendarOpen(false)} className="text-xs rounded-lg">확인</Button>
                                     </div>
                                 </div>
                             )}
