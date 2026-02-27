@@ -1,10 +1,27 @@
 import { NextResponse } from 'next/server'
 // Edge 런타임에서는 Node 전용 모듈을 사용할 수 없어 첨부파일 파싱은 비활성화
-import { getSupabaseClient } from '@/lib/supabase/client'
-import type { PolicyFundDB } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 import type { Policy, PolicyDocument, PolicyRoadmapStep } from '@/lib/mockPolicies'
 export const runtime = 'edge'
 export const revalidate = 7200
+
+export interface PolicyFundDB {
+    id: number | string;
+    title: string | null;
+    content_summary?: string | null;
+    raw_content?: string | null;
+    application_period?: string | null;
+    d_day?: number | null;
+    source_site?: string | null;
+    link?: string | null;
+    url?: string | null;
+    roadmap?: any;
+    documents?: any;
+    category?: string | null;
+    support_amount?: string | null;
+    target_audience?: string | null;
+    [key: string]: any;
+}
 
 const CACHE_HEADERS: Record<string, string> = {
     'Cache-Control': 'public, s-maxage=7200, stale-while-revalidate=3600',
@@ -1521,7 +1538,7 @@ function mapDBToUI(dbPolicy: PolicyFundDB): Policy {
         applicationPeriod: finalPeriod,
         agency: dbPolicy.agency || extractAgencyFallback(cleanedTitle, cleanedSummary) || sourcePlatform || '정부기관',
         sourcePlatform,
-        url: normalizeKStartupUrl(dbPolicy.link || dbPolicy.url || undefined, dbPolicy.title, dbPolicy.source_site),
+        url: normalizeKStartupUrl(dbPolicy.link || dbPolicy.url || undefined, dbPolicy.title || '', dbPolicy.source_site || ''),
         mobileUrl: dbPolicy.mobile_url || undefined,
         detailContent: dbPolicy.raw_content || undefined,
         inquiry: dbPolicy.inquiry || undefined,
@@ -1549,7 +1566,7 @@ export async function GET() {
     }
 
     try {
-        const supabase = getSupabaseClient()
+        const supabase = await createClient()
         if (!supabase) {
             return NextResponse.json(
                 { success: false, error: 'Missing Supabase environment variables', data: [] },
@@ -1617,7 +1634,7 @@ export async function GET() {
             return mapped
         })
 
-        
+
         const kstartupBestByTitle = new Map<string, Policy>()
         const kstartupBestByPbanc = new Map<string, Policy>()
         for (const policy of policies) {

@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { Search, MapPin, Star, Clock, Calendar, ChevronRight, Bell } from "lucide-react";
+import HomeSearchClient from "./HomeSearchClient";
 
 export default function TravelerHome() {
     return (
@@ -38,21 +39,7 @@ export default function TravelerHome() {
                         서울부터 제주까지, 지금까지 경험하지 못한 특별한 순간이 기다립니다.
                     </p>
 
-                    <div className="bg-white/10 backdrop-blur-xl p-2 rounded-2xl flex flex-col sm:flex-row gap-2 shadow-2xl border border-white/20 relative z-20 group transition-all duration-300 hover:bg-white/20 focus-within:bg-white/20">
-                        <div className="flex-1 flex items-center px-4 py-3 sm:py-0">
-                            <Search className="w-5 h-5 text-white/60 group-focus-within:text-white transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="어디로 가고 싶으신가요? (예: 서촌 메이크업 투어)"
-                                className="w-full pl-3 bg-transparent text-white placeholder:text-white/50 focus:outline-none placeholder:font-light"
-                            />
-                        </div>
-                        <Link href="/traveler/search" className="w-full sm:w-auto">
-                            <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white rounded-xl px-10 shadow-lg shadow-blue-500/20 transition-all font-bold text-base border-0 h-12 sm:h-14">
-                                탐색하기
-                            </Button>
-                        </Link>
-                    </div>
+                    <HomeSearchClient />
                 </div>
             </section>
 
@@ -96,7 +83,7 @@ export default function TravelerHome() {
                                 </div>
                             </div>
                             <Button fullWidth variant="outline" className="h-12 border-slate-200 bg-white/50 hover:bg-white text-slate-700 font-semibold rounded-xl">
-                                새 일정 기획하기
+                                새 일정 계획하기
                             </Button>
                         </CardContent>
                     </Card>

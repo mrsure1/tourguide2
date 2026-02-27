@@ -2,11 +2,31 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { GuideNav } from "@/components/layout/GuideNav";
 
-export default function GuideLayout({
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+
+export default async function GuideLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        redirect('/login');
+    }
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'guide') {
+        redirect('/role-selection');
+    }
+
     return (
         <div className="flex h-screen bg-slate-50">
             {/* Sidebar Navigation */}
@@ -23,12 +43,11 @@ export default function GuideLayout({
                 <div className="p-4 border-t border-slate-100">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
-                            {/* Dummy Avatar */}
-                            <img src="https://i.pravatar.cc/150?u=g1" alt="Profile" className="w-full h-full object-cover" />
+                            <img src={profile?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.full_name || 'User')}&background=random`} alt="Profile" className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-900 truncate">김철수 가이드</p>
-                            <p className="text-xs text-slate-500 truncate">서울 / 역사·도보</p>
+                            <p className="text-sm font-medium text-slate-900 truncate">{profile?.full_name || '가이드'}</p>
+                            <p className="text-xs text-slate-500 truncate">가이드 모드</p>
                         </div>
                     </div>
                 </div>
