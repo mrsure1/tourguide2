@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { Search, ShieldCheck, CalendarClock, ChevronRight, UserCheck, Star, Compass, Map, ArrowDown } from "lucide-react";
+import { Search, ShieldCheck, CalendarClock, ChevronRight, UserCheck, Star, Compass, Map, ArrowDown, Users, Zap, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { switchRole } from "@/app/signup/actions";
 
@@ -37,20 +37,22 @@ export default async function Home() {
         {/* Hero Content */}
         <div className="relative z-10 text-center max-w-5xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-blue-100 text-sm font-semibold mb-8 animate-fade-in-up shadow-2xl">
-            <ShieldCheck className="w-4 h-4 text-blue-300" />
-            <span>K-컬처와 함께하는 대한민국 프리미엄 가이드 매칭</span>
+            <Users className="w-4 h-4 text-blue-300" />
+            <span>Premium Local Guide Marketplace in Korea</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter mb-8 leading-[1.05] drop-shadow-2xl animate-fade-in-up animation-delay-100">
-            K-Tour의 시작, <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-indigo-200 to-white drop-shadow-sm">
-              우리가 찾는 한국
+          <h1 className="font-black tracking-tighter mb-8 leading-[1] drop-shadow-2xl animate-fade-in-up animation-delay-100">
+            <span className="block text-4xl sm:text-7xl lg:text-9xl text-white mb-2 uppercase italic">
+              Unlock Korea,
+            </span>
+            <span className="block text-3xl sm:text-6xl lg:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-400 pb-2">
+              Expertly Yours.
             </span>
           </h1>
 
-          <p className="text-lg sm:text-2xl text-slate-100 mb-12 leading-relaxed max-w-3xl mx-auto font-medium drop-shadow-lg animate-fade-in-up animation-delay-200 opacity-90">
-            가려진 명소부터 트렌디한 핫플레이스까지, <br className="hidden sm:block" />
-            검증된 가이드와 함께 당신만의 특별한 한국 여행을 디자인하세요.
+          <p className="text-lg sm:text-2xl text-slate-100 mb-12 leading-relaxed max-w-3xl mx-auto font-medium drop-shadow-lg animate-fade-in-up animation-delay-200 opacity-90 break-keep [hyphens:none]">
+            실시간 로컬 가이드 매칭으로 당신만의 한국 여행을 완성하세요. <br className="hidden sm:block" />
+            <span className="inline-block whitespace-nowrap text-blue-200 font-bold">Connect with Top-rated Local Experts</span> for an unforgettable <span className="inline-block whitespace-nowrap text-blue-200 font-bold">K-experience.</span>
           </p>
 
           <div className="flex flex-col sm:flex-row gap-5 justify-center items-center animate-fade-in-up animation-delay-300">
@@ -62,19 +64,39 @@ export default async function Home() {
             </a>
           </div>
 
-          <div className="mt-16 flex items-center justify-center gap-8 animate-fade-in-up animation-delay-400">
-            <div className="flex -space-x-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="w-12 h-12 rounded-full border-2 border-white/30 bg-white/10 backdrop-blur-md flex items-center justify-center text-xs font-bold text-white overflow-hidden shadow-xl">
-                  <UserCheck className="w-5 h-5 opacity-70" />
-                </div>
-              ))}
-            </div>
-            <div className="flex flex-col items-start">
-              <div className="flex items-center text-yellow-400 drop-shadow-md">
-                {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="w-5 h-5 fill-current" />)}
+          <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-4 lg:gap-8 animate-fade-in-up animation-delay-400">
+            <div className="flex items-center gap-4 whitespace-nowrap bg-slate-900/40 backdrop-blur-xl border border-white/10 px-6 py-4 rounded-3xl shadow-xl hover:bg-slate-900/50 transition-colors">
+              <div className="p-3 rounded-2xl bg-blue-500/20 border border-blue-400/30">
+                <Users className="w-8 h-8 text-blue-300" />
               </div>
-              <span className="text-sm font-bold text-white drop-shadow-md">전 세계 1만명 이상이 선택한 가이드 서비스</span>
+              <div className="text-left">
+                <p className="text-2xl font-black text-white leading-none">1,200+</p>
+                <p className="text-sm text-blue-200 font-medium whitespace-nowrap">Verified Guides</p>
+              </div>
+            </div>
+
+            <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-white/20"></div>
+
+            <div className="flex items-center gap-4 whitespace-nowrap bg-slate-900/40 backdrop-blur-xl border border-white/10 px-6 py-4 rounded-3xl shadow-xl hover:bg-slate-900/50 transition-colors">
+              <div className="p-3 rounded-2xl bg-amber-500/20 border border-amber-400/30">
+                <Zap className="w-8 h-8 text-amber-300" />
+              </div>
+              <div className="text-left">
+                <p className="text-2xl font-black text-white leading-none">15k+</p>
+                <p className="text-sm text-blue-200 font-medium whitespace-nowrap">Successful Matches</p>
+              </div>
+            </div>
+
+            <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-white/20"></div>
+
+            <div className="flex items-center gap-4 whitespace-nowrap bg-slate-900/40 backdrop-blur-xl border border-white/10 px-6 py-4 rounded-3xl shadow-xl hover:bg-slate-900/50 transition-colors">
+              <div className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/30">
+                <MapPin className="w-8 h-8 text-emerald-300" />
+              </div>
+              <div className="text-left">
+                <p className="text-2xl font-black text-white leading-none">32</p>
+                <p className="text-sm text-blue-200 font-medium whitespace-nowrap">Korean Cities</p>
+              </div>
             </div>
           </div>
         </div>
@@ -91,26 +113,26 @@ export default async function Home() {
       <section id="onboarding" className="py-24 lg:py-40 relative z-10 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16 space-y-4">
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">어떻게 이용하시겠습니까?</h2>
-            <p className="text-slate-500 text-lg sm:text-xl font-light">
-              {profile ? `${profile.full_name}님, 오늘 어떤 모드로 활동하시겠어요?` : "가슴 뛰는 여행의 첫 걸음, 본인의 역할을 선택해주세요."}
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight break-keep">가이드와 여행자를 잇는 최고의 플랫폼</h2>
+            <p className="text-slate-500 text-lg sm:text-xl font-light break-keep">
+              {profile ? `${profile.full_name}님, 어떤 파트너를 찾으시겠어요?` : "대한민국 No.1 매칭 플랫폼, 가점되는 당신의 자리를 선택하세요."}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
             {/* Traveler Card */}
             {user ? (
-              <Link href="/traveler/home" className="group relative">
+              <Link href={profile ? "/traveler/home" : "/signup?role=traveler"} className="group relative">
                 <div className="h-full premium-card p-10 lg:p-14 flex flex-col items-center text-center transition-all duration-500 border-2 border-transparent hover:border-blue-400 hover:shadow-[0_30px_60px_-15px_rgba(59,130,246,0.2)] bg-white/90 backdrop-blur-xl group-hover:-translate-y-2">
                   <div className="w-24 h-24 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                     <Compass className="w-12 h-12" />
                   </div>
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight">여행자</h3>
-                  <p className="text-slate-600 text-lg font-light leading-relaxed mb-8">
-                    내 취향에 딱 맞는 로컬 전문가를 탐색하고 <br className="hidden lg:block" /> 1:1 맞춤형 고퀄리티 투어를 즐겨보세요.
+                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight whitespace-nowrap">가이드 찾기 (여행자)</h3>
+                  <p className="text-slate-600 text-lg font-light leading-relaxed mb-8 break-keep">
+                    내 취향에 딱 맞는 로컬 전문가를 직접 탐색하고 <br className="hidden lg:block" /> 일대일 매칭을 통해 나만의 투어를 완성하세요.
                   </p>
-                  <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-blue-600 transition-colors duration-300 shadow-lg">
-                    {profile?.role === 'guide' || profile?.role === 'admin' ? '여행자 모드 둘러보기' : '여행자 홈으로 가기'} <ChevronRight className="w-5 h-5" />
+                  <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-blue-600 transition-colors duration-300 shadow-lg whitespace-nowrap">
+                    {profile?.role === 'guide' || profile?.role === 'admin' ? '여행자 모드로 매칭하기' : (profile ? '가이드 리스트 투기' : '여행자 프로필 설정하기')} <ChevronRight className="w-5 h-5" />
                   </div>
                 </div>
               </Link>
@@ -120,11 +142,11 @@ export default async function Home() {
                   <div className="w-24 h-24 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                     <Compass className="w-12 h-12" />
                   </div>
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight">여행자</h3>
-                  <p className="text-slate-600 text-lg font-light leading-relaxed mb-8">
-                    내 취향에 딱 맞는 로컬 전문가를 탐색하고 <br className="hidden lg:block" /> 1:1 맞춤형 고퀄리티 투어를 즐겨보세요.
+                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight whitespace-nowrap">가이드 찾기 (여행자)</h3>
+                  <p className="text-slate-600 text-lg font-light leading-relaxed mb-8 break-keep">
+                    내 취향에 딱 맞는 로컬 전문가를 직접 탐색하고 <br className="hidden lg:block" /> 일대일 매칭을 통해 나만의 투어를 완성하세요.
                   </p>
-                  <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-blue-600 transition-colors duration-300 shadow-lg">
+                  <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-blue-600 transition-colors duration-300 shadow-lg whitespace-nowrap">
                     여행자로 시작하기 <ChevronRight className="w-5 h-5" />
                   </div>
                 </div>
@@ -138,12 +160,12 @@ export default async function Home() {
                   <div className="w-24 h-24 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
                     <Map className="w-12 h-12" />
                   </div>
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight">가이드</h3>
-                  <p className="text-slate-600 text-lg font-light leading-relaxed mb-8">
-                    나만의 유니크한 투어를 전 세계 여행자에게 <br className="hidden lg:block" /> 공유하고 전문적인 수익을 창출하세요.
+                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight whitespace-nowrap">수익 창출 (가이드)</h3>
+                  <p className="text-slate-600 text-lg font-light leading-relaxed mb-8 break-keep">
+                    나만의 유니크한 투어 상품을 등록하고 <br className="hidden lg:block" /> 전 세계 여행자와 매칭되어 전문적인 수익을 창출하세요.
                   </p>
-                  <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-emerald-600 transition-colors duration-300 shadow-lg">
-                    {profile?.role === 'guide' || profile?.role === 'admin' ? '가이드 대시보드로 가기' : '새 가이드 계정 만들기'} <ChevronRight className="w-5 h-5" />
+                  <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-emerald-600 transition-colors duration-300 shadow-lg whitespace-nowrap">
+                    {profile?.role === 'guide' || profile?.role === 'admin' ? '가이드 센터 바로가기' : '가이드로 등록하고 수익내기'} <ChevronRight className="w-5 h-5" />
                   </div>
                 </div>
               </Link>
@@ -153,11 +175,11 @@ export default async function Home() {
                   <div className="w-24 h-24 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
                     <Map className="w-12 h-12" />
                   </div>
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight">가이드</h3>
-                  <p className="text-slate-600 text-lg font-light leading-relaxed mb-8">
-                    나만의 유니크한 투어를 전 세계 여행자에게 <br className="hidden lg:block" /> 공유하고 전문적인 수익을 창출하세요.
+                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight whitespace-nowrap">수익 창출 (가이드)</h3>
+                  <p className="text-slate-600 text-lg font-light leading-relaxed mb-8 break-keep">
+                    나만의 유니크한 투어 상품을 등록하고 <br className="hidden lg:block" /> 전 세계 여행자와 매칭되어 전문적인 수익을 창출하세요.
                   </p>
-                  <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-emerald-600 transition-colors duration-300 shadow-lg">
+                  <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-emerald-600 transition-colors duration-300 shadow-lg whitespace-nowrap">
                     가이드로 시작하기 <ChevronRight className="w-5 h-5" />
                   </div>
                 </div>

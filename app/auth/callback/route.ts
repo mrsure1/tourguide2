@@ -27,44 +27,49 @@ export async function GET(request: Request) {
                 .eq('id', userId)
                 .maybeSingle();
 
-            // 2. 역할 결정 우선순위: URL 파라미터 (명시적 선택) > DB 기존 데이터 > 메타데이터
-            // 사용자가 초기 화면에서 역할을 선택하고 들어온 경우(URL에 role이 있는 경우) 이를 최우선으로 반영합니다.
-            let userRole = role || existingProfile?.role || metadata?.role;
+            // 1. 역할 결정 우선순위
+            // a. 관리자 하드코딩 (최우선)
+            let userRole = (session.user.email === 'leeyob@gmail.com') ? 'admin' : null;
 
-            // 관리자 하드코딩 권한 부여 (최초 로그인 시 profiles에 레코드가 없어서 발생하는 문제 해결)
-            if (session.user.email === 'leeyob@gmail.com') {
-                userRole = 'admin';
+            // b. 관리자가 아닌 경우: URL 파라미터 > 기존 프로필 > 메타데이터
+            if (!userRole) {
+                const { data: existingProfile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', userId)
+                    .maybeSingle();
+
+                userRole = role || existingProfile?.role || metadata?.role || 'traveler';
             }
 
             const userFullName = metadata?.full_name || metadata?.name || session.user.email?.split('@')[0] || 'User';
             const userAvatar = metadata?.avatar_url || metadata?.picture || metadata?.profile_image || metadata?.profile_image_url || null;
 
-            // 3. 프로필 정보 업데이트 또는 생성 (upsert)
-            // 역할 정보가 있는 경우 무조건 업데이트하여 역할 전환(Role Switch)을 지원합니다.
-            if (userRole) {
-                const { error: upsertError } = await supabase
-                    .from('profiles')
-                    .upsert({
-                        id: userId,
-                        role: userRole,
-                        full_name: userFullName,
-                        avatar_url: userAvatar
-                    }, { onConflict: 'id' });
+            // 2. 프로필 정보 업데이트 또는 생성 (upsert)
+            const { error: upsertError } = await supabase
+                .from('profiles')
+                .upsert({
+                    id: userId,
+                    role: userRole,
+                    full_name: userFullName,
+                    avatar_url: userAvatar,
+                    email: session.user.email // 이메일 누락 방지
+                }, { onConflict: 'id' });
 
-                if (upsertError) {
-                    console.error("[Auth Callback] Profile Upsert Error:", upsertError);
-                }
-
-                // 캐시 무효화 (중요: 서버 사이드 레이아웃에서 변경된 역할을 즉시 반영하기 위함)
-                revalidatePath('/', 'layout')
-
-                // 역할에 따른 서비스 화면으로 이동
-                const finalNext = userRole === 'admin' ? '/admin/dashboard' : (userRole === 'guide' ? '/guide/dashboard' : '/traveler/home');
-                return NextResponse.redirect(`${origin}${finalNext}`)
-            } else {
-                // 역할 정보가 전혀 없으면 선택 화면으로 이동
-                return NextResponse.redirect(`${origin}/role-selection`)
+            if (upsertError) {
+                console.error("[Auth Callback] Profile Upsert Error:", upsertError);
             }
+
+            // 캐시 무효화
+            revalidatePath('/', 'layout')
+
+            // 역할에 따른 서비스 화면으로 이동
+            const finalNext = userRole === 'admin'
+                ? '/admin/dashboard'
+                : (userRole === 'guide' ? '/guide/dashboard' : '/traveler/home');
+
+            return NextResponse.redirect(`${origin}${finalNext}`)
+
         }
     }
 

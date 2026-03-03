@@ -144,6 +144,7 @@ export async function toggleTourStatus(id: string, currentStatus: boolean) {
  * 특정 투어 정보를 조회합니다.
  */
 export async function getTourById(id: string) {
+    console.log("🔥 [getTourById] Received ID:", id);
     const supabase = await createClient();
     const { data, error } = await supabase
         .from('tours')
@@ -152,9 +153,10 @@ export async function getTourById(id: string) {
         .single();
 
     if (error) {
-        console.error("Error fetching tour by ID:", error);
+        console.error("🔥 [getTourById] Error fetching tour by ID:", id, error);
         return null;
     }
 
+    console.log("🔥 [getTourById] Found tour:", data?.title);
     return data;
 }

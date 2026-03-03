@@ -10,7 +10,13 @@ export default async function TourDetailPage({ params }: { params: Promise<{ id:
     const tour = await getTourById(id);
 
     if (!tour) {
-        notFound();
+        return (
+            <div className="p-10 text-center">
+                <h1 className="text-3xl font-bold text-red-500">투어를 찾을 수 없습니다</h1>
+                <p className="mt-4">요청하신 ID: {id}</p>
+                <p>디버그: getTourById returns null.</p>
+            </div>
+        );
     }
 
     return (
