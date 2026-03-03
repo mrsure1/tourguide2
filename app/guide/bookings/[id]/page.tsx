@@ -19,8 +19,7 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
             traveler:profiles!traveler_id (
                 id,
                 full_name,
-                avatar_url,
-                email
+                avatar_url
             )
         `)
         .eq('id', id)
@@ -28,6 +27,7 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
         .single();
 
     if (error || !booking) {
+        console.error("Booking API Error:", error, "Booking:", booking, "ID:", id, "UserID:", user.id);
         notFound();
     }
 
@@ -74,8 +74,7 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
                             className="w-24 h-24 rounded-full border-4 border-white shadow-lg mb-4 object-cover"
                             alt="Traveler"
                         />
-                        <h3 className="text-xl font-bold text-slate-900">{booking.traveler.full_name || '여행자'}</h3>
-                        <p className="text-sm text-slate-500 mb-6">{booking.traveler.email}</p>
+                        <h3 className="text-xl font-bold text-slate-900 mb-6">{booking.traveler.full_name || '여행자'}</h3>
 
                         <Button variant="outline" className="w-full flex items-center gap-2 border-slate-200 text-slate-700 hover:bg-slate-50">
                             <MessageSquare className="w-4 h-4" /> 메시지 보내기
