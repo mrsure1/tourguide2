@@ -14,7 +14,7 @@ export default async function GuideProfile() {
         .eq('id', user.id)
         .single();
 
-    if (profile?.role !== 'guide') {
+    if (profile?.role !== 'guide' && profile?.role !== 'admin') {
         redirect('/role-selection');
     }
 
@@ -22,7 +22,7 @@ export default async function GuideProfile() {
         .from('guides_detail')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
     return <ProfileClient profile={profile} detail={guideDetail} />;
 }

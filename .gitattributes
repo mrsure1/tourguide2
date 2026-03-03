@@ -1,0 +1,31 @@
+# Handle line endings automatically for files detected as text
+# and perform LF normalization.
+* text=auto
+
+# Standard text files
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.sql text eol=lf
+*.py text eol=lf
+
+# Explicitly set encoding for web files if needed, 
+# although UTF-8 is the default for Git.
+# Force UTF-8 for common text files
+*.txt text eol=lf
+*.csv text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

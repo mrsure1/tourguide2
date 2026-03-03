@@ -69,6 +69,14 @@ export default async function TravelerHome() {
         .eq('role', 'guide')
         .limit(4);
 
+    // 3. Fetch trending tours (actual data)
+    const { data: trendingTours } = await supabase
+        .from('tours')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-10 animate-fade-in relative">
             {/* Ambient Background Elements */}
@@ -134,8 +142,8 @@ export default async function TravelerHome() {
                                         <div className="flex justify-between items-start mb-2 relative z-10">
                                             <h3 className="font-bold text-slate-900 text-lg">{processedBooking.detail.location || '미지정 지역'} 투어</h3>
                                             <span className={`text-xs font-bold px-2.5 py-1 rounded-full ring-1 ${processedBooking.status === 'confirmed'
-                                                    ? 'bg-blue-100 text-blue-700 ring-blue-700/10'
-                                                    : 'bg-amber-100 text-amber-700 ring-amber-700/10'
+                                                ? 'bg-blue-100 text-blue-700 ring-blue-700/10'
+                                                : 'bg-amber-100 text-amber-700 ring-amber-700/10'
                                                 }`}>
                                                 {processedBooking.status === 'confirmed' ? '확정' : '승인 대기'}
                                             </span>
@@ -183,29 +191,9 @@ export default async function TravelerHome() {
                         </CardHeader>
                         <CardContent className="p-0">
                             <ul className="divide-y divide-slate-100/80">
-                                <li className="p-5 hover:bg-slate-50/80 transition-colors cursor-pointer group">
-                                    <div className="flex gap-4">
-                                        <div className="mt-1 flex-shrink-0 relative">
-                                            <div className="w-2.5 h-2.5 rounded-full bg-blue-600 ring-4 ring-blue-100" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">예약이 최종 확정되었습니다.</p>
-                                            <p className="text-sm text-slate-600 mt-0.5 line-clamp-1">김철수 가이드님이 2월 24일 일정을 승인했습니다.</p>
-                                            <p className="text-xs font-medium text-slate-400 mt-2">2시간 전</p>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li className="p-5 hover:bg-slate-50/80 transition-colors cursor-pointer group">
-                                    <div className="flex gap-4">
-                                        <div className="mt-1 flex-shrink-0 relative">
-                                            <div className="w-2 h-2 rounded-full bg-slate-300 ml-[1px]" />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-slate-700">이영희 가이드님 문의 답변</p>
-                                            <p className="text-sm text-slate-500 mt-0.5 line-clamp-1">"네, 해당 일정에 북촌 한옥마을 투어도 조율 가능합니다."</p>
-                                            <p className="text-xs font-medium text-slate-400 mt-2">어제</p>
-                                        </div>
-                                    </div>
+                                <li className="p-10 text-center">
+                                    <Bell className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                                    <p className="text-sm text-slate-400 font-medium">새로운 알림이 없습니다.</p>
                                 </li>
                             </ul>
                         </CardContent>
@@ -271,51 +259,37 @@ export default async function TravelerHome() {
                             </div>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            <Card className="premium-card overflow-hidden group cursor-pointer bg-white/80 border-white/60 shadow-lg">
-                                <Link href="/traveler/search">
-                                    <div className="h-48 bg-slate-200 relative overflow-hidden">
-                                        <div className="absolute top-3 left-3 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-full">
-                                            BEST 1
-                                        </div>
-                                        <img src="https://images.unsplash.com/photo-1587841566371-adad37cda3a8?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Gyeongbokgung Palace Night Tour" />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                    </div>
-                                    <CardContent className="p-5">
-                                        <div className="flex justify-between items-start gap-4 mb-2">
-                                            <h3 className="font-bold text-slate-900 text-base leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">왕의 산책로, 경복궁 및 북촌 프리미엄 야간 도보 투어</h3>
-                                        </div>
-                                        <div className="flex items-center justify-between mt-4 border-t border-slate-100 pt-3">
-                                            <div className="flex items-center text-xs text-slate-500 font-medium">
-                                                <Clock className="w-3.5 h-3.5 mr-1" /> 3시간 소요
+                            {(trendingTours || []).map((tour, idx) => (
+                                <Card key={tour.id} className="premium-card overflow-hidden group cursor-pointer bg-white/80 border-white/60 shadow-lg">
+                                    <Link href={`/traveler/tours/${tour.id}`}>
+                                        <div className="h-48 bg-slate-200 relative overflow-hidden">
+                                            <div className="absolute top-3 left-3 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                                                {idx === 0 ? 'BEST 1' : 'HOT'}
                                             </div>
-                                            <p className="text-slate-900 font-bold text-lg tracking-tight">₩ 80,000</p>
+                                            <img src={tour.photo || "https://images.unsplash.com/photo-1587841566371-adad37cda3a8?q=80&w=800&auto=format&fit=crop"} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={tour.title} />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                         </div>
-                                    </CardContent>
-                                </Link>
-                            </Card>
-
-                            <Card className="premium-card overflow-hidden group cursor-pointer bg-white/80 border-white/60 shadow-lg">
-                                <Link href="/traveler/search">
-                                    <div className="h-48 bg-slate-200 relative overflow-hidden">
-                                        <div className="absolute top-3 left-3 z-10 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-full">
-                                            HOT
-                                        </div>
-                                        <img src="https://images.unsplash.com/photo-1599308307238-6b45053228ea?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Busan Haeundae Yacht" />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                    </div>
-                                    <CardContent className="p-5">
-                                        <div className="flex justify-between items-start gap-4 mb-2">
-                                            <h3 className="font-bold text-slate-900 text-base leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">로맨틱 요트 항해, 해운대 프라이빗 선셋 투어</h3>
-                                        </div>
-                                        <div className="flex items-center justify-between mt-4 border-t border-slate-100 pt-3">
-                                            <div className="flex items-center text-xs text-slate-500 font-medium">
-                                                <Clock className="w-3.5 h-3.5 mr-1" /> 2시간 소요
+                                        <CardContent className="p-5">
+                                            <div className="flex justify-between items-start gap-4 mb-2">
+                                                <h3 className="font-bold text-slate-900 text-base leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">
+                                                    {tour.title}
+                                                </h3>
                                             </div>
-                                            <p className="text-slate-900 font-bold text-lg tracking-tight">₩ 120,000</p>
-                                        </div>
-                                    </CardContent>
-                                </Link>
-                            </Card>
+                                            <div className="flex items-center justify-between mt-4 border-t border-slate-100 pt-3">
+                                                <div className="flex items-center text-xs text-slate-500 font-medium">
+                                                    <Clock className="w-3.5 h-3.5 mr-1" /> {tour.duration}시간 소요
+                                                </div>
+                                                <p className="text-slate-900 font-bold text-lg tracking-tight">₩ {tour.price.toLocaleString()}</p>
+                                            </div>
+                                        </CardContent>
+                                    </Link>
+                                </Card>
+                            ))}
+                            {(!trendingTours || trendingTours.length === 0) && (
+                                <div className="col-span-full py-10 text-center text-slate-400 text-sm">
+                                    현재 등록된 투어 상품이 없습니다.
+                                </div>
+                            )}
                         </div>
                     </section>
                 </div>

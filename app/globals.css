@@ -116,6 +116,36 @@ body {
 .animation-delay-400 { animation-delay: 400ms; }
 .animation-delay-500 { animation-delay: 500ms; }
 
+/* Premium Custom Animations */
+@keyframes ken-burns {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes floating {
+  0% { transform: translate(-50%, 0px); }
+  50% { transform: translate(-50%, 15px); }
+  100% { transform: translate(-50%, 0px); }
+}
+
+@keyframes scrolldown {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(12px); opacity: 0; }
+}
+
+.animate-[ken-burns_20s_ease-in-out_infinite] {
+  animation: ken-burns 20s ease-in-out infinite;
+}
+
+.animate-floating {
+  animation: floating 3s ease-in-out infinite;
+}
+
+.animate-scrolldown {
+  animation: scrolldown 1.5s ease-in-out infinite;
+}
+
 /* Mesh Gradient Background */
 .bg-mesh {
   background-color: #f8fafc;

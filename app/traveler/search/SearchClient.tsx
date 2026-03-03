@@ -18,8 +18,8 @@ export default function SearchClient({ guides }: { guides: any[] }) {
     const [selectedLanguage, setSelectedLanguage] = useState("상관없음");
     const [sortBy, setSortBy] = useState("추천순");
     const [dateRange, setDateRange] = useState<{ from: string; to: string }>({
-        from: "2026-02-24",
-        to: "2026-02-26"
+        from: "",
+        to: ""
     });
     const [searchKeyword, setSearchKeyword] = useState(searchParams.get('q') || "");
 
@@ -243,7 +243,9 @@ export default function SearchClient({ guides }: { guides: any[] }) {
                             </Link>
                         ))}
                         {filteredGuides.length === 0 && (
-                            <div className="col-span-full py-20 text-center text-slate-500">검색 결과가 없습니다.</div>
+                            <div className="col-span-full py-20 text-center text-slate-500">
+                                검색 결과가 없습니다.
+                            </div>
                         )}
                     </div>
                 </div>

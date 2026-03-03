@@ -52,6 +52,31 @@ export default function BookingWidgetClient({
         }
 
         startTransition(async () => {
+            // 1. 중복 예약 여부 먼저 체크
+            try {
+                const checkRes = await fetch('/api/bookings/check-overlap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        startDate: dateRange.from,
+                        endDate: dateRange.to || dateRange.from
+                    })
+                });
+
+                if (checkRes.ok) {
+                    const checkData = await checkRes.json();
+                    if (checkData.isOverlap) {
+                        // 중복 시 경고창 띄우고 취소하면 중단
+                        if (!confirm(checkData.message)) {
+                            return;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("중복 체크 중 오류 발생:", e);
+            }
+
+            // 2. 실제 예약 생성 진행
             const formData = new FormData()
             formData.append('guide_id', guideId)
             formData.append('start_date', dateRange.from)

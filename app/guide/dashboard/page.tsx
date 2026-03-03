@@ -152,13 +152,18 @@ export default async function GuideDashboard() {
                                                     <br />예상 결제 금액: ₩ {Number(booking.total_price).toLocaleString()}
                                                 </p>
                                                 <div className="flex gap-2">
-                                                    <form className="flex-1" action={`/api/bookings/accept?id=${booking.id}`} method="POST">
-                                                        <Button size="sm" type="submit" className="w-full h-9 bg-slate-900 hover:bg-slate-800 text-white flex gap-1.5 focus:outline-none">
+                                                    <Link href={`/guide/bookings/${booking.id}`} className="flex-1">
+                                                        <Button size="sm" variant="outline" className="w-full h-9 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 flex gap-1.5 focus:outline-none">
+                                                            상세보기
+                                                        </Button>
+                                                    </Link>
+                                                    <form action={`/api/bookings/accept?id=${booking.id}`} method="POST">
+                                                        <Button size="sm" type="submit" className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white flex gap-1.5 focus:outline-none">
                                                             <CheckCircle2 className="w-4 h-4" /> 수락
                                                         </Button>
                                                     </form>
                                                     <form action={`/api/bookings/reject?id=${booking.id}`} method="POST">
-                                                        <Button size="sm" variant="outline" type="submit" className="h-9 px-4 bg-white border-slate-200 text-slate-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50 flex gap-1.5">
+                                                        <Button size="sm" variant="ghost" type="submit" className="h-9 px-3 text-slate-400 hover:text-red-600 hover:bg-red-50 flex gap-1.5">
                                                             <XCircle className="w-4 h-4" /> 거절
                                                         </Button>
                                                     </form>
@@ -189,15 +194,16 @@ export default async function GuideDashboard() {
                                     <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-slate-100 text-slate-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
                                         <span className="text-xs font-bold">{new Date(tour.start_date).getDate()}일</span>
                                     </div>
-                                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
+                                    <Link href={`/guide/bookings/${tour.id}`} className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-accent hover:shadow-md transition-all group/card">
                                         <div className="flex justify-between items-start mb-2">
-                                            <h4 className="font-bold text-slate-900 text-sm">{tour.traveler.full_name || '여행자'}님과의 예약</h4>
+                                            <h4 className="font-bold text-slate-900 text-sm group-hover/card:text-accent transition-colors">{tour.traveler.full_name || '여행자'}님와의 예약</h4>
+                                            <ArrowRight className="w-4 h-4 text-slate-300 group-hover/card:text-accent group-hover/card:translate-x-1 transition-all" />
                                         </div>
                                         <div className="flex items-center gap-2 text-xs text-slate-500 mb-2 bg-slate-50 px-2 py-1.5 rounded-md">
                                             <Clock className="w-3.5 h-3.5 text-accent" />
                                             <span className="font-semibold text-slate-700">{tour.start_date} ~ {tour.end_date}</span>
                                         </div>
-                                    </div>
+                                    </Link>
                                 </div>
                             ))}
                         </div>

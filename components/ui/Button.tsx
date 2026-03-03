@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'outline' | 'ghost' | 'danger';
@@ -23,12 +24,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             lg: 'h-12 px-8 text-lg'
         };
 
-        const widthClass = fullWidth ? 'w-full' : '';
-
         return (
             <button
                 ref={ref}
-                className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${widthClass} ${className}`}
+                className={cn(
+                    baseStyles,
+                    variants[variant],
+                    sizes[size],
+                    fullWidth && 'w-full',
+                    className
+                )}
                 {...props}
             >
                 {children}

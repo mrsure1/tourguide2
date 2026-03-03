@@ -2,8 +2,9 @@
 
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 import { useState, useTransition, useEffect, useRef } from "react";
-import { Search, Send, Paperclip, MoreVertical, Phone, Video, Info, CheckCheck, ArrowLeft } from "lucide-react";
+import { Search, Send, Paperclip, Info, CheckCheck, ArrowLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { sendMessage } from "./actions";
 
@@ -157,19 +158,16 @@ export default function MessagesClient({ clientId, conversations, profiles }: { 
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-1 sm:gap-2">
-                                    <Button variant="ghost" className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-0 rounded-full w-9 h-9 flex items-center justify-center">
-                                        <Phone className="w-4 h-4" />
-                                    </Button>
-                                    <Button variant="ghost" className="hidden sm:flex text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-0 rounded-full w-9 h-9 items-center justify-center">
-                                        <Video className="w-4 h-4" />
-                                    </Button>
-                                    <Button variant="ghost" className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-0 rounded-full w-9 h-9 flex items-center justify-center">
-                                        <Info className="w-4 h-4" />
-                                    </Button>
-                                    <Button variant="ghost" className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-0 rounded-full w-9 h-9 flex items-center justify-center">
-                                        <MoreVertical className="w-4 h-4" />
-                                    </Button>
+                                <div className="flex items-center">
+                                    <Link href={activeConversation.contact.role === 'guide' ? `/traveler/guides/${activeConversation.contact.id}` : '#'}>
+                                        <Button
+                                            variant="ghost"
+                                            className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 p-0 rounded-xl w-12 h-12 flex items-center justify-center transition-all border border-transparent hover:border-blue-100"
+                                            title="상세보기"
+                                        >
+                                            <Info className="w-7 h-7" strokeWidth={2.5} />
+                                        </Button>
+                                    </Link>
                                 </div>
                             </div>
 

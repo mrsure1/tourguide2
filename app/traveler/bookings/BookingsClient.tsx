@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ReviewModal } from "@/components/review/ReviewModal";
-import { CalendarDays, Clock, Users, Ticket, MapPin, MessageSquare, Download, Repeat, Star } from "lucide-react";
+import { CalendarDays, Clock, Users, Ticket, MapPin, MessageSquare, Download, Repeat, Star, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
 export default function BookingsClient({ bookings }: { bookings: any[] }) {
@@ -13,10 +13,47 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
     const [selectedTourForReview, setSelectedTourForReview] = useState("");
     const [selectedGuideId, setSelectedGuideId] = useState("");
 
+    const now = new Date();
+
+    // 중복 날짜 감지 로직
+    const upcoming = bookings.filter(b => (b.status === "pending" || b.status === "confirmed") && new Date(b.end_date) >= now);
+    const duplicates = [];
+    for (let i = 0; i < upcoming.length; i++) {
+        for (let j = i + 1; j < upcoming.length; j++) {
+            const a = upcoming[i];
+            const b = upcoming[j];
+            const startA = new Date(a.start_date);
+            const endA = new Date(a.end_date);
+            const startB = new Date(b.start_date);
+            const endB = new Date(b.end_date);
+
+            if (startA <= endB && endA >= startB) {
+                const overlapStart = new Date(Math.max(startA.getTime(), startB.getTime()));
+                const overlapEnd = new Date(Math.min(endA.getTime(), endB.getTime()));
+                duplicates.push({
+                    dates: `${overlapStart.toLocaleDateString()} ~ ${overlapEnd.toLocaleDateString()}`,
+                    guide1: a.guide?.full_name,
+                    guide2: b.guide?.full_name
+                });
+            }
+        }
+    }
+
     const handleReviewSubmit = (data: { rating: number; review: string }) => {
         console.log("Review submitted:", data);
         alert("리뷰가 아직 DB에 연결되지 않았습니다. 등록: " + JSON.stringify(data));
         setReviewModalOpen(false);
+    };
+
+    const getRegionCode = (location: string) => {
+        if (!location) return "BK";
+        if (location.includes("서울")) return "SEL";
+        if (location.includes("부산")) return "PUS";
+        if (location.includes("제주")) return "CJU";
+        if (location.includes("인천")) return "ICN";
+        if (location.includes("경기")) return "GGY";
+        if (location.includes("강원")) return "GWN";
+        return "TR";
     };
 
     const handleCancelBooking = async (bookingId: string) => {
@@ -39,12 +76,6 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
         }
     };
 
-    const upcomingBookings = bookings.filter(b => b.status === "pending" || b.status === "confirmed");
-    const pastBookings = bookings.filter(b => b.status === "completed" || (b.status === "confirmed" && new Date(b.end_date) < new Date()));
-    // Let's adjust past logic: if end_date < now, it's past.
-    // For simplicity, upcoming = end_date >= now. cancelled = declined or cancelled
-    const now = new Date();
-
     const filteredBookings = bookings.filter(b => {
         const endDate = new Date(b.end_date);
         if (activeStatus === "cancelled") {
@@ -59,13 +90,32 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
 
     return (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-fade-in">
-            <div className="mb-10">
+            <div className="mb-8">
                 <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
                     <Ticket className="w-8 h-8 text-accent" />
                     나의 예약 내역
                 </h1>
                 <p className="mt-2 text-slate-500">예정된 투어와 다녀온 투어 일정을 확인하고 관리하세요.</p>
             </div>
+
+            {/* 날짜 중복 경고 메시지 */}
+            {duplicates.length > 0 && activeStatus === 'upcoming' && (
+                <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-4 animate-bounce-subtle">
+                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                        <AlertTriangle className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-bold text-red-900">일정 중복 주의</h3>
+                        <p className="text-xs text-red-700 mt-1 leading-relaxed">
+                            {duplicates.map((d, i) => (
+                                <span key={i} className="block">
+                                    • <strong>{d.dates}</strong> 일정이 <strong>{d.guide1}</strong> 가이드와 <strong>{d.guide2}</strong> 가이드 예약에서 겹칩니다.
+                                </span>
+                            ))}
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Premium Tabs */}
             <div className="flex border-b border-slate-200 mb-8 overflow-x-auto hide-scrollbar gap-8">
@@ -180,7 +230,7 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
                                             </div>
                                             <div>
                                                 <p className="text-xs font-semibold text-slate-500 mb-0.5">예약 번호</p>
-                                                <p className="text-sm font-bold text-slate-900">#BK-{booking.id.toString().padStart(6, '0')}</p>
+                                                <p className="text-sm font-bold text-slate-900">{getRegionCode(gd.location)}-{booking.id.toString().split('-')[0].toUpperCase()}</p>
                                             </div>
                                         </div>
                                     </div>

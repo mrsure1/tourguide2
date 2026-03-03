@@ -13,13 +13,17 @@ function LoginForm() {
     const searchParams = useSearchParams();
     const message = searchParams.get('message');
 
-    const handleOAuthLogin = async (provider: 'google' | 'kakao') => {
+    const handleOAuthLogin = async (provider: 'google' | 'kakao' | 'facebook') => {
         const supabase = createClient();
         if (supabase) {
+            // 현재 URL 파라미터(role 등)를 콜백 URL에 명시적으로 전달
+            const currentParams = searchParams.toString();
+            const callbackUrl = `${window.location.origin}/auth/callback${currentParams ? '?' + currentParams : ''}`;
+
             await supabase.auth.signInWithOAuth({
                 provider: provider,
                 options: {
-                    redirectTo: `${window.location.origin}/auth/callback` // Update with your actual callback URL
+                    redirectTo: callbackUrl
                 }
             });
         }
@@ -27,6 +31,7 @@ function LoginForm() {
 
     return (
         <form className="space-y-6" action={login}>
+            <input type="hidden" name="role" value={searchParams.get('role') || ''} />
             {message && (
                 <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm text-center">
                     {message}
@@ -94,9 +99,9 @@ function LoginForm() {
                     </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-2 gap-4">
-                    <Button type="button" variant="outline" fullWidth className="h-12 text-slate-700 bg-white/60 hover:bg-white border-slate-200 transition-all shadow-sm group" onClick={() => handleOAuthLogin('google')}>
-                        <span className="w-5 h-5 mr-no-shrink mr-2 relative flex items-center justify-center">
+                <div className="mt-6 grid grid-cols-3 gap-3">
+                    <Button type="button" variant="outline" fullWidth className="h-12 text-slate-700 bg-white/60 hover:bg-white border-slate-200 transition-all shadow-sm group px-0" onClick={() => handleOAuthLogin('google')}>
+                        <span className="w-5 h-5 mr-1 relative flex items-center justify-center">
                             <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
                                 <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
                                     <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z" />
@@ -108,11 +113,17 @@ function LoginForm() {
                         </span>
                         Google
                     </Button>
-                    <Button type="button" variant="outline" fullWidth className="h-12 text-[#381E1F] bg-[#FEE500]/60 hover:bg-[#FEE500] border-transparent transition-all shadow-sm" onClick={() => handleOAuthLogin('kakao')}>
-                        <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <Button type="button" variant="outline" fullWidth className="h-12 text-[#381E1F] bg-[#FEE500]/60 hover:bg-[#FEE500] border-transparent transition-all shadow-sm px-0" onClick={() => handleOAuthLogin('kakao')}>
+                        <svg className="w-5 h-5 mr-1" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 3C6.47715 3 2 6.47715 2 10.7643C2 13.5133 3.69335 15.932 6.22383 17.2797L5.35821 20.4568C5.23485 20.9088 5.7501 21.2562 6.13601 20.9592L9.89667 18.0673C10.5739 18.239 11.2778 18.3286 12 18.3286C17.5228 18.3286 22 14.8514 22 10.5643C22 6.27715 17.5228 3 12 3Z" />
                         </svg>
                         Kakao
+                    </Button>
+                    <Button type="button" variant="outline" fullWidth className="h-12 text-white bg-[#1877F2]/90 hover:bg-[#1877F2] border-transparent transition-all shadow-sm px-0" onClick={() => handleOAuthLogin('facebook')}>
+                        <svg className="w-5 h-5 mr-1" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                        Facebook
                     </Button>
                 </div>
             </div>
@@ -137,6 +148,11 @@ export default function Login() {
                         회원가입하기
                     </Link>
                 </p>
+                <div className="mt-4 flex justify-center gap-4 text-xs text-slate-400 font-light">
+                    <Link href="/terms" className="hover:text-slate-600 transition-colors">이용약관</Link>
+                    <span className="text-slate-200">|</span>
+                    <Link href="/terms?type=privacy" className="hover:text-slate-600 transition-colors">개인정보처리방침</Link>
+                </div>
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md animate-fade-in-up animation-delay-200 relative z-10">

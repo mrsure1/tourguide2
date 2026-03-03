@@ -2,47 +2,113 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
 
 interface Notification {
     id: string;
+    user_id: string;
     type: 'booking' | 'message' | 'system';
     title: string;
     content: string;
-    time: string;
-    read: boolean;
+    link?: string;
+    is_read: boolean;
+    created_at: string;
 }
 
 export function NotificationPopup() {
     const [isOpen, setIsOpen] = useState(false);
-    const [notifications, setNotifications] = useState<Notification[]>([
-        {
-            id: '1',
-            type: 'booking',
-            title: '예약 확정',
-            content: '김철수 가이드님이 2.24(화) 투어 예약을 확정했습니다.',
-            time: '10분 전',
-            read: false
-        },
-        {
-            id: '2',
-            type: 'message',
-            title: '새 메시지',
-            content: '이영희 가이드: 네, 미팅 장소는 안국역 3번 출구입니다.',
-            time: '1시간 전',
-            read: false
-        },
-        {
-            id: '3',
-            type: 'system',
-            title: '리뷰를 남겨주세요',
-            content: '어제 다녀오신 투어는 어떠셨나요? 리뷰를 작성하고 포인트를 받으세요.',
-            time: '하루 전',
-            read: true
-        }
-    ]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [userId, setUserId] = useState<string | null>(null);
+    const supabase = createClient();
+    const router = useRouter();
 
-    const unreadCount = notifications.filter(n => !n.read).length;
+    const unreadCount = notifications.filter(n => !n.is_read).length;
     const popupRef = useRef<HTMLDivElement>(null);
+
+    // 알림 목록 페칭
+    const fetchNotifications = async (uid: string) => {
+        const { data, error } = await supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_id', uid)
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (!error && data) {
+            setNotifications(data);
+        }
+    };
+
+    useEffect(() => {
+        const setup = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setUserId(user.id);
+                fetchNotifications(user.id);
+
+                // 실시간 구독 설정
+                const channel = supabase
+                    .channel(`public:notifications:user_id=eq.${user.id}`)
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: '*',
+                            schema: 'public',
+                            table: 'notifications',
+                            filter: `user_id=eq.${user.id}`
+                        },
+                        (payload) => {
+                            if (payload.eventType === 'INSERT') {
+                                setNotifications(prev => [payload.new as Notification, ...prev]);
+                            } else if (payload.eventType === 'UPDATE') {
+                                setNotifications(prev => prev.map(n =>
+                                    n.id === payload.new.id ? payload.new as Notification : n
+                                ));
+                            } else if (payload.eventType === 'DELETE') {
+                                setNotifications(prev => prev.filter(n => n.id !== payload.old.id));
+                            }
+                        }
+                    )
+                    .subscribe();
+
+                return () => {
+                    supabase.removeChannel(channel);
+                };
+            }
+        };
+
+        setup();
+    }, []);
+
+    // 알림 읽음 처리 및 이동
+    const handleNotificationClick = async (notification: Notification) => {
+        if (!notification.is_read) {
+            await supabase
+                .from('notifications')
+                .update({ is_read: true })
+                .eq('id', notification.id);
+        }
+
+        if (notification.link) {
+            router.push(notification.link);
+        }
+        setIsOpen(false);
+    };
+
+    // 모두 읽음 처리
+    const markAllAsRead = async () => {
+        if (!userId) return;
+        await supabase
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('user_id', userId)
+            .eq('is_read', false);
+
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    };
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -83,7 +149,7 @@ export function NotificationPopup() {
                         {unreadCount > 0 && (
                             <button
                                 className="text-xs text-accent hover:text-blue-700 font-medium"
-                                onClick={() => setNotifications(notifications.map(n => ({ ...n, read: true })))}
+                                onClick={markAllAsRead}
                             >
                                 모두 읽음 처리
                             </button>
@@ -98,7 +164,8 @@ export function NotificationPopup() {
                                 {notifications.map(notification => (
                                     <li
                                         key={notification.id}
-                                        className={`p-4 hover:bg-slate-50 transition-colors cursor-pointer ${notification.read ? 'opacity-70' : 'bg-blue-50/20'}`}
+                                        onClick={() => handleNotificationClick(notification)}
+                                        className={`p-4 hover:bg-slate-50 transition-colors cursor-pointer ${notification.is_read ? 'opacity-70' : 'bg-blue-50/20'}`}
                                     >
                                         <div className="flex gap-3">
                                             <div className="mt-1 shrink-0">
@@ -108,12 +175,14 @@ export function NotificationPopup() {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-start mb-0.5">
-                                                    <p className={`text-sm font-bold truncate ${notification.read ? 'text-slate-700' : 'text-slate-900'}`}>{notification.title}</p>
-                                                    <span className="text-[10px] text-slate-400 whitespace-nowrap shrink-0">{notification.time}</span>
+                                                    <p className={`text-sm font-bold truncate ${notification.is_read ? 'text-slate-700' : 'text-slate-900'}`}>{notification.title}</p>
+                                                    <span className="text-[10px] text-slate-400 whitespace-nowrap shrink-0">
+                                                        {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: ko })}
+                                                    </span>
                                                 </div>
-                                                <p className={`text-xs line-clamp-2 ${notification.read ? 'text-slate-500' : 'text-slate-600'}`}>{notification.content}</p>
+                                                <p className={`text-xs line-clamp-2 ${notification.is_read ? 'text-slate-500' : 'text-slate-600'}`}>{notification.content}</p>
                                             </div>
-                                            {!notification.read && <div className="w-2 h-2 rounded-full bg-accent shrink-0 mt-1.5"></div>}
+                                            {!notification.is_read && <div className="w-2 h-2 rounded-full bg-accent shrink-0 mt-1.5"></div>}
                                         </div>
                                     </li>
                                 ))}
@@ -122,10 +191,11 @@ export function NotificationPopup() {
                     </div>
 
                     <div className="p-3 border-t border-slate-100 text-center bg-slate-50">
-                        <Button variant="ghost" size="sm" className="text-xs text-slate-500 w-full hover:text-slate-900">모든 알림 보기</Button>
+                        <Button variant="ghost" size="sm" className="text-xs text-slate-500 w-full hover:text-slate-900" onClick={() => { setIsOpen(false); router.push('/notifications'); }}>모든 알림 보기</Button>
                     </div>
                 </div>
             )}
         </div>
     );
 }
+

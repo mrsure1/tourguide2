@@ -18,15 +18,20 @@ export async function POST(request: Request) {
     }
 
     // Update status to 'cancelled'
-    const { error } = await supabase
+    const { data: updatedData, error } = await supabase
         .from('bookings')
         .update({ status: 'cancelled' })
         .eq('id', bookingId)
-        .eq('traveler_id', user.id); // Must be the owner of the booking
+        .eq('traveler_id', user.id)
+        .select(); // Check if update actually happened
 
     if (error) {
-        console.error("Cancellation error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error("Cancellation error (Supabase):", error);
+        return NextResponse.json({ error: error.message, details: error.details }, { status: 500 });
+    }
+
+    if (!updatedData || updatedData.length === 0) {
+        return NextResponse.json({ error: 'Booking not found or already cancelled' }, { status: 404 });
     }
 
     revalidatePath('/traveler/bookings');

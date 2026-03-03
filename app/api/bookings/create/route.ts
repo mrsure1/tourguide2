@@ -29,21 +29,58 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Unauthorized. Please login to book a guide.' }, { status: 401 });
         }
 
-        // Explicitly check if the guide exists in guides_detail
-        // Safety: Detailed profile must exist to receive bookings
-        const { data: guideExists, error: guideCheckError } = await supabase
-            .from('guides_detail')
+        // [방어 로직] 여행자 프로필이 없는 경우 즉석에서 생성 (Just-in-Time)
+        const { data: travelerProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        if (!travelerProfile) {
+            console.log('Creating missing traveler profile for:', user.email);
+            const { error: upsertError } = await supabase.from('profiles').upsert({
+                id: user.id,
+                email: user.email,
+                role: 'traveler',
+                full_name: user.user_metadata?.full_name || user.email?.split('@')[0]
+            });
+            if (upsertError) console.error('Failed to create traveler profile:', upsertError);
+        }
+
+        // [방어 로직 2] 대상 가이드가 DB에 없는 경우 (샘플 가이드인 경우 즉석 생성)
+        const { data: guideProfile, error: guideCheckError } = await supabase
+            .from('profiles')
             .select('id')
             .eq('id', guide_id)
-            .single();
+            .maybeSingle();
 
-        // [테스트 모드] 상세 프로필 체크 완화
-        // if (guideCheckError || !guideExists) {
-        //     console.error('Guide detailed profile not found:', guideCheckError);
-        //     return NextResponse.json({
-        //         error: '예약 실패: 해당 가이드가 아직 상세 프로필을 등록하지 않았거나 승인 대기 중입니다.'
-        //     }, { status: 400 });
-        // }
+        if (!guideProfile) {
+            console.log('Target guide profile missing. Checking if it is a known sample ID:', guide_id);
+            // 알려진 샘플 가이드 데이터 (gina, james 등)
+            const sampleGuides: Record<string, any> = {
+                '44444444-4444-4444-4444-444444444444': { full_name: '김지나 (Gina)', role: 'guide', email: 'gina@sample.com' },
+                '11111111-1111-1111-1111-111111111111': { full_name: '박성진 (James)', role: 'guide', email: 'james@sample.com' },
+                '22222222-2222-2222-2222-222222222222': { full_name: '이소연 (Soyeon)', role: 'guide', email: 'soyeon@sample.com' },
+                '33333333-3333-3333-3333-333333333333': { full_name: '이현우 (Henry)', role: 'guide', email: 'henry@sample.com' },
+                '1d1742de-7c17-4ffa-9f73-41a29d6eadc2': { full_name: '김민수 (Minsoo)', role: 'guide', email: 'minsoo@sample.com' }
+            };
+
+            if (sampleGuides[guide_id]) {
+                console.log('Creating missing sample guide profile:', sampleGuides[guide_id].full_name);
+                await supabase.from('profiles').upsert({
+                    id: guide_id,
+                    ...sampleGuides[guide_id]
+                });
+                // 가이드 상세 정보도 최소한으로 생성 (FK 무결성 위해)
+                await supabase.from('guides_detail').upsert({
+                    id: guide_id,
+                    location: '서울',
+                    hourly_rate: 100000
+                });
+            } else {
+                console.warn('Guide ID is not a known sample and does not exist in profiles.');
+            }
+        }
 
         // Insert booking
         const { data, error } = await supabase.from('bookings').insert([
@@ -61,8 +98,9 @@ export async function POST(request: Request) {
             console.error('Booking creation error:', error);
             // Handle specific FK error message for the user
             if (error.code === '23503') {
+                console.error(`FK Constraint Violation: Check if guide_id(${guide_id}) OR traveler_id(${user.id}) exists in referenced tables.`);
                 return NextResponse.json({
-                    error: '예약 시스템 제약 조건 에러: 가이드 정보가 유효하지 않습니다. (샘플 가이드는 실제 가입이 필요할 수 있습니다.)'
+                    error: `예약 실패: 가이드(${guide_id}) 또는 회원 정보가 유효하지 않습니다. 샘플 가이드의 경우 실제 가입이 필요할 수 있습니다.`
                 }, { status: 400 });
             }
             return NextResponse.json({ error: error.message }, { status: 500 });

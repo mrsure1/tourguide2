@@ -14,7 +14,7 @@ export default async function GuideSchedule() {
         .eq('id', user.id)
         .single();
 
-    if (profile?.role !== 'guide') {
+    if (profile?.role !== 'guide' && profile?.role !== 'admin') {
         redirect('/role-selection');
     }
 
