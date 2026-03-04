@@ -17,14 +17,36 @@ export async function GET(request: Request) {
     }
 
     try {
-        // 1. Verify Payment with Toss API
+        // 1. Pre-verify amount with our Database (Security Check)
+        const supabase = await createClient();
+        const { data: booking, error: fetchError } = await supabase
+            .from('bookings')
+            .select('total_price, status')
+            .eq('id', orderId)
+            .single();
+
+        if (fetchError || !booking) {
+            console.error("Booking not found for verification:", fetchError);
+            return NextResponse.redirect(`${request.headers.get('origin')}/traveler/bookings?error=BookingNotFound`);
+        }
+
+        if (Number(booking.total_price) !== Number(amount)) {
+            console.error("Payment amount mismatch!", { expected: booking.total_price, received: amount });
+            return NextResponse.redirect(`${request.headers.get('origin')}/traveler/bookings?error=AmountMismatch`);
+        }
+
+        // 2. Verify Payment with Toss API
         const encryptedSecretKey = `Basic ${Buffer.from(widgetSecretKey + ":").toString("base64")}`;
+
+        // Use orderId (Booking UUID) as Idempotency-Key for extra reliability
+        const idempotencyKey = orderId;
 
         const response = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
             method: "POST",
             headers: {
                 Authorization: encryptedSecretKey,
                 "Content-Type": "application/json",
+                "Idempotency-Key": idempotencyKey,
             },
             body: JSON.stringify({
                 orderId,
@@ -40,9 +62,8 @@ export async function GET(request: Request) {
             return NextResponse.redirect(`${request.headers.get('origin')}/traveler/bookings/checkout/${orderId}?error=${data.code}`);
         }
 
-        // 2. Update booking status in database
-        const supabase = await createClient();
-        const { error } = await supabase
+        // 3. Update booking status in database
+        const { error: updateError } = await supabase
             .from('bookings')
             .update({
                 status: 'paid',
@@ -50,16 +71,15 @@ export async function GET(request: Request) {
             })
             .eq('id', orderId);
 
-        if (error) {
-            console.error("Database update failed after payment:", error);
-            // Even if DB fails, payment succeeded. Should log tightly in prod.
+        if (updateError) {
+            console.error("Database update failed after payment:", updateError);
         }
 
-        // 3. Revalidate paths
+        // 4. Revalidate paths
         revalidatePath('/traveler/bookings');
         revalidatePath('/admin/payments');
 
-        // 4. Redirect to bookings page with success
+        // 5. Redirect to bookings page with success
         return NextResponse.redirect(`${request.headers.get('origin')}/traveler/bookings?payment=success`);
 
     } catch (error: any) {
