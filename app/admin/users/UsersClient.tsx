@@ -8,11 +8,10 @@ import { updateUserRole } from "../actions";
 
 interface UserProfile {
     id: string;
-    email: string;
     full_name: string;
     role: string;
     avatar_url: string;
-    created_at: string;
+    updated_at: string;
 }
 
 export default function UsersClient({ initialUsers }: { initialUsers: UserProfile[] }) {
@@ -23,8 +22,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: UserProfil
 
     const filteredUsers = users.filter(user => {
         const matchesSearch =
-            user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+            user.full_name?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesRole = roleFilter === "all" || user.role === roleFilter;
         return matchesSearch && matchesRole;
     });
@@ -62,7 +60,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: UserProfil
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="이름 또는 이메일 검색..."
+                            placeholder="이름으로 검색..."
                             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -89,7 +87,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: UserProfil
                                 <tr className="bg-slate-50/50 text-slate-500 text-xs font-bold uppercase tracking-wider">
                                     <th className="px-6 py-4">사용자</th>
                                     <th className="px-6 py-4">역할</th>
-                                    <th className="px-6 py-4">가입일</th>
+                                    <th className="px-6 py-4">최근 수정일</th>
                                     <th className="px-6 py-4 text-right">관리</th>
                                 </tr>
                             </thead>
@@ -105,21 +103,21 @@ export default function UsersClient({ initialUsers }: { initialUsers: UserProfil
                                                 />
                                                 <div>
                                                     <p className="font-bold text-slate-900">{user.full_name || '이름 없음'}</p>
-                                                    <p className="text-xs text-slate-500">{user.email}</p>
+                                                    <p className="text-xs text-slate-500">이메일 정보 비공개</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ring-1 ${user.role === 'admin' ? 'bg-purple-100 text-purple-700 ring-purple-700/10' :
-                                                    user.role === 'guide' ? 'bg-emerald-100 text-emerald-700 ring-emerald-700/10' :
-                                                        'bg-blue-100 text-blue-700 ring-blue-700/10'
+                                                user.role === 'guide' ? 'bg-emerald-100 text-emerald-700 ring-emerald-700/10' :
+                                                    'bg-blue-100 text-blue-700 ring-blue-700/10'
                                                 }`}>
                                                 {user.role === 'admin' ? <Shield className="w-3 h-3" /> : <UserIcon className="w-3 h-3" />}
                                                 {user.role}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-slate-500">
-                                            {new Date(user.created_at).toLocaleDateString()}
+                                            {user.updated_at ? new Date(user.updated_at).toLocaleDateString() : '-'}
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">

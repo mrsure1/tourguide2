@@ -27,7 +27,6 @@ export default async function AdminGuidesPage() {
         .select(`
             id,
             full_name,
-            email,
             avatar_url,
             guides_detail (
                 id,

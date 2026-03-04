@@ -9,7 +9,6 @@ import { approveGuide, rejectGuide } from "../actions";
 interface GuideRecord {
     id: string;
     full_name: string;
-    email: string;
     avatar_url: string;
     guides_detail: {
         location: string;
@@ -104,7 +103,7 @@ export default function GuidesClient({ initialGuides }: { initialGuides: GuideRe
                                     )}
                                 </div>
                                 <h3 className="text-lg font-black text-slate-900">{guide.full_name}</h3>
-                                <p className="text-sm text-slate-500 mb-6 truncate w-full">{guide.email}</p>
+                                <p className="text-sm text-slate-500 mb-6 truncate w-full">이메일 정보 비공개</p>
 
                                 <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-8 ${guide.guides_detail.is_verified ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
                                     {guide.guides_detail.is_verified ? 'Verified Partner' : 'Verification Pending'}
