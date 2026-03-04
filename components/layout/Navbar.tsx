@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { NotificationPopup } from "@/components/notification/NotificationPopup";
 import { Button } from "@/components/ui/Button";
 import { LayoutDashboard, Search, Map, Calendar, User, ShoppingBag, Menu, X, Landmark } from "lucide-react";
@@ -55,8 +56,14 @@ export function Navbar({ profile }: NavbarProps) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 group shrink-0">
-                    <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white shadow-lg shadow-accent/20 group-hover:scale-105 transition-transform">
-                        <Landmark className="w-6 h-6" />
+                    <div className="relative w-8 h-8 group-hover:scale-105 transition-transform">
+                        <Image
+                            src="/logo.png"
+                            alt="GuideMatch Logo"
+                            fill
+                            className="object-contain"
+                            priority
+                        />
                     </div>
                     <span className="text-xl font-black tracking-tighter text-slate-900 hidden sm:block">
                         Guide<span className="text-accent">Match</span>

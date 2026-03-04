@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ReviewModal } from "@/components/review/ReviewModal";
-import { CalendarDays, Clock, Users, Ticket, MapPin, MessageSquare, Download, Repeat, Star, AlertTriangle } from "lucide-react";
+import { CalendarDays, Clock, Users, Ticket, MapPin, MessageSquare, Download, Repeat, Star, AlertTriangle, CreditCard } from "lucide-react";
 import Link from "next/link";
 
 export default function BookingsClient({ bookings }: { bookings: any[] }) {
@@ -16,7 +16,7 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
     const now = new Date();
 
     // 중복 날짜 감지 로직
-    const upcoming = bookings.filter(b => (b.status === "pending" || b.status === "confirmed") && new Date(b.end_date) >= now);
+    const upcoming = bookings.filter(b => (b.status === "pending" || b.status === "confirmed" || b.status === "paid") && new Date(b.end_date) >= now);
     const duplicates = [];
     for (let i = 0; i < upcoming.length; i++) {
         for (let j = i + 1; j < upcoming.length; j++) {
@@ -85,7 +85,7 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
             return b.status === "completed" || (b.status === "confirmed" && endDate < now);
         }
         // upcoming
-        return (b.status === "pending" || b.status === "confirmed") && endDate >= now;
+        return (b.status === "pending" || b.status === "confirmed" || b.status === "paid") && endDate >= now;
     });
 
     return (
@@ -124,7 +124,7 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
                     className={`pb-4 text-sm font-bold whitespace-nowrap transition-all relative ${activeStatus === 'upcoming' ? 'text-accent' : 'text-slate-500 hover:text-slate-800'
                         }`}
                 >
-                    예정된 투어 ({bookings.filter(b => (b.status === "pending" || b.status === "confirmed") && new Date(b.end_date) >= now).length})
+                    예정된 투어 ({bookings.filter(b => (b.status === "pending" || b.status === "confirmed" || b.status === "paid") && new Date(b.end_date) >= now).length})
                     {activeStatus === 'upcoming' && (
                         <div className="absolute bottom-0 left-0 w-full h-0.5 bg-accent rounded-t-full" />
                     )}
@@ -173,7 +173,7 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent opacity-60" />
                                 <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-bold text-accent shadow-sm flex items-center gap-1.5">
                                     <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                                    {booking.status === 'pending' ? '승인 대기중' : booking.status === 'confirmed' ? '예약 확정' : booking.status}
+                                    {booking.status === 'pending' ? '승인 대기중' : booking.status === 'confirmed' ? '결제 대기중' : booking.status === 'paid' ? '결제 완료' : booking.status}
                                 </div>
                             </div>
 
@@ -276,6 +276,13 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
                                                 </Button>
                                             </Link>
                                             {booking.status === 'confirmed' && (
+                                                <Link href={`/traveler/bookings/checkout/${booking.id}`}>
+                                                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md flex items-center gap-2">
+                                                        <CreditCard className="w-4 h-4" /> 결제하기
+                                                    </Button>
+                                                </Link>
+                                            )}
+                                            {booking.status === 'paid' && (
                                                 <Button className="bg-slate-900 text-white hover:bg-slate-800 shadow-md flex items-center gap-2">
                                                     <Download className="w-4 h-4" /> E-바우처
                                                 </Button>

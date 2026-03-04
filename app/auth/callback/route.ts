@@ -52,8 +52,7 @@ export async function GET(request: Request) {
                     id: userId,
                     role: userRole,
                     full_name: userFullName,
-                    avatar_url: userAvatar,
-                    email: session.user.email // 이메일 누락 방지
+                    avatar_url: userAvatar
                 }, { onConflict: 'id' });
 
             if (upsertError) {

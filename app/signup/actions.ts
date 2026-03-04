@@ -42,7 +42,6 @@ export async function signup(formData: FormData) {
     if (data.user) {
         await supabase.from('profiles').upsert({
             id: data.user.id,
-            email: email,
             role: role,
             full_name: fullName,
         }, { onConflict: 'id' });

@@ -40,7 +40,6 @@ export async function POST(request: Request) {
             console.log('Creating missing traveler profile for:', user.email);
             const { error: upsertError } = await supabase.from('profiles').upsert({
                 id: user.id,
-                email: user.email,
                 role: 'traveler',
                 full_name: user.user_metadata?.full_name || user.email?.split('@')[0]
             });
@@ -56,13 +55,12 @@ export async function POST(request: Request) {
 
         if (!guideProfile) {
             console.log('Target guide profile missing. Checking if it is a known sample ID:', guide_id);
-            // 알려진 샘플 가이드 데이터 (gina, james 등)
             const sampleGuides: Record<string, any> = {
-                '44444444-4444-4444-4444-444444444444': { full_name: '김지나 (Gina)', role: 'guide', email: 'gina@sample.com' },
-                '11111111-1111-1111-1111-111111111111': { full_name: '박성진 (James)', role: 'guide', email: 'james@sample.com' },
-                '22222222-2222-2222-2222-222222222222': { full_name: '이소연 (Soyeon)', role: 'guide', email: 'soyeon@sample.com' },
-                '33333333-3333-3333-3333-333333333333': { full_name: '이현우 (Henry)', role: 'guide', email: 'henry@sample.com' },
-                '1d1742de-7c17-4ffa-9f73-41a29d6eadc2': { full_name: '김민수 (Minsoo)', role: 'guide', email: 'minsoo@sample.com' }
+                '44444444-4444-4444-4444-444444444444': { full_name: '김지나 (Gina)', role: 'guide' },
+                '11111111-1111-1111-1111-111111111111': { full_name: '박성진 (James)', role: 'guide' },
+                '22222222-2222-2222-2222-222222222222': { full_name: '이소연 (Soyeon)', role: 'guide' },
+                '33333333-3333-3333-3333-333333333333': { full_name: '이현우 (Henry)', role: 'guide' },
+                '1d1742de-7c17-4ffa-9f73-41a29d6eadc2': { full_name: '김민수 (Minsoo)', role: 'guide' }
             };
 
             if (sampleGuides[guide_id]) {

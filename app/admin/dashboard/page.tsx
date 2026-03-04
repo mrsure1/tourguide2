@@ -29,7 +29,9 @@ export default async function AdminDashboardPage() {
         { data: recentPayments }
     ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('guides_detail').select('*', { count: 'exact', head: true }).eq('is_verified', false),
+        supabase.from('profiles').select('id, guides_detail!inner(is_verified)', { count: 'exact', head: true })
+            .eq('role', 'guide')
+            .eq('guides_detail.is_verified', false),
         supabase.from('bookings').select('total_price').in('status', ['paid', 'completed'])
     ]);
 
