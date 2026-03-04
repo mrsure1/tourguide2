@@ -10,7 +10,7 @@ import { ChevronLeft, CreditCard, User, FileText, Calendar, Clock, Users, Globe,
 import { useRouter } from "next/navigation";
 
 // Toss Payments Client Key
-const clientKey = "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
+const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
 
 interface CheckoutClientProps {
     booking: any;
@@ -172,8 +172,8 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
                             <div className="flex flex-col md:flex-row gap-4 mb-6 relative z-10 mx-6 md:mx-0 pt-6 md:pt-0">
                                 <button
                                     className={`flex-1 py-3 px-4 rounded-xl border-2 font-bold flex items-center justify-center gap-2 transition-all ${paymentMethod === 'toss'
-                                            ? 'border-blue-600 text-blue-700 bg-blue-50 shadow-sm'
-                                            : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                                        ? 'border-blue-600 text-blue-700 bg-blue-50 shadow-sm'
+                                        : 'border-slate-200 text-slate-500 hover:bg-slate-50'
                                         }`}
                                     onClick={() => setPaymentMethod('toss')}
                                 >
@@ -182,8 +182,8 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
                                 </button>
                                 <button
                                     className={`flex-1 py-3 px-4 rounded-xl border-2 font-bold flex items-center justify-center gap-2 transition-all ${paymentMethod === 'paypal'
-                                            ? 'border-[#003087] text-[#003087] bg-blue-50 shadow-sm'
-                                            : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                                        ? 'border-[#003087] text-[#003087] bg-blue-50 shadow-sm'
+                                        : 'border-slate-200 text-slate-500 hover:bg-slate-50'
                                         }`}
                                     onClick={() => setPaymentMethod('paypal')}
                                 >
@@ -217,7 +217,7 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
                                             <p className="text-3xl font-black text-[#003087]">${usdAmount}</p>
                                             <p className="text-xs text-slate-400 mt-2">안내: 환율 $1 = ₩1,400 기준 테스트 금액입니다.</p>
                                         </div>
-                                        <PayPalScriptProvider options={{ clientId: "test", currency: "USD" }}>
+                                        <PayPalScriptProvider options={{ clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "test", currency: "USD" }}>
                                             <PayPalButtons
                                                 style={{ layout: "vertical", shape: "rect", color: "gold" }}
                                                 createOrder={(data, actions) => {

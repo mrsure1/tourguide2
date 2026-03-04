@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-// Toss Payments Secret Key (Test)
-const widgetSecretKey = "test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6";
+// Toss Payments Secret Key
+const widgetSecretKey = process.env.TOSS_SECRET_KEY || "test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6";
 
 export async function GET(request: Request) {
     console.log("--- Toss Payments Success Callback ---");
