@@ -56,6 +56,17 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
         return "TR";
     };
 
+    const getTimeRemaining = (updatedAt: string) => {
+        const deadline = new Date(new Date(updatedAt).getTime() + 24 * 60 * 60 * 1000);
+        const diff = deadline.getTime() - now.getTime();
+
+        if (diff <= 0) return "기한 만료";
+
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        return `${hours}시간 ${minutes}분 남음`;
+    };
+
     const handleCancelBooking = async (bookingId: string) => {
         if (!confirm("정말로 이 예약을 취소하시겠습니까?")) return;
 
@@ -175,6 +186,12 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
                                     <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
                                     {booking.status === 'pending' ? '승인 대기중' : booking.status === 'confirmed' ? '결제 대기중' : booking.status === 'paid' ? '결제 완료' : booking.status}
                                 </div>
+                                {booking.status === 'confirmed' && (
+                                    <div className="absolute bottom-4 left-4 right-4 bg-red-600/90 backdrop-blur-sm px-3 py-2 rounded-xl text-[10px] sm:text-xs font-bold text-white shadow-lg flex items-center justify-center gap-2 animate-pulse">
+                                        <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                                        <span>결제 기한: {getTimeRemaining(booking.updated_at)}</span>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="p-6 lg:p-8 flex-1 flex flex-col justify-between min-w-0 bg-white">
@@ -276,9 +293,13 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
                                                 </Button>
                                             </Link>
                                             {booking.status === 'confirmed' && (
-                                                <Link href={`/traveler/bookings/checkout/${booking.id}`}>
-                                                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md flex items-center gap-2">
-                                                        <CreditCard className="w-4 h-4" /> 결제하기
+                                                <Link href={getTimeRemaining(booking.updated_at) === "기한 만료" ? "#" : `/traveler/bookings/checkout/${booking.id}`}>
+                                                    <Button
+                                                        className={`${getTimeRemaining(booking.updated_at) === "기한 만료" ? "bg-slate-300 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700"} text-white shadow-md flex items-center gap-2`}
+                                                        disabled={getTimeRemaining(booking.updated_at) === "기한 만료"}
+                                                    >
+                                                        <CreditCard className="w-4 h-4" />
+                                                        {getTimeRemaining(booking.updated_at) === "기한 만료" ? "기한 만료" : "결제하기"}
                                                     </Button>
                                                 </Link>
                                             )}

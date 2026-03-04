@@ -10,7 +10,17 @@ export default async function TravelerBookings() {
         redirect('/login');
     }
 
-    // 1. Fetch bookings first
+    // [Lazy Cleanup] 24시간 내 미결제된 확정(confirmed) 예약 자동 취소 처리
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    await supabase
+        .from('bookings')
+        .update({ status: 'cancelled' })
+        .eq('status', 'confirmed')
+        .eq('traveler_id', user.id)
+        .lt('updated_at', twentyFourHoursAgo);
+
+    // 1. Fetch bookings first (after cleanup)
     const { data: rawBookings, error: bookingsError } = await supabase
         .from('bookings')
         .select('*')
