@@ -160,12 +160,12 @@ export default async function Home() {
                   <div className="w-24 h-24 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
                     <Map className="w-12 h-12" />
                   </div>
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight whitespace-nowrap">수익 창출 (가이드)</h3>
+                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight whitespace-nowrap">가이드로 활동하기</h3>
                   <p className="text-slate-600 text-lg font-light leading-relaxed mb-8 break-keep">
-                    나만의 유니크한 투어 상품을 등록하고 <br className="hidden lg:block" /> 전 세계 여행자와 매칭되어 전문적인 수익을 창출하세요.
+                    나만의 유니크한 투어 상품을 등록하고 <br className="hidden lg:block" /> 전 세계 여행자들과 만나 특별한 경험을 공유해 보세요.
                   </p>
                   <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-emerald-600 transition-colors duration-300 shadow-lg whitespace-nowrap">
-                    {profile?.role === 'guide' || profile?.role === 'admin' ? '가이드 센터 바로가기' : '가이드로 등록하고 수익내기'} <ChevronRight className="w-5 h-5" />
+                    {profile?.role === 'guide' || profile?.role === 'admin' ? '가이드 센터 바로가기' : '신규 가이드로 등록하기'} <ChevronRight className="w-5 h-5" />
                   </div>
                 </div>
               </Link>
@@ -175,9 +175,9 @@ export default async function Home() {
                   <div className="w-24 h-24 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
                     <Map className="w-12 h-12" />
                   </div>
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight whitespace-nowrap">수익 창출 (가이드)</h3>
+                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight whitespace-nowrap">가이드로 활동하기</h3>
                   <p className="text-slate-600 text-lg font-light leading-relaxed mb-8 break-keep">
-                    나만의 유니크한 투어 상품을 등록하고 <br className="hidden lg:block" /> 전 세계 여행자와 매칭되어 전문적인 수익을 창출하세요.
+                    나만의 유니크한 투어 상품을 등록하고 <br className="hidden lg:block" /> 전 세계 여행자들과 만나 특별한 경험을 공유해 보세요.
                   </p>
                   <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-emerald-600 transition-colors duration-300 shadow-lg whitespace-nowrap">
                     가이드로 시작하기 <ChevronRight className="w-5 h-5" />
