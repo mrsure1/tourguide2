@@ -18,65 +18,112 @@ interface CheckoutClientProps {
 
 export default function CheckoutClient({ booking }: CheckoutClientProps) {
     const router = useRouter();
-    const [paymentMethod, setPaymentMethod] = useState<'toss' | 'paypal'>('toss');
+    const [paymentMethod, setPaymentMethod] = useState<'toss' | 'paypal' | 'kakao'>('toss');
 
     // Toss Payments Widget
     const [paymentWidget, setPaymentWidget] = useState<any>(null);
+    const [isWidgetLoading, setIsWidgetLoading] = useState(false);
     const paymentMethodsWidgetRef = useRef<any>(null);
 
     useEffect(() => {
+        let isMounted = true;
         (async () => {
-            if (paymentMethod === 'toss') {
+            // Both 'toss' and 'kakao' use Toss Payments SDK
+            if (paymentMethod === 'toss' || paymentMethod === 'kakao') {
                 try {
+                    setIsWidgetLoading(true);
+                    console.log(`Toss/Kakao: Starting initialization for ${paymentMethod}...`);
                     const tossPayments = await loadTossPayments(clientKey);
+
+                    if (!isMounted) return;
+
                     const widget = tossPayments.widgets({
-                        customerKey: booking.traveler_id // Must be a unique identifier
+                        customerKey: booking.traveler_id
                     });
+
+                    console.log("Toss/Kakao: Widget initialized successfully");
                     setPaymentWidget(widget);
                 } catch (error) {
-                    console.error("Error loading Toss Payments:", error);
+                    console.error("Toss/Kakao: Initialization error:", error);
+                } finally {
+                    if (isMounted) setIsWidgetLoading(false);
                 }
             }
         })();
+        return () => { isMounted = false; };
     }, [paymentMethod, booking.traveler_id]);
 
     useEffect(() => {
-        if (paymentWidget && paymentMethod === 'toss') {
-            const amount = {
-                currency: "KRW",
-                value: booking.total_price,
+        if (paymentWidget && (paymentMethod === 'toss' || paymentMethod === 'kakao')) {
+            const renderWidget = async () => {
+                try {
+                    // Ensure the container exists before rendering
+                    const container = document.getElementById("payment-method");
+                    if (!container) {
+                        console.warn("Toss/Kakao: #payment-method container not found yet, retrying in 100ms...");
+                        setTimeout(renderWidget, 100);
+                        return;
+                    }
+
+                    console.log("Toss/Kakao: Rendering payment methods...");
+                    const amount = {
+                        currency: "KRW",
+                        value: booking.total_price,
+                    };
+
+                    const methodsWidget = await paymentWidget.renderPaymentMethods({
+                        selector: "#payment-method",
+                        amount,
+                        options: { variantKey: "DEFAULT" }
+                    });
+
+                    await paymentWidget.renderAgreement({
+                        selector: "#agreement",
+                        options: { variantKey: "AGREEMENT" }
+                    });
+
+                    paymentMethodsWidgetRef.current = methodsWidget;
+                    console.log("Toss/Kakao: Rendering complete");
+                } catch (error) {
+                    console.error("Toss/Kakao: Rendering error:", error);
+                }
             };
-            const methodsWidget = paymentWidget.renderPaymentMethods(
-                "#payment-method",
-                amount,
-                { variantKey: "DEFAULT" }
-            );
 
-            paymentWidget.renderAgreement(
-                "#agreement",
-                { variantKey: "AGREEMENT" }
-            );
-
-            paymentMethodsWidgetRef.current = methodsWidget;
+            renderWidget();
         }
     }, [paymentWidget, paymentMethod, booking.total_price]);
 
-    const handleTossPaymentRequest = async () => {
-        if (!paymentWidget) return;
+    const handlePaymentRequest = async () => {
+        console.log("handlePaymentRequest called for:", paymentMethod);
 
-        try {
-            await paymentWidget.requestPayment({
-                orderId: booking.id, // Using the Supabase booking UUID
-                orderName: booking.tour?.title || `${booking.guide?.full_name} 가이드 투어`,
-                successUrl: `${window.location.origin}/api/payments/toss/success`,
-                failUrl: `${window.location.origin}/api/payments/toss/fail`,
-                customerEmail: booking.traveler?.email || "customer@email.com",
-                customerName: booking.traveler?.full_name || "고객",
-                // amount is already set in renderPaymentMethods
-            });
-        } catch (error) {
-            console.error("Payment failed", error);
-            alert("결제 요청 중 오류가 발생했습니다.");
+        if (paymentMethod === 'toss' || paymentMethod === 'kakao') {
+            if (!paymentWidget) {
+                console.error("Payment widget not initialized");
+                alert("결제 위젯이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
+                return;
+            }
+
+            try {
+                // If it's kakao, we use a specific method if supported, 
+                // but usually the widget handles the selection.
+                // For a dedicated KakaoPay experience via Toss:
+                const paymentOptions: any = {
+                    orderId: booking.id,
+                    orderName: booking.tour?.title || `${booking.guide?.full_name} 가이드 투어`,
+                    successUrl: `${window.location.origin}/api/payments/toss/success`,
+                    failUrl: `${window.location.origin}/api/payments/toss/fail`,
+                    customerEmail: booking.traveler?.email || "customer@email.com",
+                    customerName: booking.traveler?.full_name || "고객",
+                };
+
+                // If specialized 'kakao' is selected, we could try to bypass the general UI 
+                // but the widget is usually the best way. 
+                // We'll proceed with the widget's current selection.
+                await paymentWidget.requestPayment(paymentOptions);
+            } catch (error) {
+                console.error("Payment request error:", error);
+                alert("결제 요청 중 오류가 발생했습니다.");
+            }
         }
     };
 
@@ -169,44 +216,65 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6 p-0 md:p-6">
-                            <div className="flex flex-col md:flex-row gap-4 mb-6 relative z-10 mx-6 md:mx-0 pt-6 md:pt-0">
+                            <div className="flex flex-col md:flex-row gap-3 mb-6 relative z-10 mx-6 md:mx-0 pt-6 md:pt-0">
                                 <button
-                                    className={`flex-1 py-3 px-4 rounded-xl border-2 font-bold flex items-center justify-center gap-2 transition-all ${paymentMethod === 'toss'
+                                    className={`flex-1 py-3 px-3 rounded-xl border-2 font-bold flex items-center justify-center gap-2 transition-all ${paymentMethod === 'toss'
                                         ? 'border-blue-600 text-blue-700 bg-blue-50 shadow-sm'
                                         : 'border-slate-200 text-slate-500 hover:bg-slate-50'
                                         }`}
                                     onClick={() => setPaymentMethod('toss')}
                                 >
-                                    <span className="text-lg text-blue-600">toss</span>
-                                    <span>토스페이먼츠 (국내결제)</span>
+                                    <span className="text-lg text-blue-600 font-bold">toss</span>
+                                    <span className="text-sm">토스페이먼츠</span>
                                 </button>
                                 <button
-                                    className={`flex-1 py-3 px-4 rounded-xl border-2 font-bold flex items-center justify-center gap-2 transition-all ${paymentMethod === 'paypal'
+                                    className={`flex-1 py-3 px-3 rounded-xl border-2 font-bold flex items-center justify-center gap-2 transition-all ${paymentMethod === 'kakao'
+                                        ? 'border-[#ffeb00] text-[#3c1e1e] bg-[#ffeb00]/10 shadow-sm'
+                                        : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                                        }`}
+                                    onClick={() => setPaymentMethod('kakao')}
+                                >
+                                    <span className="bg-[#ffeb00] px-1.5 py-0.5 rounded text-[10px] font-black text-[#3c1e1e]">TALK</span>
+                                    <span className="text-sm">카카오페이</span>
+                                </button>
+                                <button
+                                    className={`flex-1 py-3 px-3 rounded-xl border-2 font-bold flex items-center justify-center gap-2 transition-all ${paymentMethod === 'paypal'
                                         ? 'border-[#003087] text-[#003087] bg-blue-50 shadow-sm'
                                         : 'border-slate-200 text-slate-500 hover:bg-slate-50'
                                         }`}
                                     onClick={() => setPaymentMethod('paypal')}
                                 >
                                     <span className="text-lg italic text-[#003087] font-black tracking-tight">PayPal</span>
-                                    <span>해외결제</span>
                                 </button>
                             </div>
 
                             <div className="bg-white px-2 md:px-0 pb-4">
-                                {paymentMethod === 'toss' ? (
-                                    <div className="animate-fade-in">
+                                {(paymentMethod === 'toss' || paymentMethod === 'kakao') ? (
+                                    <div className="animate-fade-in relative">
+                                        {isWidgetLoading && (
+                                            <div className="absolute inset-0 bg-white/60 z-20 flex items-center justify-center rounded-xl backdrop-blur-[2px]">
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
+                                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">위젯 로딩 중...</p>
+                                                </div>
+                                            </div>
+                                        )}
                                         {/* Toss Payments Widget Wrappers */}
-                                        <div id="payment-method" className="w-full"></div>
+                                        <div id="payment-method" className="w-full min-h-[300px]"></div>
                                         <div id="agreement" className="w-full"></div>
 
                                         <div className="px-5 pb-5">
                                             <Button
                                                 fullWidth
                                                 size="lg"
-                                                className="mt-4 rounded-xl shadow-lg shadow-blue-600/25 border-0 bg-blue-600 hover:bg-blue-700 text-white font-bold text-base h-14 transition-all hover:-translate-y-0.5"
-                                                onClick={handleTossPaymentRequest}
+                                                disabled={isWidgetLoading || !paymentWidget}
+                                                className={`mt-4 rounded-xl shadow-lg border-0 font-bold text-base h-14 transition-all hover:-translate-y-0.5 ${paymentMethod === 'kakao'
+                                                        ? 'bg-[#ffeb00] hover:bg-[#f7e100] text-[#3c1e1e] shadow-yellow-500/25'
+                                                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/25'
+                                                    }`}
+                                                onClick={handlePaymentRequest}
                                             >
-                                                토스페이먼츠로 ₩ {booking.total_price.toLocaleString()} 결제하기
+                                                {isWidgetLoading ? "준비 중..." : `${paymentMethod === 'kakao' ? '카카오페이' : '토스페이'}로 ₩ ${booking.total_price.toLocaleString()} 결제하기`}
                                             </Button>
                                         </div>
                                     </div>
