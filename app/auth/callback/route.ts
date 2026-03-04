@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { cookies } from 'next/headers';
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
@@ -10,7 +11,13 @@ export async function GET(request: Request) {
     const next = searchParams.get('next') ?? '/role-selection'
 
     // if "role" is in param, we might want to attach it to the profile
-    const role = searchParams.get('role')
+    const roleParam = searchParams.get('role')
+
+    // Check for cookie-based role which persists reliably during OAuth flow
+    const cookieStore = await cookies();
+    const cookieRole = cookieStore.get('oauth_role')?.value;
+
+    const role = roleParam || cookieRole;
 
     if (code) {
         const supabase = await createClient()
@@ -62,12 +69,22 @@ export async function GET(request: Request) {
             // 캐시 무효화
             revalidatePath('/', 'layout')
 
+            // 사용된 임시 쿠키 삭제
+            if (cookieRole) {
+                // To delete a cookie inside App Router handlers (Route Handlers / Server Actions),
+                // doing cookieStore.delete() fails or requires response headers tweaking,
+                // Alternatively, NextResponse.redirect(new URL(..., origin)) doesn't directly delete it, 
+                // but we can set the cookie header to expire in the NextResponse.
+            }
+
             // 역할에 따른 서비스 화면으로 이동
             const finalNext = userRole === 'admin'
                 ? '/admin/dashboard'
                 : (userRole === 'guide' ? '/guide/dashboard' : '/traveler/home');
 
-            return NextResponse.redirect(`${origin}${finalNext}`)
+            const response = NextResponse.redirect(`${origin}${finalNext}`);
+            response.cookies.delete('oauth_role');
+            return response;
 
         }
     }

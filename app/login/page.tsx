@@ -16,7 +16,10 @@ function LoginForm() {
     const handleOAuthLogin = async (provider: 'google' | 'kakao') => {
         const supabase = createClient();
         if (supabase) {
-            // 현재 URL 파라미터(role 등)를 콜백 URL에 명시적으로 전달
+            // Store the role in a cookie so it survives the OAuth redirect flow
+            const role = searchParams.get('role') || 'traveler';
+            document.cookie = `oauth_role=${role}; path=/; max-age=3600`;
+
             const currentParams = searchParams.toString();
             const callbackUrl = `${window.location.origin}/auth/callback${currentParams ? '?' + currentParams : ''}`;
 

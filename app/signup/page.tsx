@@ -29,6 +29,9 @@ function SignupForm() {
     const handleOAuthSignup = async (provider: 'google' | 'kakao') => {
         const supabase = createClient();
         if (supabase) {
+            // Store the role in a cookie so it survives the OAuth redirect flow
+            document.cookie = `oauth_role=${role}; path=/; max-age=3600`;
+
             await supabase.auth.signInWithOAuth({
                 provider: provider,
                 options: {
