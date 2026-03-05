@@ -94,11 +94,13 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
     }, [paymentWidget, paymentMethod, booking.total_price]);
 
     const handlePaymentRequest = async () => {
-        console.log("handlePaymentRequest called for:", paymentMethod);
+        console.log("handlePaymentRequest triggered");
+        console.log("Selected Payment Method:", paymentMethod);
+        console.log("Payment Widget Object:", paymentWidget);
 
         if (paymentMethod === 'toss' || paymentMethod === 'kakao') {
             if (!paymentWidget) {
-                console.error("Payment widget not initialized");
+                console.error("Toss: Payment widget not initialized");
                 alert("결제 위젯이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
                 return;
             }
@@ -116,12 +118,14 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
                     customerName: booking.traveler?.full_name || "고객",
                 };
 
+                console.log("Toss: Requesting payment with options:", paymentOptions);
                 // If specialized 'kakao' is selected, we could try to bypass the general UI 
                 // but the widget is usually the best way. 
                 // We'll proceed with the widget's current selection.
                 await paymentWidget.requestPayment(paymentOptions);
+                console.log("Toss: requestPayment call finished");
             } catch (error) {
-                console.error("Payment request error:", error);
+                console.error("Toss: Payment request error:", error);
                 alert("결제 요청 중 오류가 발생했습니다.");
             }
         }
@@ -269,8 +273,8 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
                                                 size="lg"
                                                 disabled={isWidgetLoading || !paymentWidget}
                                                 className={`mt-4 rounded-xl shadow-lg border-0 font-bold text-base h-14 transition-all hover:-translate-y-0.5 ${paymentMethod === 'kakao'
-                                                        ? 'bg-[#ffeb00] hover:bg-[#f7e100] text-[#3c1e1e] shadow-yellow-500/25'
-                                                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/25'
+                                                    ? 'bg-[#ffeb00] hover:bg-[#f7e100] text-[#3c1e1e] shadow-yellow-500/25'
+                                                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/25'
                                                     }`}
                                                 onClick={handlePaymentRequest}
                                             >

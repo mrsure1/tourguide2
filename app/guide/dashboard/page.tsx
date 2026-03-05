@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Calendar as CalendarIcon, Map, DollarSign, MessageSquare, Plus, CheckCircle2, XCircle, ArrowRight, UserCircle, Settings, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import ConfirmedToursModal from "./ConfirmedToursModal";
 
 export default async function GuideDashboard() {
     const supabase = await createClient();
@@ -11,34 +12,22 @@ export default async function GuideDashboard() {
 
     if (!user) redirect('/login');
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, avatar_url')
-        .eq('id', user.id)
-        .single();
-
-    // Fetch waitlist/pending bookings
-    const { data: pendingBookings } = await supabase
-        .from('bookings')
-        .select(`
+    // Fetch all required data in parallel to avoid multiple sequential lock requests
+    const [profileRes, pendingRes, confirmedRes] = await Promise.all([
+        supabase.from('profiles').select('full_name, avatar_url').eq('id', user.id).single(),
+        supabase.from('bookings').select(`
             id, start_date, end_date, total_price, status, created_at,
             traveler:profiles!traveler_id ( full_name, avatar_url )
-        `)
-        .eq('guide_id', user.id)
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-
-    // Fetch confirmed future bookings
-    const { data: confirmedBookings } = await supabase
-        .from('bookings')
-        .select(`
+        `).eq('guide_id', user.id).eq('status', 'pending').order('created_at', { ascending: false }),
+        supabase.from('bookings').select(`
             id, start_date, end_date, total_price, status, created_at,
             traveler:profiles!traveler_id ( full_name, avatar_url )
-        `)
-        .eq('guide_id', user.id)
-        .eq('status', 'confirmed')
-        .gte('start_date', new Date().toISOString())
-        .order('start_date', { ascending: true });
+        `).eq('guide_id', user.id).eq('status', 'confirmed').gte('start_date', new Date().toISOString()).order('start_date', { ascending: true })
+    ]);
+
+    const profile = profileRes.data;
+    const pendingBookings = pendingRes.data;
+    const confirmedBookings = confirmedRes.data;
 
     const totalConfirmed = confirmedBookings?.length || 0;
     const pendingCount = pendingBookings?.length || 0;
@@ -88,19 +77,24 @@ export default async function GuideDashboard() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-slate-200/60 shadow-md bg-white">
-                    <CardHeader className="pb-2">
-                        <p className="text-slate-500 font-bold text-sm flex items-center gap-2 uppercase tracking-wider">
-                            <Map className="w-4 h-4 text-accent" /> 확정된 투어 (예정)
-                        </p>
-                    </CardHeader>
-                    <CardContent>
-                        <h2 className="text-4xl font-extrabold text-slate-900 mb-2">{totalConfirmed}건</h2>
-                        <p className="text-sm font-medium text-slate-600 bg-slate-50 inline-block px-3 py-1 rounded-md border border-slate-100">
-                            다음 투어: {nextTour ? new Date(nextTour.start_date).toLocaleDateString() : '없음'}
-                        </p>
-                    </CardContent>
-                </Card>
+                <ConfirmedToursModal
+                    bookings={(confirmedBookings as any) || []}
+                    trigger={
+                        <Card className="border-slate-200/60 shadow-md bg-white hover:border-accent hover:shadow-lg transition-all cursor-pointer h-full group">
+                            <CardHeader className="pb-2 text-left">
+                                <p className="text-slate-500 font-bold text-sm flex items-center gap-2 uppercase tracking-wider group-hover:text-accent transition-colors">
+                                    <Map className="w-4 h-4 text-accent" /> 확정된 투어 (예정)
+                                </p>
+                            </CardHeader>
+                            <CardContent className="text-left">
+                                <h2 className="text-4xl font-extrabold text-slate-900 mb-2">{totalConfirmed}건</h2>
+                                <p className="text-sm font-medium text-slate-600 bg-slate-50 inline-block px-3 py-1 rounded-md border border-slate-100">
+                                    다음 투어: {nextTour ? new Date(nextTour.start_date).toLocaleDateString() : '없음'}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    }
+                />
 
                 <Card className="border-slate-200/60 shadow-md bg-white">
                     <CardHeader className="pb-2">

@@ -70,9 +70,9 @@ function SignupForm() {
                             return;
                         }
 
-                        // 역할이 가이드인 경우, 여행자 모드는 그냥 상위 권한으로 접근 가능하므로 덮어쓰기 안하고 바로 보냄
-                        if (data.role === 'guide' && roleParam === 'traveler') {
-                            window.location.href = '/traveler/home';
+                        // 역할이 가이드이거나 어드민인 경우, 모든 역할 접근 허용
+                        if ((data.role === 'guide' || data.role === 'admin') && (roleParam === 'traveler' || roleParam === 'guide')) {
+                            window.location.href = roleParam === 'guide' ? '/guide/dashboard' : '/traveler/home';
                             return;
                         }
 

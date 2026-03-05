@@ -132,7 +132,7 @@ export default async function Home() {
                     내 취향에 딱 맞는 로컬 전문가를 직접 탐색하고 <br className="hidden lg:block" /> 일대일 매칭을 통해 나만의 투어를 완성하세요.
                   </p>
                   <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-blue-600 transition-colors duration-300 shadow-lg whitespace-nowrap">
-                    {profile?.role === 'guide' || profile?.role === 'admin' ? '여행자 모드로 매칭하기' : (profile ? '가이드 리스트 투기' : '여행자 프로필 설정하기')} <ChevronRight className="w-5 h-5" />
+                    {profile?.role === 'guide' || profile?.role === 'admin' ? '여행자 모드로 탐색하기' : (profile ? '가이드 리스트 보기' : '여행자로 시작하기')} <ChevronRight className="w-5 h-5" />
                   </div>
                 </div>
               </Link>

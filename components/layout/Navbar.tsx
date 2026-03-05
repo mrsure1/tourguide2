@@ -29,15 +29,13 @@ export function Navbar({ profile }: NavbarProps) {
     const isGuide = profile?.role === "guide" || profile?.role === "admin";
 
     const travelerLinks = [
-        { href: "/traveler/home", label: "투어 찾기", icon: Map },
-        { href: "/traveler/search", label: "가이드 찾기", icon: Search },
+        { href: "/traveler/home", label: "가이드/투어 탐색", icon: Map },
         { href: "/traveler/bookings", label: "내 예약", icon: Calendar },
         { href: "/traveler/profile", label: "마이페이지", icon: User },
     ];
 
     const guideLinks = [
-        { href: "/traveler/home", label: "투어 찾기", icon: Map },
-        { href: "/traveler/search", label: "가이드 찾기", icon: Search },
+        { href: "/traveler/home", label: "가이드/투어 탐색", icon: Map },
         { href: "/guide/tours", label: "내 상품 관리", icon: ShoppingBag },
         { href: "/guide/dashboard", label: "가이드 대시보드", icon: LayoutDashboard },
         { href: "/guide/profile", label: "마이페이지", icon: User },

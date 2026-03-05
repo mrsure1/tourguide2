@@ -80,13 +80,13 @@ export default async function TravelerProfile() {
                 <CardContent className="p-0">
                     <ul className="divide-y divide-slate-50">
                         {[
-                            { icon: User, label: "개인 정보 관리", sub: "내 연락처와 주소를 관리하세요" },
-                            { icon: Settings, label: "알림 설정", sub: "푸시 알림 및 이메일 수신 여부를 결정하세요" },
-                            { icon: Shield, label: "로그인 방식 및 보안", sub: "비밀번호 변경 및 SNS 연동 관리" },
-                            { icon: History, label: "결제 및 환불 내역", sub: "영수증 확인 및 결제 수단 관리" },
+                            { icon: User, label: "개인 정보 관리", sub: "내 연락처와 주소를 관리하세요", href: "/traveler/profile/edit" },
+                            { icon: Settings, label: "알림 설정", sub: "푸시 알림 및 이메일 수신 여부를 결정하세요", href: "/traveler/profile/edit#notifications" },
+                            { icon: Shield, label: "로그인 방식 및 보안", sub: "비밀번호 변경 및 SNS 연동 관리", href: "/traveler/profile/edit#security" },
+                            { icon: History, label: "결제 및 환불 내역", sub: "영수증 확인 및 결제 수단 관리", href: "/traveler/bookings" },
                         ].map((item, i) => (
                             <li key={i}>
-                                <button className="w-full flex items-center justify-between p-5 hover:bg-slate-50 transition-colors group">
+                                <Link href={item.href} className="w-full flex items-center justify-between p-5 hover:bg-slate-50 transition-colors group">
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-full bg-slate-50 text-slate-500 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-slate-100">
                                             <item.icon className="w-5 h-5" />
@@ -97,7 +97,7 @@ export default async function TravelerProfile() {
                                         </div>
                                     </div>
                                     <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
-                                </button>
+                                </Link>
                             </li>
                         ))}
                     </ul>

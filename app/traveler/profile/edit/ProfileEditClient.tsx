@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { Camera, User, Loader2 } from "lucide-react";
+import { Camera, User, Loader2, Settings, Shield } from "lucide-react";
 import { updateTravelerProfile } from "./actions";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -155,6 +155,81 @@ export default function ProfileEditClient({ profile }: { profile: any }) {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* 알림 설정 섹션 */}
+            <div id="notifications" className="scroll-mt-24">
+                <Card className="border-slate-200/60 shadow-md bg-white overflow-hidden">
+                    <CardHeader className="bg-slate-50/50 border-b border-slate-100/80 pb-4">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <Settings className="w-5 h-5 text-amber-500" /> 알림 설정
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div>
+                                    <p className="text-sm font-bold text-slate-900">이메일 알림</p>
+                                    <p className="text-xs text-slate-500 mt-0.5">새로운 투어 제안 및 예약 확정 소식을 이메일로 받습니다.</p>
+                                </div>
+                                <input type="checkbox" name="email_notifications" defaultChecked className="w-5 h-5 accent-blue-600 rounded cursor-pointer" />
+                            </div>
+                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div>
+                                    <p className="text-sm font-bold text-slate-900">앱 푸시 알림</p>
+                                    <p className="text-xs text-slate-500 mt-0.5">실시간 메시지 및 가이드 응답을 실시간으로 확인하세요.</p>
+                                </div>
+                                <input type="checkbox" name="push_notifications" defaultChecked className="w-5 h-5 accent-blue-600 rounded cursor-pointer" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* 보안 설정 섹션 */}
+            <div id="security" className="scroll-mt-24">
+                <Card className="border-slate-200/60 shadow-md bg-white overflow-hidden">
+                    <CardHeader className="bg-slate-50/50 border-b border-slate-100/80 pb-4">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <Shield className="w-5 h-5 text-rose-500" /> 보안 설정
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                        <div className="space-y-6">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-rose-50/30 rounded-2xl border border-rose-100/50">
+                                <div>
+                                    <p className="text-sm font-bold text-slate-900">비밀번호 재설정</p>
+                                    <p className="text-xs text-slate-500 mt-0.5">안전한 계정 관리를 위해 주기적으로 비밀번호를 변경하세요.</p>
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-rose-200 text-rose-600 hover:bg-rose-50"
+                                    onClick={async () => {
+                                        const supabase = createClient();
+                                        const { data: { user } } = await supabase.auth.getUser();
+                                        if (user?.email) {
+                                            const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+                                                redirectTo: `${window.location.origin}/auth/callback?next=/traveler/profile/edit`,
+                                            });
+                                            if (error) alert("오류가 발생했습니다: " + error.message);
+                                            else alert("비밀번호 재설정 이메일이 발송되었습니다. 이메일을 확인해주세요.");
+                                        }
+                                    }}
+                                >
+                                    재설정 이메일 받기
+                                </Button>
+                            </div>
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <p className="text-sm font-bold text-slate-900">SNS 연동 계정</p>
+                                <div className="mt-3 flex gap-3">
+                                    <span className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold flex items-center gap-2 italic text-slate-400">KAKAO 연동됨</span>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
 
             <div className="flex justify-end gap-3 pt-6 pb-12">
                 <Button type="button" onClick={() => router.back()} disabled={isPending} variant="outline" className="bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 h-11 px-6 shadow-sm">취소</Button>

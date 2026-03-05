@@ -17,7 +17,7 @@ export default async function GuideDetail({ params }: { params: Promise<{ id: st
             id,
             full_name,
             avatar_url,
-            guides_detail!inner (
+            guides_detail (
                 id,
                 location,
                 languages,
@@ -30,14 +30,13 @@ export default async function GuideDetail({ params }: { params: Promise<{ id: st
             )
         `)
         .eq('id', id)
-        .eq('role', 'guide')
         .single();
 
-    if (error || !guide || !guide.guides_detail) {
+    if (error || !guide) {
         notFound();
     }
 
-    const gd = (Array.isArray(guide.guides_detail) ? guide.guides_detail[0] : guide.guides_detail) as any;
+    const gd = (Array.isArray(guide.guides_detail) ? guide.guides_detail[0] : (guide.guides_detail || {})) as any;
 
     // Fetch unavailabilities for the 캘린더/위젯 (To be passed to client)
     const { data: unavailabilities } = await supabase

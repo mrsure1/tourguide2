@@ -5,17 +5,28 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
-export default function HomeSearchClient() {
+export default function HomeSearchClient({ initialKeyword = "" }: { initialKeyword?: string }) {
     const router = useRouter();
-    const [keyword, setKeyword] = useState("");
+    const [keyword, setKeyword] = useState(initialKeyword);
 
     const handleSearch = (e?: React.FormEvent) => {
         if (e) e.preventDefault();
+
+        // 성능 최적화: 타이핑 마다 push하는 대신 엔터나 버튼 클릭 시에만 URL 업데이트
+        const params = new URLSearchParams(window.location.search);
         if (keyword.trim()) {
-            router.push(`/traveler/search?q=${encodeURIComponent(keyword.trim())}`);
+            params.set('q', keyword);
         } else {
-            router.push(`/traveler/search`);
+            params.delete('q');
         }
+
+        // 검색 결과 영역으로 부드럽게 스크롤
+        const searchResults = document.getElementById('search-results');
+        if (searchResults) {
+            searchResults.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        router.push(`/traveler/home?${params.toString()}`, { scroll: false });
     };
 
     return (
@@ -26,11 +37,11 @@ export default function HomeSearchClient() {
                     type="text"
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
-                    placeholder="어디로 가고 싶으신가요? (예: 서촌 메이크업 투어)"
-                    className="w-full pl-3 bg-transparent text-white placeholder:text-white/50 focus:outline-none placeholder:font-light"
+                    placeholder="도시, 테마 또는 가이드 이름 검색..."
+                    className="w-full h-12 sm:h-14 pl-3 bg-transparent text-white placeholder:text-white/50 focus:outline-none placeholder:font-light text-lg"
                 />
             </div>
-            <Button type="submit" size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white rounded-xl px-10 shadow-lg shadow-blue-500/20 transition-all font-bold text-base border-0 h-12 sm:h-14">
+            <Button type="submit" size="lg" className="h-12 sm:h-14 px-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-500/20 transition-all font-bold text-lg border-0">
                 탐색하기
             </Button>
         </form>
