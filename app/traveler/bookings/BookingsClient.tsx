@@ -15,6 +15,7 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
     const [isReviewModalOpen, setReviewModalOpen] = useState(false);
     const [selectedTourForReview, setSelectedTourForReview] = useState("");
     const [selectedGuideId, setSelectedGuideId] = useState("");
+    const [selectedBookingId, setSelectedBookingId] = useState("");
 
     // Update URL when tab changes
     const handleTabChange = (status: string) => {
@@ -58,10 +59,31 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
         }
     }
 
-    const handleReviewSubmit = (data: { rating: number; review: string }) => {
-        console.log("Review submitted:", data);
-        alert("리뷰가 아직 DB에 연결되지 않았습니다. 등록: " + JSON.stringify(data));
-        setReviewModalOpen(false);
+    const handleReviewSubmit = async (data: { rating: number; review: string }) => {
+        try {
+            const res = await fetch("/api/reviews", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    booking_id: selectedBookingId,
+                    guide_id: selectedGuideId,
+                    rating: data.rating,
+                    review: data.review
+                })
+            });
+
+            if (res.ok) {
+                alert("소중한 리뷰가 성공적으로 등록되었습니다!");
+                setReviewModalOpen(false);
+                router.refresh();
+            } else {
+                const errorData = await res.json();
+                alert(`오류: ${errorData.error || "리뷰 등록을 실패했습니다."}`);
+            }
+        } catch (error) {
+            console.error("Error submitting review:", error);
+            alert("처리 중 알 수 없는 오류가 발생했습니다.");
+        }
     };
 
     const getRegionCode = (location: string) => {
@@ -364,6 +386,7 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
                                                 setSelectedTourForReview(`${guide.full_name} 가이드 투어`);
                                                 setReviewModalOpen(true);
                                                 setSelectedGuideId(guide.id);
+                                                setSelectedBookingId(booking.id.toString());
                                             }}>
                                                 <Star className="w-4 h-4 mr-2" /> 후기 작성
                                             </Button>
