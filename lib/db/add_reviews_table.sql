@@ -1,7 +1,7 @@
 -- 1. Create `reviews` table
 CREATE TABLE IF NOT EXISTS public.reviews (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    booking_id TEXT REFERENCES public.bookings(id) ON DELETE CASCADE,
+    booking_id UUID REFERENCES public.bookings(id) ON DELETE CASCADE,
     guide_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     traveler_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
