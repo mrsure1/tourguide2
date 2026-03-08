@@ -17,12 +17,12 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
     const [selectedGuideId, setSelectedGuideId] = useState("");
     const [selectedBookingId, setSelectedBookingId] = useState("");
 
-    // Update URL when tab changes
+    // Update URL when tab changes without triggering a Next.js navigation and suspense flash
     const handleTabChange = (status: string) => {
         setActiveStatus(status);
         const params = new URLSearchParams(searchParams.toString());
         params.set("tab", status);
-        router.push(`?${params.toString()}`, { scroll: false });
+        window.history.replaceState(null, '', `?${params.toString()}`);
     };
 
     // Ensure state stays in sync with URL (e.g., back button)
