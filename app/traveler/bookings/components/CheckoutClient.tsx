@@ -55,7 +55,7 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
     }, [booking.traveler_id]);
 
     useEffect(() => {
-        if (paymentWidget && (paymentMethod === 'toss' || paymentMethod === 'kakao')) {
+        if (paymentWidget && !paymentMethodsWidgetRef.current) {
             const renderWidget = async () => {
                 try {
                     // Ensure the container exists before rendering
@@ -91,7 +91,7 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
 
             renderWidget();
         }
-    }, [paymentWidget, paymentMethod, booking.total_price]);
+    }, [paymentWidget, booking.total_price]);
 
     const handlePaymentRequest = async () => {
         console.log("handlePaymentRequest triggered");
@@ -272,7 +272,7 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
                             </div>
 
                             <div className="bg-white px-2 md:px-0 pb-4">
-                                {(paymentMethod === 'toss' || paymentMethod === 'kakao') ? (
+                                <div className={paymentMethod === 'paypal' ? 'hidden' : 'block'}>
                                     <div className="animate-fade-in relative">
                                         {isWidgetLoading && (
                                             <div className="absolute inset-0 bg-white/60 z-20 flex items-center justify-center rounded-xl backdrop-blur-[2px]">
@@ -301,7 +301,8 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
                                             </Button>
                                         </div>
                                     </div>
-                                ) : (
+                                </div>
+                                <div className={paymentMethod === 'paypal' ? 'block' : 'hidden'}>
                                     <div className="animate-fade-in p-6 bg-slate-50 rounded-xl border border-slate-100 mx-5 md:mx-0">
                                         <div className="mb-6 text-center">
                                             <p className="text-slate-600 mb-2 font-medium">결제 금액 (USD)</p>
@@ -329,7 +330,7 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
                                             />
                                         </PayPalScriptProvider>
                                     </div>
-                                )}
+                                </div>
                             </div>
                         </CardContent>
 
