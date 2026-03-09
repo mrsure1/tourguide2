@@ -18,12 +18,14 @@ function LoginForm() {
     const handleOAuthLogin = async (provider: 'google' | 'kakao') => {
         const supabase = createClient();
         if (supabase) {
-            // Store the role in a cookie so it survives the OAuth redirect flow
-            const role = searchParams.get('role') || 'traveler';
-            document.cookie = `oauth_role=${role}; path=/; max-age=3600`;
+            // Store only a validated role in cookie so OAuth callback can restore intent safely.
+            const roleParam = searchParams.get('role');
+            const role = roleParam === 'guide' || roleParam === 'traveler' ? roleParam : 'traveler';
+            document.cookie = `oauth_role=${role}; path=/; max-age=3600; samesite=lax`;
 
-            const currentParams = searchParams.toString();
-            const callbackUrl = `${window.location.origin}/auth/callback${currentParams ? '?' + currentParams : ''}`;
+            // Use a stable callback URL. Passing arbitrary query strings can trigger invalid path errors.
+            const appOrigin = (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, "");
+            const callbackUrl = `${appOrigin}/auth/callback`;
 
             await supabase.auth.signInWithOAuth({
                 provider: provider,

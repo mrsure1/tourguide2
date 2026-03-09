@@ -4,8 +4,10 @@ import {
   ArrowRight,
   CalendarCheck2,
   ChevronRight,
+  Clock,
   Compass,
   Map,
+  MapPin,
   MessageSquareText,
   ShieldCheck,
   Sparkles,
@@ -14,7 +16,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
-const destinations = [
+const fallbackDestinations = [
   {
     city: "SEOUL",
     title: "서울 야경 & 로컬 바투어",
@@ -53,6 +55,66 @@ export default async function Home() {
       .maybeSingle();
     profile = data;
   }
+
+  const { data: rawPopularTours } = await supabase
+    .from("tours")
+    .select(
+      `
+      id,
+      title,
+      description,
+      region,
+      duration,
+      price,
+      photo,
+      profiles (
+        full_name,
+        guides_detail ( rating, review_count )
+      )
+    `
+    )
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(3);
+
+  const popularTours = (rawPopularTours || []).map((tour) => {
+    const profile = Array.isArray(tour.profiles) ? tour.profiles[0] : tour.profiles;
+    const guideDetail = profile?.guides_detail;
+    const normalizedGuideDetail = Array.isArray(guideDetail) ? guideDetail[0] : guideDetail;
+
+    return {
+      id: tour.id,
+      title: tour.title || "인기 로컬 투어",
+      description: tour.description || "현지 가이드와 함께하는 특별한 로컬 경험",
+      region: tour.region || "Korea",
+      duration: typeof tour.duration === "number" ? tour.duration : null,
+      price: typeof tour.price === "number" ? tour.price : null,
+      photo: tour.photo,
+      guideName: profile?.full_name || "로컬 가이드",
+      rating:
+        normalizedGuideDetail && typeof normalizedGuideDetail.rating === "number"
+          ? normalizedGuideDetail.rating
+          : null,
+      reviewCount:
+        normalizedGuideDetail && typeof normalizedGuideDetail.review_count === "number"
+          ? normalizedGuideDetail.review_count
+          : null,
+    };
+  });
+
+  const featuredTour = popularTours[0] || null;
+  const destinationCards =
+    popularTours.length > 0
+      ? popularTours.map((tour) => ({
+          city: String(tour.region || "KOREA").toUpperCase(),
+          title: tour.title,
+          desc: tour.description,
+          image:
+            tour.photo ||
+            "https://images.unsplash.com/photo-1538485399081-7c8973f7aa9f?auto=format&fit=crop&w=1400&q=80",
+          href: `/traveler/tours/${tour.id}`,
+        }))
+      : fallbackDestinations.map((item) => ({ ...item, href: "#onboarding" }));
 
   const isGuide = profile?.role === "guide" || profile?.role === "admin";
   const travelerHref = user ? "/traveler/home" : "/signup?role=traveler";
@@ -135,33 +197,46 @@ export default async function Home() {
                     <p className="text-sm font-semibold text-cyan-100">이번 주 인기 일정</p>
                     <p className="text-xs text-slate-300">TOP RATED</p>
                   </div>
-                  <h3 className="mt-3 text-xl font-bold">서울 야경 + 한강 피크닉 + 로컬 바</h3>
+                  <h3 className="mt-3 text-xl font-bold">
+                    {featuredTour?.title || "서울 야경 + 한강 피크닉 + 로컬 바"}
+                  </h3>
                   <p className="mt-2 text-sm text-slate-300">
-                    감성 포인트를 놓치지 않는 1일 시그니처 코스
+                    {featuredTour?.description || "감성 포인트를 놓치지 않는 1일 시그니처 코스"}
                   </p>
                   <div className="mt-4 flex items-center gap-2 text-amber-300">
-                    <Star className="h-4 w-4 fill-amber-300" />
-                    <Star className="h-4 w-4 fill-amber-300" />
-                    <Star className="h-4 w-4 fill-amber-300" />
-                    <Star className="h-4 w-4 fill-amber-300" />
-                    <Star className="h-4 w-4 fill-amber-300" />
-                    <span className="ml-1 text-xs text-slate-200">4.9 (824)</span>
+                    {Array.from({ length: 5 }).map((_, idx) => (
+                      <Star
+                        key={idx}
+                        className={`h-4 w-4 ${
+                          (featuredTour?.rating || 0) > idx ? "fill-amber-300" : ""
+                        }`}
+                      />
+                    ))}
+                    <span className="ml-1 text-xs text-slate-200">
+                      {featuredTour?.rating?.toFixed(1) || "NEW"}
+                      {featuredTour?.reviewCount ? ` (${featuredTour.reviewCount})` : ""}
+                    </span>
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
                     <Users className="h-5 w-5 text-cyan-200" />
-                    <p className="mt-2 text-sm font-semibold">프라이빗 그룹</p>
-                    <p className="text-xs text-slate-300">최대 6인 맞춤</p>
+                    <p className="mt-2 text-sm font-semibold">{featuredTour?.guideName || "프라이빗 그룹"}</p>
+                    <p className="text-xs text-slate-300">{featuredTour?.region || "최대 6인 맞춤"}</p>
                   </div>
                   <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
                     <CalendarCheck2 className="h-5 w-5 text-cyan-200" />
                     <p className="mt-2 text-sm font-semibold">즉시 예약</p>
-                    <p className="text-xs text-slate-300">실시간 일정 확인</p>
+                    <p className="text-xs text-slate-300">
+                      {featuredTour?.duration ? `${featuredTour.duration}시간` : "실시간 일정 확인"}
+                    </p>
                   </div>
                 </div>
-                <Link href="/login" className="mt-5 inline-flex items-center text-sm font-semibold text-cyan-100 hover:text-cyan-200">
-                  로그인하고 상세 보기 <ChevronRight className="h-4 w-4" />
+                <Link
+                  href={featuredTour ? `/traveler/tours/${featuredTour.id}` : "/login"}
+                  className="mt-5 inline-flex items-center text-sm font-semibold text-cyan-100 hover:text-cyan-200"
+                >
+                  {featuredTour ? "투어 상세 보기" : "로그인하고 상세 보기"} <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>
@@ -187,9 +262,9 @@ export default async function Home() {
           </div>
 
           <div className="grid gap-5 md:grid-cols-3">
-            {destinations.map((item) => (
+            {destinationCards.map((item, idx) => (
               <article
-                key={item.city}
+                key={`${item.city}-${item.title}-${idx}`}
                 className="group relative h-96 overflow-hidden rounded-3xl border border-slate-200 shadow-sm"
               >
                 <div
@@ -200,7 +275,26 @@ export default async function Home() {
                 <div className="absolute inset-x-0 bottom-0 p-6 text-white">
                   <p className="text-xs font-semibold tracking-[0.18em] text-cyan-200">{item.city}</p>
                   <h3 className="mt-2 text-2xl font-black leading-tight">{item.title}</h3>
-                  <p className="mt-2 text-sm text-slate-200">{item.desc}</p>
+                  <p className="mt-2 line-clamp-2 text-sm text-slate-200">{item.desc}</p>
+                  <div className="mt-3 flex items-center gap-3 text-xs text-slate-200">
+                    {popularTours.length > 0 && (
+                      <>
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="h-3.5 w-3.5" />
+                          {item.city}
+                        </span>
+                        {typeof popularTours[idx]?.duration === "number" && (
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5" />
+                            {popularTours[idx]?.duration}시간
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <Link href={item.href} className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-cyan-100 hover:text-cyan-200">
+                    상품 보기 <ChevronRight className="h-4 w-4" />
+                  </Link>
                 </div>
               </article>
             ))}

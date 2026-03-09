@@ -26,12 +26,13 @@ function SignupForm() {
         const supabase = createClient();
         if (supabase) {
             // Store the role in a cookie so it survives the OAuth redirect flow
-            document.cookie = `oauth_role=${role}; path=/; max-age=3600`;
+            document.cookie = `oauth_role=${role}; path=/; max-age=3600; samesite=lax`;
 
             await supabase.auth.signInWithOAuth({
                 provider: provider,
                 options: {
-                    redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
+                    // Keep callback URL stable to avoid provider path validation issues.
+                    redirectTo: `${(process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, "")}/auth/callback`,
                 }
             });
         }
