@@ -1,240 +1,305 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { Search, ShieldCheck, CalendarClock, ChevronRight, UserCheck, Star, Compass, Map, ArrowDown, Users, Zap, MapPin } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarCheck2,
+  ChevronRight,
+  Compass,
+  Map,
+  MessageSquareText,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Users,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { switchRole } from "@/app/signup/actions";
+
+const destinations = [
+  {
+    city: "SEOUL",
+    title: "서울 야경 & 로컬 바투어",
+    desc: "남산, 익선동, 한강까지 한 번에.",
+    image:
+      "https://images.unsplash.com/photo-1538485399081-7c8973f7aa9f?auto=format&fit=crop&w=1400&q=80",
+  },
+  {
+    city: "BUSAN",
+    title: "부산 오션뷰 드라이브",
+    desc: "해운대부터 송정까지 감성 루트.",
+    image:
+      "https://images.unsplash.com/photo-1600240644455-3edc55c375fe?auto=format&fit=crop&w=1400&q=80",
+  },
+  {
+    city: "JEJU",
+    title: "제주 자연 치유 코스",
+    desc: "오름, 숲길, 오션 선셋을 한 일정으로.",
+    image:
+      "https://images.unsplash.com/photo-1595908129746-57ca1acb72a9?auto=format&fit=crop&w=1400&q=80",
+  },
+];
 
 export default async function Home() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  let profile = null;
+  let profile: { full_name?: string; role?: string } | null = null;
   if (user) {
     const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
+      .from("profiles")
+      .select("full_name, role")
+      .eq("id", user.id)
       .maybeSingle();
     profile = data;
   }
 
+  const isGuide = profile?.role === "guide" || profile?.role === "admin";
+  const travelerHref = user ? "/traveler/home" : "/signup?role=traveler";
+  const guideHref = user && isGuide ? "/guide/dashboard" : "/signup?role=guide";
+
   return (
-    <main className="flex-1 bg-background relative overflow-hidden bg-mesh min-h-screen">
-      {/* ... (Hero Section 동일 유지) ... */}
-      <div className="relative min-h-screen flex flex-col items-center justify-center pt-20 px-4">
-        {/* Hero Background Image & Gradient overlay */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-700 scale-105 animate-[ken-burns_20s_ease-in-out_infinite]"
-            style={{ backgroundImage: "url('/hero-korea.png')" }}
-          />
-          {/* Multi-layered premium overlay */}
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[1px]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-slate-900/40" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
-        </div>
+    <main className="flex-1 min-h-screen bg-slate-950 text-white">
+      <section className="relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1535189043414-47a3c49a0bed?auto=format&fit=crop&w=1800&q=80')",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/95 via-slate-950/70 to-blue-950/70" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(56,189,248,0.28),transparent_32%),radial-gradient(circle_at_80%_15%,rgba(59,130,246,0.2),transparent_28%),radial-gradient(circle_at_75%_85%,rgba(14,116,144,0.2),transparent_30%)]" />
 
-        {/* Hero Content */}
-        <div className="relative z-10 text-center max-w-5xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-blue-100 text-sm font-semibold mb-8 animate-fade-in-up shadow-2xl">
-            <Users className="w-4 h-4 text-blue-300" />
-            <span>Premium Local Guide Marketplace in Korea</span>
-          </div>
-
-          <h1 className="font-black tracking-tighter mb-8 leading-[1] drop-shadow-2xl animate-fade-in-up animation-delay-100">
-            <span className="block text-4xl sm:text-7xl lg:text-9xl text-white mb-2 uppercase italic">
-              Unlock Korea,
-            </span>
-            <span className="block text-3xl sm:text-6xl lg:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-400 pb-2">
-              Expertly Yours.
-            </span>
-          </h1>
-
-          <p className="text-lg sm:text-2xl text-slate-100 mb-12 leading-relaxed max-w-3xl mx-auto font-medium drop-shadow-lg animate-fade-in-up animation-delay-200 opacity-90 break-keep [hyphens:none]">
-            실시간 로컬 가이드 매칭으로 당신만의 한국 여행을 완성하세요. <br className="hidden sm:block" />
-            <span className="inline-block whitespace-nowrap text-blue-200 font-bold">Connect with Top-rated Local Experts</span> for an unforgettable <span className="inline-block whitespace-nowrap text-blue-200 font-bold">K-experience.</span>
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-5 justify-center items-center animate-fade-in-up animation-delay-300">
-            <a href="#onboarding" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto text-lg rounded-full px-12 py-7 h-auto bg-white text-slate-950 hover:bg-slate-100 shadow-[0_20px_50px_rgba(255,255,255,0.2)] border-0 flex items-center justify-center gap-3 group transition-all duration-300 hover:scale-105 active:scale-95 font-bold">
-                지금 바로 시작하기
-                <ArrowDown className="w-5 h-5 animate-bounce" />
-              </Button>
-            </a>
-          </div>
-
-          <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-4 lg:gap-8 animate-fade-in-up animation-delay-400">
-            <div className="flex items-center gap-4 whitespace-nowrap bg-slate-900/40 backdrop-blur-xl border border-white/10 px-6 py-4 rounded-3xl shadow-xl hover:bg-slate-900/50 transition-colors">
-              <div className="p-3 rounded-2xl bg-blue-500/20 border border-blue-400/30">
-                <Users className="w-8 h-8 text-blue-300" />
+        <div className="relative z-10 mx-auto max-w-7xl px-4 pb-20 pt-24 sm:px-6 lg:px-8 lg:pb-28 lg:pt-28">
+          <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="animate-fade-in-up">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-300/15 px-4 py-2 text-xs font-semibold text-cyan-100">
+                <Sparkles className="h-3.5 w-3.5" />
+                KOREA LOCAL TRAVEL MATCH PLATFORM
               </div>
-              <div className="text-left">
-                <p className="text-2xl font-black text-white leading-none">1,200+</p>
-                <p className="text-sm text-blue-200 font-medium whitespace-nowrap">Verified Guides</p>
+              <h1 className="text-4xl font-black leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">
+                한국이
+                <span className="bg-gradient-to-r from-cyan-200 via-sky-300 to-blue-300 bg-clip-text text-transparent">
+                  {" "}
+                  진짜 여행지
+                </span>
+                로 느껴지는 순간
+              </h1>
+              <p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-200 sm:text-lg break-keep">
+                관광지만 훑는 여행이 아니라, 로컬 가이드와 함께 한국의 분위기와 이야기를
+                경험하세요. 지금 가장 어울리는 코스로 바로 매칭됩니다.
+              </p>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <Link href={travelerHref}>
+                  <Button className="h-12 rounded-xl bg-white px-7 text-slate-950 hover:bg-slate-200 font-bold">
+                    {user ? "여행자로 시작하기" : "여행자로 시작하기"}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href={guideHref}>
+                  <Button
+                    variant="outline"
+                    className="h-12 rounded-xl border-white/30 bg-white/10 px-7 text-white hover:bg-white/20 font-bold"
+                  >
+                    {user && isGuide ? "가이드 대시보드로" : "가이드로 시작하기"}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <a href="#destinations" className="text-sm font-semibold text-cyan-100/90 hover:text-cyan-100">
+                  인기 코스 먼저 보기
+                </a>
+              </div>
+
+              <div className="mt-10 grid max-w-xl grid-cols-3 gap-3 sm:gap-4">
+                <div className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
+                  <p className="text-2xl font-black">1,200+</p>
+                  <p className="text-xs text-slate-200">검증 가이드</p>
+                </div>
+                <div className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
+                  <p className="text-2xl font-black">15K+</p>
+                  <p className="text-xs text-slate-200">누적 매칭</p>
+                </div>
+                <div className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
+                  <p className="text-2xl font-black">32</p>
+                  <p className="text-xs text-slate-200">서비스 도시</p>
+                </div>
               </div>
             </div>
 
-            <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-white/20"></div>
-
-            <div className="flex items-center gap-4 whitespace-nowrap bg-slate-900/40 backdrop-blur-xl border border-white/10 px-6 py-4 rounded-3xl shadow-xl hover:bg-slate-900/50 transition-colors">
-              <div className="p-3 rounded-2xl bg-amber-500/20 border border-amber-400/30">
-                <Zap className="w-8 h-8 text-amber-300" />
-              </div>
-              <div className="text-left">
-                <p className="text-2xl font-black text-white leading-none">15k+</p>
-                <p className="text-sm text-blue-200 font-medium whitespace-nowrap">Successful Matches</p>
+            <div className="animate-fade-in-up animation-delay-200">
+              <div className="rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-md shadow-[0_20px_70px_rgba(2,6,23,0.45)]">
+                <div className="rounded-2xl border border-white/15 bg-slate-900/45 p-5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-cyan-100">이번 주 인기 일정</p>
+                    <p className="text-xs text-slate-300">TOP RATED</p>
+                  </div>
+                  <h3 className="mt-3 text-xl font-bold">서울 야경 + 한강 피크닉 + 로컬 바</h3>
+                  <p className="mt-2 text-sm text-slate-300">
+                    감성 포인트를 놓치지 않는 1일 시그니처 코스
+                  </p>
+                  <div className="mt-4 flex items-center gap-2 text-amber-300">
+                    <Star className="h-4 w-4 fill-amber-300" />
+                    <Star className="h-4 w-4 fill-amber-300" />
+                    <Star className="h-4 w-4 fill-amber-300" />
+                    <Star className="h-4 w-4 fill-amber-300" />
+                    <Star className="h-4 w-4 fill-amber-300" />
+                    <span className="ml-1 text-xs text-slate-200">4.9 (824)</span>
+                  </div>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                    <Users className="h-5 w-5 text-cyan-200" />
+                    <p className="mt-2 text-sm font-semibold">프라이빗 그룹</p>
+                    <p className="text-xs text-slate-300">최대 6인 맞춤</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                    <CalendarCheck2 className="h-5 w-5 text-cyan-200" />
+                    <p className="mt-2 text-sm font-semibold">즉시 예약</p>
+                    <p className="text-xs text-slate-300">실시간 일정 확인</p>
+                  </div>
+                </div>
+                <Link href="/login" className="mt-5 inline-flex items-center text-sm font-semibold text-cyan-100 hover:text-cyan-200">
+                  로그인하고 상세 보기 <ChevronRight className="h-4 w-4" />
+                </Link>
               </div>
             </div>
-
-            <div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-white/20"></div>
-
-            <div className="flex items-center gap-4 whitespace-nowrap bg-slate-900/40 backdrop-blur-xl border border-white/10 px-6 py-4 rounded-3xl shadow-xl hover:bg-slate-900/50 transition-colors">
-              <div className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/30">
-                <MapPin className="w-8 h-8 text-emerald-300" />
-              </div>
-              <div className="text-left">
-                <p className="text-2xl font-black text-white leading-none">32</p>
-                <p className="text-sm text-blue-200 font-medium whitespace-nowrap">Korean Cities</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 animate-floating hidden lg:block">
-          <div className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center p-1">
-            <div className="w-1 h-2 bg-white/60 rounded-full animate-scrolldown" />
-          </div>
-        </div>
-      </div>
-
-      {/* Onboarding Section - Intelligent Role Selection */}
-      <section id="onboarding" className="py-24 lg:py-40 relative z-10 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 space-y-4">
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight break-keep">가이드와 여행자를 잇는 최고의 플랫폼</h2>
-            <p className="text-slate-500 text-lg sm:text-xl font-light break-keep">
-              {profile ? `${profile.full_name}님, 어떤 파트너를 찾으시겠어요?` : "대한민국 No.1 매칭 플랫폼, 가점되는 당신의 자리를 선택하세요."}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
-            {/* Traveler Card */}
-            {user ? (
-              <Link href={profile ? "/traveler/home" : "/signup?role=traveler"} className="group relative">
-                <div className="h-full premium-card p-10 lg:p-14 flex flex-col items-center text-center transition-all duration-500 border-2 border-transparent hover:border-blue-400 hover:shadow-[0_30px_60px_-15px_rgba(59,130,246,0.2)] bg-white/90 backdrop-blur-xl group-hover:-translate-y-2">
-                  <div className="w-24 h-24 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                    <Compass className="w-12 h-12" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight whitespace-nowrap">가이드 찾기 (여행자)</h3>
-                  <p className="text-slate-600 text-lg font-light leading-relaxed mb-8 break-keep">
-                    내 취향에 딱 맞는 로컬 전문가를 직접 탐색하고 <br className="hidden lg:block" /> 일대일 매칭을 통해 나만의 투어를 완성하세요.
-                  </p>
-                  <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-blue-600 transition-colors duration-300 shadow-lg whitespace-nowrap">
-                    {profile?.role === 'guide' || profile?.role === 'admin' ? '여행자 모드로 탐색하기' : (profile ? '가이드 리스트 보기' : '여행자로 시작하기')} <ChevronRight className="w-5 h-5" />
-                  </div>
-                </div>
-              </Link>
-            ) : (
-              <Link href="/signup?role=traveler" className="group relative">
-                <div className="h-full premium-card p-10 lg:p-14 flex flex-col items-center text-center transition-all duration-500 border-2 border-transparent hover:border-blue-400 hover:shadow-[0_30px_60px_-15px_rgba(59,130,246,0.2)] bg-white/90 backdrop-blur-xl group-hover:-translate-y-2">
-                  <div className="w-24 h-24 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                    <Compass className="w-12 h-12" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight whitespace-nowrap">가이드 찾기 (여행자)</h3>
-                  <p className="text-slate-600 text-lg font-light leading-relaxed mb-8 break-keep">
-                    내 취향에 딱 맞는 로컬 전문가를 직접 탐색하고 <br className="hidden lg:block" /> 일대일 매칭을 통해 나만의 투어를 완성하세요.
-                  </p>
-                  <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-blue-600 transition-colors duration-300 shadow-lg whitespace-nowrap">
-                    여행자로 시작하기 <ChevronRight className="w-5 h-5" />
-                  </div>
-                </div>
-              </Link>
-            )}
-
-            {/* Guide Card */}
-            {user ? (
-              <Link href={profile?.role === 'guide' || profile?.role === 'admin' ? '/guide/dashboard' : '/signup?role=guide'} className="group relative">
-                <div className="h-full premium-card p-10 lg:p-14 flex flex-col items-center text-center transition-all duration-500 border-2 border-transparent hover:border-emerald-400 hover:shadow-[0_30px_60px_-15px_rgba(16,185,129,0.2)] bg-white/90 backdrop-blur-xl group-hover:-translate-y-2">
-                  <div className="w-24 h-24 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
-                    <Map className="w-12 h-12" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight whitespace-nowrap">가이드로 활동하기</h3>
-                  <p className="text-slate-600 text-lg font-light leading-relaxed mb-8 break-keep">
-                    나만의 유니크한 투어 상품을 등록하고 <br className="hidden lg:block" /> 전 세계 여행자들과 만나 특별한 경험을 공유해 보세요.
-                  </p>
-                  <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-emerald-600 transition-colors duration-300 shadow-lg whitespace-nowrap">
-                    {profile?.role === 'guide' || profile?.role === 'admin' ? '가이드 센터 바로가기' : '신규 가이드로 등록하기'} <ChevronRight className="w-5 h-5" />
-                  </div>
-                </div>
-              </Link>
-            ) : (
-              <Link href="/signup?role=guide" className="group relative">
-                <div className="h-full premium-card p-10 lg:p-14 flex flex-col items-center text-center transition-all duration-500 border-2 border-transparent hover:border-emerald-400 hover:shadow-[0_30px_60px_-15px_rgba(16,185,129,0.2)] bg-white/90 backdrop-blur-xl group-hover:-translate-y-2">
-                  <div className="w-24 h-24 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-8 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
-                    <Map className="w-12 h-12" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4 tracking-tight whitespace-nowrap">가이드로 활동하기</h3>
-                  <p className="text-slate-600 text-lg font-light leading-relaxed mb-8 break-keep">
-                    나만의 유니크한 투어 상품을 등록하고 <br className="hidden lg:block" /> 전 세계 여행자들과 만나 특별한 경험을 공유해 보세요.
-                  </p>
-                  <div className="w-full py-4 rounded-2xl bg-slate-900 text-white font-bold text-base flex items-center justify-center gap-2 group-hover:bg-emerald-600 transition-colors duration-300 shadow-lg whitespace-nowrap">
-                    가이드로 시작하기 <ChevronRight className="w-5 h-5" />
-                  </div>
-                </div>
-              </Link>
-            )}
-          </div>
-
-          <div className="mt-16 text-center">
-            <p className="text-slate-500 font-medium">
-              이미 계정이 있으신가요?{" "}
-              <Link href="/login" className="text-blue-600 hover:text-blue-800 underline underline-offset-4 decoration-2">안전하게 로그인하기</Link>
-            </p>
           </div>
         </div>
       </section>
 
-      {/* Feature Highlights - Bento Grid */}
-      <section className="py-24 bg-white/50 backdrop-blur-sm px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-6">
-            <div className="md:col-span-2 premium-card p-10 group cursor-default shadow-sm border-slate-100">
-              <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
-                <Search className="w-8 h-8" />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-5 tracking-tight">정교한 맞춤 매칭 알고리즘</h3>
-              <p className="text-slate-600 leading-relaxed font-light text-xl">
-                동선, 언어, 스타일까지 분석하여 가장 잘 맞는 가이드를 실시간으로 추천해 드립니다.
+      <section id="destinations" className="bg-white px-4 py-20 text-slate-900 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.18em] text-blue-600">
+                DESTINATIONS YOU WILL LOVE
               </p>
+              <h2 className="mt-2 text-3xl font-black tracking-tight sm:text-5xl">
+                한국으로 떠나고 싶어지는 인기 코스
+              </h2>
             </div>
+            <p className="max-w-md text-sm text-slate-500 break-keep">
+              단순한 관광 스팟이 아니라, 현지 가이드와 함께하는 분위기 중심 루트를
+              추천합니다.
+            </p>
+          </div>
 
-            <div className="md:col-span-2 grid grid-rows-2 gap-6">
-              <div className="premium-card p-8 flex flex-col justify-center group cursor-default shadow-sm border-slate-100">
-                <div className="flex items-center gap-5 mb-4">
-                  <div className="w-14 h-14 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center group-hover:rotate-12 transition-transform duration-300 shadow-sm">
-                    <ShieldCheck className="w-7 h-7" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-slate-900 tracking-tight">검증된 퀄리티</h3>
+          <div className="grid gap-5 md:grid-cols-3">
+            {destinations.map((item) => (
+              <article
+                key={item.city}
+                className="group relative h-96 overflow-hidden rounded-3xl border border-slate-200 shadow-sm"
+              >
+                <div
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                  style={{ backgroundImage: `url("${item.image}")` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-900/30 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-6 text-white">
+                  <p className="text-xs font-semibold tracking-[0.18em] text-cyan-200">{item.city}</p>
+                  <h3 className="mt-2 text-2xl font-black leading-tight">{item.title}</h3>
+                  <p className="mt-2 text-sm text-slate-200">{item.desc}</p>
                 </div>
-                <p className="text-slate-600 leading-relaxed font-light text-lg pl-19">
-                  엄격한 자격 심사와 리뷰 시스템으로 믿을 수 있는 서비스를 보장합니다.
-                </p>
-              </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <div className="premium-card p-8 flex flex-col justify-center group cursor-default shadow-sm border-slate-100">
-                <div className="flex items-center gap-5 mb-4">
-                  <div className="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center group-hover:-rotate-12 transition-transform duration-300 shadow-sm">
-                    <CalendarClock className="w-7 h-7" />
+      <section id="onboarding" className="relative px-4 py-24 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-indigo-50/40 to-white overflow-hidden">
+        {/* Background glow effects */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-blue-100/50 mix-blend-multiply filter blur-3xl opacity-70 animate-[pulse-slow_6s_ease-in-out_infinite]" />
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-emerald-100/50 mix-blend-multiply filter blur-3xl opacity-70 animate-[pulse-slow_8s_ease-in-out_infinite_1s]" />
+        
+        <div className="mx-auto max-w-7xl relative z-10">
+          <div className="mb-16 text-center">
+            <h2 className="text-3xl font-black tracking-tight text-slate-900 sm:text-5xl">
+              {profile ? `${profile.full_name}님, 어떤 모드로 시작할까요?` : "나에게 맞는 방식으로 시작하세요"}
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base text-slate-600 break-keep">
+              여행자는 최적의 가이드를 빠르게 찾고, 가이드는 자신만의 경험을 상품으로
+              만들어 수익화할 수 있습니다.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-2">
+            <Link href={travelerHref} className="group outline-none">
+              <article className="relative h-full overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-br from-blue-50/40 via-white to-white p-10 shadow-lg shadow-blue-900/5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-blue-900/10 hover:border-blue-200 ring-4 ring-transparent focus-visible:ring-blue-100">
+                <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-blue-100/50 opacity-20 transition-transform duration-500 group-hover:scale-150" />
+                <div className="relative z-10">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-600/30">
+                    <Compass className="h-8 w-8" />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900 tracking-tight">실시간 스케줄링</h3>
+                  <h3 className="mt-8 text-2xl font-black text-slate-900">여행자로 시작하기</h3>
+                  <p className="mt-4 text-base leading-relaxed text-slate-600 break-keep">
+                    지역, 일정, 취향 기반으로 맞춤 가이드를 추천받고, 메시지로 구체적 일정까지
+                    쉽고 빠르게 조율하세요.
+                  </p>
+                  <div className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-blue-600 rounded-full bg-blue-50 px-4 py-2 transition-colors group-hover:bg-blue-100">
+                    {isGuide ? "여행자 모드로 이동" : "가이드 1분 만에 찾기"}
+                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1.5" />
+                  </div>
                 </div>
-                <p className="text-slate-600 leading-relaxed font-light text-lg pl-19">
-                  번거로운 조율 없이 캘린더 연동으로 단 몇 번의 클릭으로 예약을 확정하세요.
-                </p>
+              </article>
+            </Link>
+
+            <Link href={guideHref} className="group outline-none">
+              <article className="relative h-full overflow-hidden rounded-[2rem] border border-emerald-100 bg-gradient-to-br from-emerald-50/40 via-white to-white p-10 shadow-lg shadow-emerald-900/5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-emerald-900/10 hover:border-emerald-200 ring-4 ring-transparent focus-visible:ring-emerald-100">
+                <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-emerald-100/50 opacity-20 transition-transform duration-500 group-hover:scale-150" />
+                <div className="relative z-10">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-600/30">
+                    <Map className="h-8 w-8" />
+                  </div>
+                  <h3 className="mt-8 text-2xl font-black text-slate-900">가이드로 등록하기</h3>
+                  <p className="mt-4 text-base leading-relaxed text-slate-600 break-keep">
+                    나만의 시그니처 코스를 등록하고 수입을 창출하세요. 편리한 일정 관리 도구로 
+                    고객 안내에만 집중할 수 있습니다.
+                  </p>
+                  <div className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-emerald-600 rounded-full bg-emerald-50 px-4 py-2 transition-colors group-hover:bg-emerald-100">
+                    {isGuide ? "가이드 대시보드 열기" : "가이드로 무료 시작하기"}
+                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1.5" />
+                  </div>
+                </div>
+              </article>
+            </Link>
+          </div>
+
+          <div className="mt-16 grid gap-6 md:grid-cols-3">
+            <div className="group rounded-3xl border border-violet-100 bg-gradient-to-b from-violet-50/50 to-white p-7 shadow-xl shadow-violet-900/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-violet-900/10 hover:border-violet-200">
+              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-600 transition-all duration-300 group-hover:scale-110 group-hover:bg-violet-600 group-hover:text-white shadow-inner">
+                <ShieldCheck className="h-7 w-7" />
               </div>
+              <h4 className="text-xl font-bold text-slate-900">신뢰할 수 있는 매칭</h4>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600">엄격한 신원 인증과 실제 리뷰 데이터를 통해 믿을 수 있는 가이드와 여행자를 이어줍니다.</p>
             </div>
+            <div className="group rounded-3xl border border-amber-100 bg-gradient-to-b from-amber-50/50 to-white p-7 shadow-xl shadow-amber-900/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-amber-900/10 hover:border-amber-200">
+              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white shadow-inner">
+                <MessageSquareText className="h-7 w-7" />
+              </div>
+              <h4 className="text-xl font-bold text-slate-900">디테일한 조율</h4>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600">예약 진행 과정에서 실시간 채팅으로 픽업 장소부터 세부 코스까지 맞춤 설정이 가능합니다.</p>
+            </div>
+            <div className="group rounded-3xl border border-sky-100 bg-gradient-to-b from-sky-50/50 to-white p-7 shadow-xl shadow-sky-900/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-sky-900/10 hover:border-sky-200">
+              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-100 text-sky-600 transition-all duration-300 group-hover:scale-110 group-hover:bg-sky-500 group-hover:text-white shadow-inner">
+                <CalendarCheck2 className="h-7 w-7" />
+              </div>
+              <h4 className="text-xl font-bold text-slate-900">빈틈 없는 예약 시스템</h4>
+              <p className="mt-3 text-sm leading-relaxed text-slate-600">일정 캘린더 기반으로 즉시 예약 처리되어 여러 번 메시지를 주고받는 소모를 줄여줍니다.</p>
+            </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-slate-500 font-medium">
+              이미 계정이 있으신가요?{" "}
+              <Link
+                href="/login"
+                className="text-blue-600 hover:text-blue-800 underline underline-offset-4 decoration-2"
+              >
+                로그인하기
+              </Link>
+            </p>
           </div>
         </div>
       </section>

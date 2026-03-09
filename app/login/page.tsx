@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/Input";
 import { Card, CardContent } from "@/components/ui/Card";
 import { login } from "./actions";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ForgotPasswordModal } from "@/components/ui/ForgotPasswordModal";
 
 function LoginForm() {
     const searchParams = useSearchParams();
     const message = searchParams.get('message');
+    const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
     const handleOAuthLogin = async (provider: 'google' | 'kakao') => {
         const supabase = createClient();
@@ -80,9 +82,16 @@ function LoginForm() {
                 </div>
 
                 <div className="text-sm">
-                    <a href="#" className="font-medium text-blue-600 hover:text-blue-800 transition-colors">
+                    <button 
+                        type="button" 
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setIsForgotPasswordOpen(true);
+                        }}
+                        className="font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                    >
                         비밀번호를 잊으셨나요?
-                    </a>
+                    </button>
                 </div>
             </div>
 
@@ -124,6 +133,11 @@ function LoginForm() {
                     </Button>
                 </div>
             </div>
+            
+            <ForgotPasswordModal 
+                isOpen={isForgotPasswordOpen}
+                onClose={() => setIsForgotPasswordOpen(false)}
+            />
         </form>
     );
 }

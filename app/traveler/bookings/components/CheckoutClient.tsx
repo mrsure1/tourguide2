@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { ChevronLeft, CreditCard, User, FileText, Calendar, Clock, Users, Globe, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { AlertModal } from "@/components/ui/AlertModal";
 
 // Toss Payments Client Key (위젯 전용 테스트 클라이언트 키 사용 필수)
 // 일반 결제창 키(test_ck_...)가 아닌 결제위젯 키(test_gck_...)를 사용해야 합니다.
@@ -23,6 +24,20 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
     const [travelerName, setTravelerName] = useState(booking.traveler?.full_name || '');
     const [travelerEmail, setTravelerEmail] = useState(booking.traveler?.email || '');
     const [travelerMessage, setTravelerMessage] = useState('');
+
+    const [alertConfig, setAlertConfig] = useState<{isOpen: boolean; title: string; message: string}>({
+        isOpen: false,
+        title: "",
+        message: ""
+    });
+
+    const showAlert = (title: string, message: string) => {
+        setAlertConfig({ isOpen: true, title, message });
+    };
+
+    const hideAlert = () => {
+        setAlertConfig(prev => ({ ...prev, isOpen: false }));
+    };
 
     // Toss Payments Widget
     const [paymentWidget, setPaymentWidget] = useState<any>(null);
@@ -101,7 +116,7 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
         if (paymentMethod === 'toss' || paymentMethod === 'kakao') {
             if (!paymentWidget) {
                 console.error("Toss: Payment widget not initialized");
-                alert("결제 위젯이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
+                showAlert("결제 위젯 안내", "결제 위젯이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
                 return;
             }
 
@@ -131,7 +146,18 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
                     return;
                 }
                 console.error("Toss: Payment request error:", error);
-                alert("결제 요청 중 오류가 발생했습니다.");
+                
+                // 에러 메시지 상세화
+                let errorMessage = "필수 결제 과정이 완료되지 않았습니다.";
+                
+                if (error?.message) {
+                    // 제공된 에러 메시지를 포함하며 추가적인 구체적 행동 지침 추가
+                    errorMessage = `${error.message}\n\n화면에 표시된 결제 수단(예: 신용카드 아이콘, 계좌이체 등)을 마우스/터치로 명확히 선택해주시고, 하단의 '필수 약관 동의' 체크박스에 모두 체크했는지 다시 한번 확인해주세요.`;
+                } else {
+                    errorMessage += "\n\n결제 수단(카드 선택)과 하단 필수 약관 동의를 모두 완료했는지 확인해주세요.";
+                }
+                
+                showAlert("결제 정보 확인", errorMessage);
             }
         }
     };
@@ -151,16 +177,18 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
             const result = await res.json();
 
             if (res.ok) {
-                alert("결제가 성공적으로 완료되었습니다!");
-                router.push('/traveler/bookings');
-                router.refresh();
+                showAlert("결제 성공", "결제가 성공적으로 완료되었습니다!");
+                setTimeout(() => {
+                    router.push('/traveler/bookings');
+                    router.refresh();
+                }, 1500);
             } else {
-                alert(`결제 승인 실패: ${result.error}`);
+                showAlert("결제 실패", `결제 승인 실패: ${result.error}`);
             }
 
         } catch (err) {
             console.error("PayPal capture error", err);
-            alert("PayPal 결제 승인 중 오류가 발생했습니다.");
+            showAlert("결제 오류", "PayPal 결제 승인 중 오류가 발생했습니다.");
         }
     };
 
@@ -395,6 +423,13 @@ export default function CheckoutClient({ booking }: CheckoutClientProps) {
                     </div>
                 </div>
             </div>
+            
+            <AlertModal 
+                isOpen={alertConfig.isOpen}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                onClose={hideAlert}
+            />
         </div>
     );
 }
