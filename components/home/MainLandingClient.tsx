@@ -367,14 +367,15 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
         <div className="relative z-30 mx-auto max-w-7xl px-4 pb-14 pt-6 sm:px-6 lg:px-8">
           <header className="flex items-center justify-between gap-4 rounded-full border border-white/15 bg-white/8 px-5 py-3 backdrop-blur-md">
             <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#ff385c] text-white">
-                <Compass className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ffb6c2]">
-                  GuideMatch
-                </p>
-                <p className="text-sm text-white/70">Traveler-first local planning</p>
+              <div className="relative h-11 w-[148px]">
+                <Image
+                  src="/logo.png"
+                  alt="GuideMatch"
+                  fill
+                  priority
+                  sizes="148px"
+                  className="object-contain object-left"
+                />
               </div>
             </Link>
             <Link
