@@ -17,6 +17,9 @@ import {
   User,
   LayoutGrid,
   ChevronRight,
+  Menu,
+  X,
+  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -137,6 +140,18 @@ export default function SearchClient({
   const [activeTab, setActiveTab] = useState<"guide" | "tour">(
     (searchParams.get("type") as "guide" | "tour") || "guide",
   );
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobileMenuOpen]);
   const [guidePage, setGuidePage] = useState(1);
   const [tourPage, setTourPage] = useState(1);
   const [selectedRegion, setSelectedRegion] = useState("전체");
@@ -453,144 +468,198 @@ export default function SearchClient({
     );
   };
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10 w-full animate-in fade-in duration-500 will-change-transform">
-      {/* Sidebar: Dashboard-like Sidebar for search too */}
-      <aside className="lg:col-span-1 flex flex-col gap-6">
-        <div className="space-y-6 sticky top-24">
-          {/* New Widget: Quick Navigation */}
-          <Card className="premium-card bg-white/70 backdrop-blur-md border-white/60 shadow-xl shadow-slate-900/5 overflow-hidden">
-            <div className="p-5 border-b border-slate-100/50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <LayoutGrid className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">퀵 네비게이션</h3>
-              </div>
+  const renderSidebarContent = () => (
+    <div className="space-y-6">
+      {/* New Widget: Quick Navigation */}
+      <Card className="premium-card bg-white/70 backdrop-blur-md border-white/60 shadow-xl shadow-slate-900/5 overflow-hidden">
+        <div className="p-5 border-b border-slate-100/50 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <LayoutGrid className="w-5 h-5 text-indigo-600" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">퀵 네비게이션</h3>
+          </div>
+        </div>
+        <div className="p-4 space-y-3">
+          <Button 
+            variant="outline" 
+            fullWidth 
+            className="justify-between h-12 border-slate-200 bg-white/50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 font-bold rounded-xl transition-all group"
+            onClick={() => {
+              setSearchKeyword('');
+              setActiveTab('guide');
+              setSelectedRegion('전체');
+              setSelectedLanguage('상관없음');
+              setSortBy('추천순');
+              resetPagination();
+              router.replace('/traveler/home?type=guide', { scroll: false });
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
+              <span>전체 가이드 보기</span>
             </div>
-            <div className="p-4 space-y-3">
-              <Button 
-                variant="outline" 
-                fullWidth 
-                className="justify-between h-12 border-slate-200 bg-white/50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 font-bold rounded-xl transition-all group"
-                onClick={() => {
-                  setSearchKeyword('');
-                  setActiveTab('guide');
-                  setSelectedRegion('전체');
-                  setSelectedLanguage('상관없음');
-                  setSortBy('추천순');
-                  resetPagination();
-                  router.replace('/traveler/home?type=guide', { scroll: false });
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
-                  <span>전체 가이드 보기</span>
-                </div>
-                <ChevronRight className="w-4 h-4 opacity-30 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
-              </Button>
-              <Button 
-                variant="outline" 
-                fullWidth 
-                className="justify-between h-12 border-slate-200 bg-white/50 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 font-bold rounded-xl transition-all group"
-                onClick={() => {
-                  setSearchKeyword('');
-                  setActiveTab('tour');
-                  setSelectedRegion('전체');
-                  setSelectedCategory('전체');
-                  setSortBy('추천순');
-                  resetPagination();
-                  router.replace('/traveler/home?type=tour', { scroll: false });
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-slate-400 group-hover:text-rose-500" />
-                  <span>전체 투어 상품 보기</span>
-                </div>
-                <ChevronRight className="w-4 h-4 opacity-30 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
-              </Button>
+            <ChevronRight className="w-4 h-4 opacity-30 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+          </Button>
+          <Button 
+            variant="outline" 
+            fullWidth 
+            className="justify-between h-12 border-slate-200 bg-white/50 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 font-bold rounded-xl transition-all group"
+            onClick={() => {
+              setSearchKeyword('');
+              setActiveTab('tour');
+              setSelectedRegion('전체');
+              setSelectedCategory('전체');
+              setSortBy('추천순');
+              resetPagination();
+              router.replace('/traveler/home?type=tour', { scroll: false });
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <Heart className="w-4 h-4 text-slate-400 group-hover:text-rose-500" />
+              <span>전체 투어 상품 보기</span>
             </div>
-          </Card>
+            <ChevronRight className="w-4 h-4 opacity-30 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+          </Button>
+        </div>
+      </Card>
 
-          {/* Notifications Card - Matching Dashboard style */}
-          <Card className="premium-card bg-white/70 backdrop-blur-md border-white/60 shadow-xl shadow-slate-900/5 overflow-hidden">
-            <div className="p-5 border-b border-slate-100/50 flex items-center gap-2">
-              <Bell className="w-5 h-5 text-slate-700" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">최근 알림</h3>
-            </div>
-            <div className="p-8 text-center">
-              <Bell className="w-10 h-10 text-slate-200 mx-auto mb-3" />
-              <p className="text-xs text-slate-400 font-bold">새로운 알림이 없습니다.</p>
-            </div>
-          </Card>
+      {/* Notifications Card - Matching Dashboard style */}
+      <Card className="premium-card bg-white/70 backdrop-blur-md border-white/60 shadow-xl shadow-slate-900/5 overflow-hidden">
+        <div className="p-5 border-b border-slate-100/50 flex items-center gap-2">
+          <Bell className="w-5 h-5 text-slate-700" />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">최근 알림</h3>
+        </div>
+        <div className="p-8 text-center">
+          <Bell className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+          <p className="text-xs text-slate-400 font-bold">새로운 알림이 없습니다.</p>
+        </div>
+      </Card>
 
-          {/* New Widget: Travel Tips */}
-          <Card className="premium-card bg-gradient-to-br from-blue-600 to-indigo-700 border-none shadow-xl shadow-blue-900/20 text-white overflow-hidden group">
-            <div className="p-6 relative">
-              <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-1/4 -translate-y-1/4 group-hover:scale-110 transition-transform">
-                <Sparkles className="w-24 h-24" />
-              </div>
-              <h3 className="text-lg font-black mb-2 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                여행 꿀팁
-              </h3>
-              <p className="text-xs text-blue-100 font-medium leading-relaxed mb-4">
-                가이드와 미리 연락하여 <br/>코스를 조정하면 더 만족스럽답니다!
-              </p>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 text-[10px] font-bold bg-white/10 p-2 rounded-lg border border-white/10">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                  전문 예약 시스템 이용하기
-                </div>
-                <div className="flex items-center gap-2 text-[10px] font-bold bg-white/10 p-2 rounded-lg border border-white/10">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-300"></span>
-                  리뷰 꼼꼼히 체크하기
-                </div>
-              </div>
+      {/* New Widget: Travel Tips */}
+      <Card className="premium-card bg-gradient-to-br from-blue-600 to-indigo-700 border-none shadow-xl shadow-blue-900/20 text-white overflow-hidden group">
+        <div className="p-6 relative">
+          <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-1/4 -translate-y-1/4 group-hover:scale-110 transition-transform">
+            <Sparkles className="w-24 h-24" />
+          </div>
+          <h3 className="text-lg font-black mb-2 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-amber-300" />
+            여행 꿀팁
+          </h3>
+          <p className="text-xs text-blue-100 font-medium leading-relaxed mb-4">
+            가이드와 미리 연락하여 <br/>코스를 조정하면 더 만족스럽답니다!
+          </p>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-[10px] font-bold bg-white/10 p-2 rounded-lg border border-white/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              전문 예약 시스템 이용하기
             </div>
-          </Card>
-
-          {/* New Widget: Safe Guarantee */}
-          <Card className="premium-card bg-white/80 backdrop-blur-md border-white/60 shadow-lg p-5">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <h4 className="text-sm font-black text-slate-900">100% 안심 보장</h4>
-                <p className="text-[10px] text-slate-500 font-bold">Mr.Sure가 보증하는 거래</p>
-              </div>
-            </div>
-            <ul className="space-y-2.5">
-              <li className="flex items-center gap-2 text-[11px] font-bold text-slate-600">
-                <Clock className="w-3.5 h-3.5 text-blue-500" />
-                24시간 전 무료 취소 가능
-              </li>
-              <li className="flex items-center gap-2 text-[11px] font-bold text-slate-600">
-                <User className="h-3.5 w-3.5 text-blue-500" />
-                신원 인증 완료된 가이드만 활동
-              </li>
-            </ul>
-          </Card>
-
-          {/* New Widget: Popular Tags */}
-          <div className="px-2">
-            <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Tag className="w-3.5 h-3.5 text-indigo-500" />
-              지금 뜨는 키워드
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {["#서울야경", "#현지인맛집", "#사진전문가", "#역사기행", "#DMZ투어", "#동대문쇼핑"].map((tag) => (
-                <button 
-                  key={tag}
-                  onClick={() => handleKeywordChange(tag.replace('#', ''))} 
-                  className="px-3 py-1.5 bg-white border border-slate-200 rounded-full text-[11px] font-bold text-slate-600 hover:border-blue-400 hover:text-blue-600 hover:shadow-sm transition-all shadow-sm"
-                >
-                  {tag}
-                </button>
-              ))}
+            <div className="flex items-center gap-2 text-[10px] font-bold bg-white/10 p-2 rounded-lg border border-white/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-300"></span>
+              리뷰 꼼꼼히 체크하기
             </div>
           </div>
         </div>
+      </Card>
+
+      {/* New Widget: Safe Guarantee */}
+      <Card className="premium-card bg-white/80 backdrop-blur-md border-white/60 shadow-lg p-5">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <h4 className="text-sm font-black text-slate-900">100% 안심 보장</h4>
+            <p className="text-[10px] text-slate-500 font-bold">Mr.Sure가 보증하는 거래</p>
+          </div>
+        </div>
+        <ul className="space-y-2.5">
+          <li className="flex items-center gap-2 text-[11px] font-bold text-slate-600">
+            <Clock className="w-3.5 h-3.5 text-blue-500" />
+            24시간 전 무료 취소 가능
+          </li>
+          <li className="flex items-center gap-2 text-[11px] font-bold text-slate-600">
+            <User className="h-3.5 w-3.5 text-blue-500" />
+            신원 인증 완료된 가이드만 활동
+          </li>
+        </ul>
+      </Card>
+
+      {/* New Widget: Popular Tags */}
+      <div className="px-2">
+        <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <Tag className="w-3.5 h-3.5 text-indigo-500" />
+          지금 뜨는 키워드
+        </h4>
+        <div className="flex flex-wrap gap-2">
+          {["#서울야경", "#현지인맛집", "#사진전문가", "#역사기행", "#DMZ투어", "#동대문쇼핑"].map((tag) => (
+            <button 
+              key={tag}
+              onClick={() => {
+                handleKeywordChange(tag.replace('#', ''))
+                setIsMobileMenuOpen(false);
+              }} 
+              className="px-3 py-1.5 bg-white border border-slate-200 rounded-full text-[11px] font-bold text-slate-600 hover:border-blue-400 hover:text-blue-600 hover:shadow-sm transition-all shadow-sm"
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10 w-full animate-in fade-in duration-500 will-change-transform">
+      {/* Sidebar: Dashboard-like Sidebar for search too */}
+      <aside className="hidden lg:flex lg:col-span-1 flex-col gap-6">
+        <div className="space-y-6 sticky top-24">
+          {renderSidebarContent()}
+        </div>
       </aside>
+
+      {/* Mobile Floating Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end lg:hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          {/* Bottom Sheet */}
+          <div className="relative w-full max-h-[85vh] overflow-y-auto rounded-t-3xl bg-slate-50 flex flex-col shadow-2xl animate-in slide-in-from-bottom-[100%] duration-300 pointer-events-auto border-t border-white/40">
+            <div className="flex items-center justify-between sticky top-0 z-10 bg-slate-50/95 backdrop-blur-md px-6 py-4 border-b border-slate-200/50">
+              <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                <Menu className="w-5 h-5 text-indigo-600" />
+                탐색 및 알림
+              </h2>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 -mr-2 rounded-full bg-transparent hover:bg-slate-200 text-slate-500 transition-colors"
+                aria-label="닫기"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6">
+              {renderSidebarContent()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Floating Action Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(true)}
+        className="lg:hidden fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3.5 rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-700 active:scale-95 transition-all group font-bold border border-blue-400/30"
+        style={{
+          boxShadow: "0 10px 25px -5px rgba(37, 99, 235, 0.4), 0 8px 10px -6px rgba(37, 99, 235, 0.2)"
+        }}
+        aria-label="필터 및 알림 보기"
+      >
+        <Filter className="w-5 h-5 fill-white/20" />
+        <span>필터 및 알림</span>
+      </button>
 
       {/* Main Results: Dashboard-like container for search too */}
       <main id="search-results" className="lg:col-span-2 space-y-8 min-w-0">
