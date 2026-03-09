@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
 import { NotificationPopup } from "@/components/notification/NotificationPopup";
-import { Button } from "@/components/ui/Button";
-import { LayoutDashboard, Search, Map, Calendar, User, ShoppingBag, Menu, X, Landmark } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import { LayoutDashboard, Search, Map, Calendar, User, ShoppingBag, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
@@ -53,20 +52,9 @@ export function Navbar({ profile }: NavbarProps) {
         )}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 group shrink-0">
-                    <div className="relative w-8 h-8 group-hover:scale-105 transition-transform">
-                        <Image
-                            src="/logo.png"
-                            alt="GuideMatch Logo"
-                            fill
-                            className="object-contain"
-                            priority
-                        />
-                    </div>
-                    <span className="text-xl font-black tracking-tighter text-slate-900 hidden sm:block">
-                        Guide<span className="text-accent">Match</span>
-                    </span>
-                </Link>
+                <div className="shrink-0">
+                    <BrandLogo href="/" size="sm" tone="dark" showTagline={false} />
+                </div>
 
                 {/* Desktop Menu */}
                 <nav className="hidden md:flex items-center gap-1 bg-slate-100/50 p-1 rounded-2xl border border-slate-200/50 mx-4">

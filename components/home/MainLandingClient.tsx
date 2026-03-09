@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Calendar } from "@/components/ui/Calendar";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import {
   Clock,
   Compass,
@@ -366,24 +367,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
 
         <div className="relative z-30 mx-auto max-w-7xl px-4 pb-14 pt-6 sm:px-6 lg:px-8">
           <header className="flex items-center justify-between gap-4 rounded-full border border-white/15 bg-white/8 px-5 py-3 backdrop-blur-md">
-            <Link href="/" className="flex items-center gap-4">
-              <div className="relative h-11 w-[148px]">
-                <Image
-                  src="/logo.png"
-                  alt="GuideMatch"
-                  fill
-                  priority
-                  sizes="148px"
-                  className="object-contain object-left"
-                />
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-lg font-semibold tracking-[-0.03em] text-white">GuideMatch</p>
-                <p className="text-xs font-medium text-white/68">
-                  Guide-led travel picks by region and theme
-                </p>
-              </div>
-            </Link>
+            <BrandLogo href="/" size="lg" tone="light" variant="signature" />
             <Link
               href={guideHref}
               className="rounded-full border border-white/20 bg-white/8 px-4 py-2 text-xs font-medium text-white/72 transition hover:border-white/30 hover:bg-white/12 hover:text-white"

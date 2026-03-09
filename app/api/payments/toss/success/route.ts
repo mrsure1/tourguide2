@@ -7,13 +7,17 @@ const widgetSecretKey = process.env.TOSS_SECRET_KEY || "test_gsk_docs_OaPz8L5Kdm
 
 export async function GET(request: Request) {
     console.log("--- Toss Payments Success Callback ---");
-    const { searchParams } = new URL(request.url);
+    const { searchParams, origin } = new URL(request.url);
     const paymentKey = searchParams.get('paymentKey');
     const orderId = searchParams.get('orderId'); // UUID from bookings table
     const amount = searchParams.get('amount');
+    const popup = searchParams.get('popup') === '1';
 
     if (!paymentKey || !orderId || !amount) {
-        return NextResponse.redirect(`${request.headers.get('origin')}/traveler/bookings?error=InvalidPaymentParams`);
+        if (popup) {
+            return NextResponse.redirect(`${origin}/payment-popup?status=error&message=invalid`);
+        }
+        return NextResponse.redirect(`${origin}/traveler/bookings?error=InvalidPaymentParams`);
     }
 
     try {
@@ -27,12 +31,18 @@ export async function GET(request: Request) {
 
         if (fetchError || !booking) {
             console.error("Booking not found for verification:", fetchError);
-            return NextResponse.redirect(`${request.headers.get('origin')}/traveler/bookings?error=BookingNotFound`);
+            if (popup) {
+                return NextResponse.redirect(`${origin}/payment-popup?status=error&message=booking_not_found`);
+            }
+            return NextResponse.redirect(`${origin}/traveler/bookings?error=BookingNotFound`);
         }
 
         if (Number(booking.total_price) !== Number(amount)) {
             console.error("Payment amount mismatch!", { expected: booking.total_price, received: amount });
-            return NextResponse.redirect(`${request.headers.get('origin')}/traveler/bookings?error=AmountMismatch`);
+            if (popup) {
+                return NextResponse.redirect(`${origin}/payment-popup?status=error&message=amount_mismatch&bookingId=${orderId}`);
+            }
+            return NextResponse.redirect(`${origin}/traveler/bookings?error=AmountMismatch`);
         }
 
         // 2. Verify Payment with Toss API
@@ -59,7 +69,12 @@ export async function GET(request: Request) {
 
         if (!response.ok) {
             console.error("Toss Verification Failed:", data);
-            return NextResponse.redirect(`${request.headers.get('origin')}/traveler/bookings/checkout/${orderId}?error=${data.code}`);
+            if (popup) {
+                return NextResponse.redirect(
+                    `${origin}/payment-popup/${orderId}?error=${encodeURIComponent(data.code)}&message=${encodeURIComponent(data.message || data.code)}`
+                );
+            }
+            return NextResponse.redirect(`${origin}/traveler/bookings/checkout/${orderId}?error=${data.code}`);
         }
 
         // 3. Update booking status in database
@@ -80,10 +95,17 @@ export async function GET(request: Request) {
         revalidatePath('/admin/payments');
 
         // 5. Redirect to bookings page with success
-        return NextResponse.redirect(`${request.headers.get('origin')}/traveler/bookings?payment=success`);
+        if (popup) {
+            return NextResponse.redirect(`${origin}/payment-popup?status=success&bookingId=${orderId}`);
+        }
+
+        return NextResponse.redirect(`${origin}/traveler/bookings?payment=success`);
 
     } catch (error: any) {
         console.error("Payment Confirmation Error:", error);
-        return NextResponse.redirect(`${request.headers.get('origin')}/traveler/bookings/checkout/${orderId}?error=InternalError`);
+        if (popup && orderId) {
+            return NextResponse.redirect(`${origin}/payment-popup/${orderId}?error=InternalError&message=internal`);
+        }
+        return NextResponse.redirect(`${origin}/traveler/bookings/checkout/${orderId}?error=InternalError`);
     }
 }
