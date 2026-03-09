@@ -20,7 +20,11 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 
 const updates = [
   {
-    full_name: '이진영',
+    id: 'f1ad3503-797a-46fb-8f43-b0d3718a4436',
+    avatar_url: '/images/guides/guide_culture_man.png',
+  },
+  {
+    id: '38d6dfc7-21db-4c32-8996-19df14a60719',
     avatar_url:
       'https://k.kakaocdn.net/dn/bpAwu1/btsQ4ll9NTj/ODgi0OUmksFXMkgysUzMVK/img_640x640.jpg',
   },
@@ -30,7 +34,7 @@ for (const update of updates) {
   const { data, error } = await supabase
     .from('profiles')
     .update({ avatar_url: update.avatar_url })
-    .eq('full_name', update.full_name)
+    .eq('id', update.id)
     .select('id, full_name, avatar_url')
     .single();
 
