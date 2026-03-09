@@ -239,13 +239,11 @@ export default async function Home() {
     }) || fallbackTours;
 
   const isGuide = profile?.role === "guide" || profile?.role === "admin";
-  const travelerHref = user ? "/traveler/home" : "/signup?role=traveler";
   const guideHref = user && isGuide ? "/guide/dashboard" : "/signup?role=guide";
 
   return (
     <MainLandingClient
       userName={profile?.full_name ?? null}
-      travelerHref={travelerHref}
       guideHref={guideHref}
       guides={guides.length > 0 ? guides : fallbackGuides}
       tours={tours.length > 0 ? tours : fallbackTours}
