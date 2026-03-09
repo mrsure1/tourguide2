@@ -366,7 +366,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
 
         <div className="relative z-30 mx-auto max-w-7xl px-4 pb-14 pt-6 sm:px-6 lg:px-8">
           <header className="flex items-center justify-between gap-4 rounded-full border border-white/15 bg-white/8 px-5 py-3 backdrop-blur-md">
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-4">
               <div className="relative h-11 w-[148px]">
                 <Image
                   src="/logo.png"
@@ -376,6 +376,12 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                   sizes="148px"
                   className="object-contain object-left"
                 />
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-lg font-semibold tracking-[-0.03em] text-white">GuideMatch</p>
+                <p className="text-xs font-medium text-white/68">
+                  Guide-led travel picks by region and theme
+                </p>
               </div>
             </Link>
             <Link
@@ -551,16 +557,19 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
           <div className="mt-8 max-w-3xl text-white">
             <p className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-300/12 px-4 py-2 text-sm font-medium text-cyan-50 shadow-sm">
               <Sparkles className="h-4 w-4" />
-              {userName ? `${userName}님, 다음 여행을 간단하게 골라보세요` : "검색은 간단하게, 비교는 바로 아래에서"}
+              {userName
+                ? `${userName}님, 이번 여행에 맞는 가이드와 상품을 골라보세요`
+                : "지역과 일정만 고르면 가이드와 여행상품을 바로 비교할 수 있습니다"}
             </p>
             <h1 className="mt-5 text-3xl font-semibold tracking-[-0.03em] sm:text-5xl">
-              여행지와 날짜를 정하면,
+              어디로 떠날지 고르면
               <br />
-              가장 맞는 카드만 바로 보여줍니다.
+              잘 맞는 가이드와 여행을 바로 찾습니다
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-200">
-              여행상품과 가이드를 탭으로 전환하면서 비교할 수 있고, 지역명은 직접 입력하면서 추천 드롭다운으로
-              참고할 수 있습니다.
+              지역, 날짜, 인원을 먼저 선택하고 현지 가이드 매칭과 관광상품을 한 화면에서
+              비교해보세요. 지역별 추천은 물론 여행 테마에 맞는 선택지도 빠르게 찾을 수
+              있습니다.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               {quickRegions.map((region) => (
