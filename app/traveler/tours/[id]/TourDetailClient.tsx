@@ -21,6 +21,7 @@ export default function TourDetailClient({ tour }: TourDetailClientProps) {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const defaultDateStr = tomorrow.toISOString().split('T')[0];
     const startDateParam = searchParams.get('startDate') || defaultDateStr;
+    const endDateParam = searchParams.get('endDate') || startDateParam;
 
     const pAdults = searchParams.get('adults');
     const pChildren = searchParams.get('children');
@@ -30,18 +31,26 @@ export default function TourDetailClient({ tour }: TourDetailClientProps) {
 
     const [isPending, setIsPending] = useState(false);
     const [guests, setGuests] = useState(defaultGuests || 2);
-    const [selectedDate, setSelectedDate] = useState(startDateParam);
+    const [dateRange, setDateRange] = useState<{ from: string; to: string }>({
+        from: startDateParam,
+        to: endDateParam
+    });
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
     const handleBooking = async () => {
+        if (!dateRange.from) {
+            alert("투어 날짜를 선택해주세요.");
+            return;
+        }
+
         setIsPending(true);
         try {
             const formData = new FormData();
             formData.append('guide_id', tour.guide_id);
             formData.append('tour_id', tour.id);
-            formData.append('start_date', selectedDate);
-            formData.append('end_date', selectedDate);
-            formData.append('total_price', Math.round(tour.price * guests * 1.05).toString()); // N인 기준 + 5% 수수료
+            formData.append('start_date', dateRange.from);
+            formData.append('end_date', dateRange.to || dateRange.from);
+            formData.append('total_price', Math.round(tour.price * guests * 1.05).toString());
             formData.append('guests', guests.toString());
 
             const res = await fetch('/api/bookings/create', {
@@ -164,7 +173,7 @@ export default function TourDetailClient({ tour }: TourDetailClientProps) {
                     {/* Booking Card */}
                     <div className="w-full md:w-96 shrink-0 mt-8 md:mt-0">
                         <div className="sticky top-24">
-                            <Card className="bg-white shadow-2xl shadow-slate-200 border-0 rounded-3xl overflow-hidden">
+                            <Card className="bg-white shadow-2xl shadow-slate-200 border-0 rounded-3xl">
                                 <CardContent className="p-6 md:p-8">
                                     <div className="mb-6">
                                         <div className="text-sm font-medium text-slate-500 mb-1">1인 기준</div>
@@ -180,21 +189,32 @@ export default function TourDetailClient({ tour }: TourDetailClientProps) {
                                                 onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
                                             >
                                                 <div className="text-xs font-bold text-slate-500 mb-1 flex items-center gap-1">
-                                                    <CalendarIcon className="w-3 h-3" /> 날짜 선택
+                                                    <CalendarIcon className="w-3 h-3" /> 일정 선택
                                                 </div>
-                                                <div className="text-sm font-semibold text-slate-900">{selectedDate}</div>
+                                                <div className="text-sm font-semibold text-slate-900">
+                                                    {dateRange.from ? (
+                                                        <>
+                                                            {dateRange.from}
+                                                            {dateRange.to && dateRange.to !== dateRange.from && ` ~ ${dateRange.to}`}
+                                                        </>
+                                                    ) : "날짜를 선택하세요"}
+                                                </div>
                                             </div>
 
                                             {isDatePickerOpen && (
                                                 <div className="absolute top-full left-0 right-0 z-[100] mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2">
                                                     <Calendar
-                                                        mode="single"
-                                                        selected={selectedDate}
-                                                        onSelect={(date) => {
-                                                            setSelectedDate(date);
-                                                            setIsDatePickerOpen(false);
+                                                        mode="range"
+                                                        selected={dateRange}
+                                                        onSelect={(range) => {
+                                                            if (range) {
+                                                                setDateRange(range);
+                                                                if (range.from && range.to) {
+                                                                    setIsDatePickerOpen(false);
+                                                                }
+                                                            }
                                                         }}
-                                                        defaultMonth={new Date(selectedDate)}
+                                                        defaultMonth={dateRange.from ? new Date(dateRange.from) : new Date()}
                                                         minDate={new Date().toISOString().split('T')[0]}
                                                     />
                                                 </div>
