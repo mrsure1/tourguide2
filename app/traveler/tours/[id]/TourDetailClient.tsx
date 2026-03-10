@@ -173,7 +173,7 @@ export default function TourDetailClient({ tour }: TourDetailClientProps) {
                     {/* Booking Card */}
                     <div className="w-full md:w-96 shrink-0 mt-8 md:mt-0">
                         <div className="sticky top-24">
-                            <Card className="bg-white shadow-2xl shadow-slate-200 border-0 rounded-3xl">
+                            <Card className="bg-white shadow-2xl shadow-slate-200 border-0 rounded-3xl overflow-visible">
                                 <CardContent className="p-6 md:p-8">
                                     <div className="mb-6">
                                         <div className="text-sm font-medium text-slate-500 mb-1">1인 기준</div>

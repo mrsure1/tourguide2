@@ -1,8 +1,10 @@
 import React from 'react';
 
 export const Card = ({ className = '', children }: { className?: string; children: React.ReactNode }) => {
+    // 기본적으로 overflow-hidden을 적용하되, 사용자가 직접 지정한 경우 클래스 중첩을 최소화
+    const hasOverflow = className.includes('overflow-');
     return (
-        <div className={`premium-card overflow-hidden ${className}`}>
+        <div className={`premium-card ${!hasOverflow ? 'overflow-hidden' : ''} ${className}`}>
             {children}
         </div>
     );
