@@ -407,13 +407,6 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (!criteria) return;
-
-    const section = document.getElementById("explore-results");
-    section?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [criteria, activeTab]);
-
   const canSearch = Boolean(draft.destination.trim());
 
   const filteredGuides = useMemo(() => {
@@ -455,6 +448,26 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
       })
       .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
   }, [criteria, tours]);
+
+  useEffect(() => {
+    if (!criteria) return;
+
+    // Determine target section based on results
+    let targetId = "explore-results";
+
+    // If active tab has no results, redirect scroll to recommended sections
+    if (activeTab === 'guide' && filteredGuides.length === 0) {
+      targetId = "recommended-guides";
+    } else if (activeTab === 'tour' && filteredTours.length === 0) {
+      targetId = "trending-tours";
+    }
+
+    // Give a slight delay to allow the DOM to render the message and unhide the target sections properly before scrolling
+    setTimeout(() => {
+      const section = document.getElementById(targetId);
+      section?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }, [criteria, activeTab, filteredGuides.length, filteredTours.length]);
 
   const guestSummary = `성인 ${draft.adults}명${draft.children > 0 ? ` · 어린이 ${draft.children}명` : ""
     }`;
@@ -722,8 +735,8 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
 
                   {activeTab === 'guide' && filteredGuides.length === 0 && (
                     <section className="container mx-auto px-4 py-20 text-center border-t border-slate-100">
-                       <h3 className="text-2xl font-bold text-slate-700">해당 조건의 가이드가 없습니다.</h3>
-                       <p className="text-slate-500 mt-2">다른 지역이나 조건으로 가이드를 다시 검색해 보세요.</p>
+                       <h3 className="text-2xl font-bold text-slate-700">검색한 결과가 정확히는 없지만 다음 가이드를 추천합니다.</h3>
+                       <p className="text-slate-500 mt-2">아래의 검증된 추천 가이드들을 확인해 보세요.</p>
                     </section>
                   )}
 
@@ -750,8 +763,8 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
 
                   {activeTab === 'tour' && filteredTours.length === 0 && (
                     <section className="container mx-auto px-4 py-20 text-center border-t border-slate-100">
-                       <h3 className="text-2xl font-bold text-slate-700">해당 조건의 투어 상품이 없습니다.</h3>
-                       <p className="text-slate-500 mt-2">다른 지역이나 일정으로 여행 상품을 다시 검색해 보세요.</p>
+                       <h3 className="text-2xl font-bold text-slate-700">검색한 결과가 정확히는 없지만 다음 여행 상품을 추천합니다.</h3>
+                       <p className="text-slate-500 mt-2">아래의 특별한 로컬 익스피리언스 및 급상승 투어를 확인해 보세요.</p>
                     </section>
                   )}
                 </div>
@@ -761,7 +774,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
               <div className="w-screen relative left-[50%] right-[50%] -ml-[50vw] -mr-[50vw] bg-white pb-0 pt-10">
                 <div className="space-y-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                   {/* Recommended Guides Section */}
-              <section className="container mx-auto px-4 py-10 relative">
+              <section id="recommended-guides" className="container mx-auto px-4 py-10 relative scroll-mt-20">
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                   <div>
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold mb-4 animate-fade-in-up">
@@ -785,7 +798,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
               </section>
 
               {/* Local Experience Section ([시안 2]) */}
-              <section className="bg-[#fcfaf7] pt-12 pb-16 rounded-3xl">
+              <section id="trending-tours" className="bg-[#fcfaf7] pt-12 pb-16 rounded-3xl scroll-mt-20">
                 <div className="container mx-auto px-4">
                   <div className="text-center mb-10">
                     <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
