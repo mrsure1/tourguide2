@@ -414,30 +414,27 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
     section?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [criteria, activeTab]);
 
-  const canSearch = Boolean(draft.destination.trim() && draft.startDate && draft.endDate);
+  const canSearch = Boolean(draft.destination.trim());
 
   const filteredGuides = useMemo(() => {
     const list = [...guides];
 
-    if (!criteria) return list.slice(0, 8);
+    if (!criteria || !criteria.destination.trim()) return list;
 
     return list
-      .filter((guide) => guide.location.toLowerCase().includes(criteria.destination.toLowerCase()))
+      .filter((guide) => guide.location.toLowerCase().includes(criteria.destination.trim().toLowerCase()))
       .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
   }, [criteria, guides]);
 
   const filteredTours = useMemo(() => {
     const list = [...tours];
 
-    if (!criteria) return list.slice(0, 8);
+    if (!criteria || !criteria.destination.trim()) return list;
 
     return list
-      .filter((tour) => tour.region.toLowerCase().includes(criteria.destination.toLowerCase()))
+      .filter((tour) => tour.region.toLowerCase().includes(criteria.destination.trim().toLowerCase()))
       .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
   }, [criteria, tours]);
-
-  const visibleGuides = filteredGuides.slice(0, 8);
-  const visibleTours = filteredTours.slice(0, 8);
 
   const guestSummary = `성인 ${draft.adults}명${draft.children > 0 ? ` · 어린이 ${draft.children}명` : ""
     }`;
@@ -697,7 +694,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                  {guides.slice(0, 4).map((guide, idx) => (
+                  {filteredGuides.slice(0, 4).map((guide, idx) => (
                     <GuideCard key={guide.id} guide={guide} idx={idx} queryString={searchParamsString} />
                   ))}
                 </div>
@@ -743,7 +740,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                       <div className="h-[2px] flex-1 bg-gradient-to-r from-slate-200 to-transparent ml-4" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {tours.slice(0, 3).map((tour, idx) => (
+                      {filteredTours.slice(0, 3).map((tour, idx) => (
                         <TourCard key={tour.id} tour={tour} idx={idx} queryString={searchParamsString} />
                       ))}
                     </div>
@@ -760,7 +757,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                       <div className="h-[2px] flex-1 bg-gradient-to-r from-slate-200 to-transparent ml-4" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {tours.slice(3, 6).map((tour, idx) => (
+                      {filteredTours.slice(3, 6).map((tour, idx) => (
                         <TourCard key={tour.id} tour={tour} idx={idx + 3} queryString={searchParamsString} />
                       ))}
                     </div>
@@ -778,7 +775,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                  {tours.map((tour, idx) => (
+                  {filteredTours.map((tour, idx) => (
                     <TourCard key={tour.id} tour={tour} idx={idx} queryString={searchParamsString} />
                   ))}
                 </div>
