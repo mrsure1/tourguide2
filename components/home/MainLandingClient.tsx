@@ -750,8 +750,9 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
               )}
 
               {/* Default Recommended Section (Shown whether searched or not, beneath results) */}
-              
-              {/* Recommended Guides Section */}
+              <div className="w-full bg-white pb-12 pt-10 border-t border-slate-200 mt-12">
+                <div className="space-y-10 mx-auto max-w-7xl">
+                  {/* Recommended Guides Section */}
               <section className="container mx-auto px-4 py-10 relative">
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                   <div>
@@ -856,6 +857,8 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                   </div>
                 </section>
               )}
+                </div>
+              </div>
             </div>
           );
         })()}
