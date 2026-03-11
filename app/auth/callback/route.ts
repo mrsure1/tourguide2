@@ -78,9 +78,14 @@ export async function GET(request: Request) {
             }
 
             // 역할에 따른 서비스 화면으로 이동
-            const finalNext = userRole === 'admin'
+            let finalNext = userRole === 'admin'
                 ? '/admin/dashboard'
                 : (userRole === 'guide' ? '/guide/dashboard' : '/traveler/home');
+
+            // if next is explicitly provided and is not the default, prioritize it
+            if (next && next !== '/role-selection') {
+                finalNext = next;
+            }
 
             const response = NextResponse.redirect(`${origin}${finalNext}`);
             response.cookies.delete('oauth_role');

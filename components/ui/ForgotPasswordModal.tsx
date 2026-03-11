@@ -32,7 +32,7 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
       if (!supabase) throw new Error("Supabase client is not available");
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/update-password`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
       });
 
       if (error) throw error;
