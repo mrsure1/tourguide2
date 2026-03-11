@@ -421,8 +421,18 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
 
     if (!criteria || !criteria.destination.trim()) return list;
 
+    const query = criteria.destination.trim().toLowerCase();
+
     return list
-      .filter((guide) => guide.location.toLowerCase().includes(criteria.destination.trim().toLowerCase()))
+      .filter((guide) => {
+        const fields = [
+            guide.location,
+            guide.name,
+            guide.bio,
+            ...(guide.languages || [])
+        ];
+        return fields.some(field => field && field.toLowerCase().includes(query));
+      })
       .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
   }, [criteria, guides]);
 
@@ -431,8 +441,18 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
 
     if (!criteria || !criteria.destination.trim()) return list;
 
+    const query = criteria.destination.trim().toLowerCase();
+
     return list
-      .filter((tour) => tour.region.toLowerCase().includes(criteria.destination.trim().toLowerCase()))
+      .filter((tour) => {
+        const fields = [
+            tour.title,
+            tour.region,
+            tour.description,
+            tour.guideName
+        ];
+        return fields.some(field => field && field.toLowerCase().includes(query));
+      })
       .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
   }, [criteria, tours]);
 
