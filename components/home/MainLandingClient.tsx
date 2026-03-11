@@ -676,6 +676,61 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
 
           return (
             <div className="space-y-10">
+              {/* Search Results Display Area */}
+              {criteria && (
+                <div className="space-y-16 animate-in slide-in-from-bottom-4 fade-in duration-500">
+                  {/* Searched Guides Section */}
+                  {filteredGuides.length > 0 && (
+                    <section className="container mx-auto px-4 pt-12 relative border-t border-slate-100">
+                      <div className="flex items-center justify-between mb-8">
+                        <div>
+                          <h2 className="text-3xl font-black text-slate-900">
+                             가이드 검색 결과
+                          </h2>
+                          <p className="text-slate-500 mt-2 font-medium">
+                            요청하신 조건에 맞는 가이드 목록입니다.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {filteredGuides.slice(0, 8).map((guide, idx) => (
+                          <GuideCard key={guide.id} guide={guide} idx={idx} queryString={searchParamsString} />
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Searched Tours Section */}
+                  {filteredTours.length > 0 && (
+                    <section className="container mx-auto px-4 py-12 relative border-t border-slate-100">
+                      <div className="flex items-center justify-between mb-8">
+                        <div>
+                          <h2 className="text-3xl font-black text-slate-900">
+                            투어 검색 결과
+                          </h2>
+                          <p className="text-slate-500 mt-2 font-medium">
+                            요청하신 조건에 맞는 투어 상품입니다.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        {filteredTours.map((tour, idx) => (
+                          <TourCard key={tour.id} tour={tour} idx={idx} queryString={searchParamsString} />
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                  {filteredGuides.length === 0 && filteredTours.length === 0 && (
+                    <section className="container mx-auto px-4 py-20 text-center">
+                       <h3 className="text-2xl font-bold text-slate-700">검색 결과가 없습니다.</h3>
+                       <p className="text-slate-500 mt-2">다른 조건으로 다시 검색해 보세요.</p>
+                    </section>
+                  )}
+                </div>
+              )}
+
+              {/* Default Recommended Section (Shown whether searched or not, beneath results) */}
+              
               {/* Recommended Guides Section */}
               <section className="container mx-auto px-4 py-10 relative">
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
@@ -694,7 +749,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                  {filteredGuides.slice(0, 4).map((guide, idx) => (
+                  {guides.slice(0, 4).map((guide, idx) => (
                     <GuideCard key={guide.id} guide={guide} idx={idx} queryString={searchParamsString} />
                   ))}
                 </div>
@@ -740,7 +795,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                       <div className="h-[2px] flex-1 bg-gradient-to-r from-slate-200 to-transparent ml-4" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {filteredTours.slice(0, 3).map((tour, idx) => (
+                      {tours.slice(0, 3).map((tour, idx) => (
                         <TourCard key={tour.id} tour={tour} idx={idx} queryString={searchParamsString} />
                       ))}
                     </div>
@@ -757,7 +812,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                       <div className="h-[2px] flex-1 bg-gradient-to-r from-slate-200 to-transparent ml-4" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {filteredTours.slice(3, 6).map((tour, idx) => (
+                      {tours.slice(3, 6).map((tour, idx) => (
                         <TourCard key={tour.id} tour={tour} idx={idx + 3} queryString={searchParamsString} />
                       ))}
                     </div>
@@ -765,21 +820,22 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                 </div>
               </section>
 
-              {/* Tour Products Section (All Products) */}
-              <section className="container mx-auto px-4 py-12 border-t border-slate-100">
-                <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <h2 className="text-3xl font-black text-slate-900">전체 투어 상품</h2>
-                    <p className="text-slate-500 mt-2 font-medium">검색 결과에 맞는 모든 상품을 확인하세요.</p>
+              {!criteria && (
+                <section className="container mx-auto px-4 py-12 border-t border-slate-100">
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-3xl font-black text-slate-900">전체 투어 상품</h2>
+                      <p className="text-slate-500 mt-2 font-medium">모든 상품을 확인하세요.</p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                  {filteredTours.map((tour, idx) => (
-                    <TourCard key={tour.id} tour={tour} idx={idx} queryString={searchParamsString} />
-                  ))}
-                </div>
-              </section>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {tours.map((tour, idx) => (
+                      <TourCard key={tour.id} tour={tour} idx={idx} queryString={searchParamsString} />
+                    ))}
+                  </div>
+                </section>
+              )}
             </div>
           );
         })()}
