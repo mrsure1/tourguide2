@@ -700,7 +700,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
               {criteria && (
                 <div className="space-y-16 animate-in slide-in-from-bottom-4 fade-in duration-500">
                   {/* Searched Guides Section */}
-                  {filteredGuides.length > 0 && (
+                  {activeTab === 'guide' && filteredGuides.length > 0 && (
                     <section className="container mx-auto px-4 pt-12 relative border-t border-slate-100">
                       <div className="flex items-center justify-between mb-8">
                         <div>
@@ -720,8 +720,15 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                     </section>
                   )}
 
+                  {activeTab === 'guide' && filteredGuides.length === 0 && (
+                    <section className="container mx-auto px-4 py-20 text-center border-t border-slate-100">
+                       <h3 className="text-2xl font-bold text-slate-700">해당 조건의 가이드가 없습니다.</h3>
+                       <p className="text-slate-500 mt-2">다른 지역이나 조건으로 가이드를 다시 검색해 보세요.</p>
+                    </section>
+                  )}
+
                   {/* Searched Tours Section */}
-                  {filteredTours.length > 0 && (
+                  {activeTab === 'tour' && filteredTours.length > 0 && (
                     <section className="container mx-auto px-4 py-12 relative border-t border-slate-100">
                       <div className="flex items-center justify-between mb-8">
                         <div>
@@ -740,10 +747,11 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                       </div>
                     </section>
                   )}
-                  {filteredGuides.length === 0 && filteredTours.length === 0 && (
-                    <section className="container mx-auto px-4 py-20 text-center">
-                       <h3 className="text-2xl font-bold text-slate-700">검색 결과가 없습니다.</h3>
-                       <p className="text-slate-500 mt-2">다른 조건으로 다시 검색해 보세요.</p>
+
+                  {activeTab === 'tour' && filteredTours.length === 0 && (
+                    <section className="container mx-auto px-4 py-20 text-center border-t border-slate-100">
+                       <h3 className="text-2xl font-bold text-slate-700">해당 조건의 투어 상품이 없습니다.</h3>
+                       <p className="text-slate-500 mt-2">다른 지역이나 일정으로 여행 상품을 다시 검색해 보세요.</p>
                     </section>
                   )}
                 </div>
