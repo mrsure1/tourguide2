@@ -713,7 +713,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
               {criteria && (
                 <div className="space-y-16 animate-in slide-in-from-bottom-4 fade-in duration-500">
                   {/* Searched Guides Section */}
-                  {activeTab === 'guide' && filteredGuides.length > 0 && (
+                  {filteredGuides.length > 0 && (
                     <section className="container mx-auto px-4 pt-12 relative border-t border-slate-100">
                       <div className="flex items-center justify-between mb-8">
                         <div>
@@ -733,15 +733,8 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                     </section>
                   )}
 
-                  {activeTab === 'guide' && filteredGuides.length === 0 && (
-                    <section className="container mx-auto px-4 py-20 text-center border-t border-slate-100">
-                       <h3 className="text-2xl font-bold text-slate-700">검색한 결과가 정확히는 없지만 다음 가이드를 추천합니다.</h3>
-                       <p className="text-slate-500 mt-2">아래의 검증된 추천 가이드들을 확인해 보세요.</p>
-                    </section>
-                  )}
-
                   {/* Searched Tours Section */}
-                  {activeTab === 'tour' && filteredTours.length > 0 && (
+                  {filteredTours.length > 0 && (
                     <section className="container mx-auto px-4 py-12 relative border-t border-slate-100">
                       <div className="flex items-center justify-between mb-8">
                         <div>
@@ -761,10 +754,10 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                     </section>
                   )}
 
-                  {activeTab === 'tour' && filteredTours.length === 0 && (
+                  {filteredGuides.length === 0 && filteredTours.length === 0 && (
                     <section className="container mx-auto px-4 py-20 text-center border-t border-slate-100">
-                       <h3 className="text-2xl font-bold text-slate-700">검색한 결과가 정확히는 없지만 다음 여행 상품을 추천합니다.</h3>
-                       <p className="text-slate-500 mt-2">아래의 특별한 로컬 익스피리언스 및 급상승 투어를 확인해 보세요.</p>
+                       <h3 className="text-2xl font-bold text-slate-700">매칭된 검색 결과가 없습니다.</h3>
+                       <p className="text-slate-500 mt-2">검색한 결과가 정확히는 없지만 다음 추천 상품을 안내해 드립니다.<br/>아래의 전문 가이드 및 인기 투어를 확인해 보세요.</p>
                     </section>
                   )}
                 </div>
