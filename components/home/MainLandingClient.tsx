@@ -668,7 +668,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
         </div>
       </section>
 
-      <section id="explore-results" className="relative z-10 mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
+      <section id="explore-results" className="relative z-10 mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
         {(() => {
           const params = new URLSearchParams();
           if (criteria?.startDate) params.set('startDate', criteria.startDate);
@@ -678,10 +678,10 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
           const searchParamsString = Array.from(params.keys()).length > 0 ? `?${params.toString()}` : '';
 
           return (
-            <div className="space-y-16">
+            <div className="space-y-10">
               {/* Recommended Guides Section */}
-              <section className="container mx-auto px-4 py-20 relative">
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+              <section className="container mx-auto px-4 py-10 relative">
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                   <div>
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold mb-4 animate-fade-in-up">
                       <Star className="w-3 h-3 fill-current" />
@@ -704,19 +704,19 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
               </section>
 
               {/* Local Experience Section ([시안 2]) */}
-              <section className="bg-[#fcfaf7] pt-24 pb-32">
+              <section className="bg-[#fcfaf7] pt-12 pb-16 rounded-3xl">
                 <div className="container mx-auto px-4">
-                  <div className="text-center mb-16">
+                  <div className="text-center mb-10">
                     <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
                       특별한 <span className="text-[#ff385c]">로컬 익스피리언스</span>
                     </h2>
-                    <p className="mt-6 text-slate-500 text-lg md:text-xl font-medium max-w-2xl mx-auto">
+                    <p className="mt-4 text-slate-500 text-lg md:text-xl font-medium max-w-2xl mx-auto">
                       뻔한 관광지 말고, 현지인처럼 즐기는 생생한 체험들을 테마별로 만나보세요.
                     </p>
                   </div>
 
                   {/* Theme Navigation */}
-                  <div className="flex overflow-x-auto pb-8 mb-12 gap-6 scrollbar-none justify-center">
+                  <div className="flex overflow-x-auto pb-4 mb-10 gap-6 scrollbar-none justify-center">
                     {[
                       { name: "미식 탐방", icon: Coffee, color: "bg-orange-100 text-orange-600" },
                       { name: "인생샷 투어", icon: Camera, color: "bg-purple-100 text-purple-600" },
@@ -724,9 +724,9 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                       { name: "야경 명소", icon: Zap, color: "bg-blue-100 text-blue-600" },
                       { name: "현지 명소", icon: Map, color: "bg-emerald-100 text-emerald-600" },
                     ].map((theme, i) => (
-                      <button key={i} className="flex flex-col items-center gap-3 group shrink-0 transition-transform active:scale-95">
-                        <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg shadow-sm border border-white", theme.color)}>
-                          <theme.icon className="w-8 h-8" />
+                      <button key={i} className="flex flex-col items-center gap-2 group shrink-0 transition-transform active:scale-95">
+                        <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg shadow-sm border border-white", theme.color)}>
+                          <theme.icon className="w-7 h-7" />
                         </div>
                         <span className="text-sm font-bold text-slate-700 group-hover:text-slate-900">{theme.name}</span>
                       </button>
@@ -734,8 +734,8 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
                   </div>
 
                   {/* Trending Section */}
-                  <div className="mb-20">
-                    <div className="flex items-center gap-3 mb-8">
+                  <div className="mb-12">
+                    <div className="flex items-center gap-3 mb-6">
                       <div className="p-2 bg-red-100 rounded-lg">
                         <Zap className="w-5 h-5 text-red-500 fill-current" />
                       </div>
@@ -751,7 +751,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
 
                   {/* Half-day Section */}
                   <div>
-                    <div className="flex items-center gap-3 mb-8">
+                    <div className="flex items-center gap-3 mb-6">
                       <div className="p-2 bg-emerald-100 rounded-lg">
                         <Clock className="w-5 h-5 text-emerald-600" />
                       </div>
@@ -769,8 +769,8 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
               </section>
 
               {/* Tour Products Section (All Products) */}
-              <section className="container mx-auto px-4 py-24 border-t border-slate-100">
-                <div className="flex items-center justify-between mb-12">
+              <section className="container mx-auto px-4 py-12 border-t border-slate-100">
+                <div className="flex items-center justify-between mb-8">
                   <div>
                     <h2 className="text-3xl font-black text-slate-900">전체 투어 상품</h2>
                     <p className="text-slate-500 mt-2 font-medium">검색 결과에 맞는 모든 상품을 확인하세요.</p>
