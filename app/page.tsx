@@ -244,6 +244,7 @@ export default async function Home() {
   return (
     <MainLandingClient
       userName={profile?.full_name ?? null}
+      userRole={profile?.role ?? null}
       guideHref={guideHref}
       guides={guides.length > 0 ? guides : fallbackGuides}
       tours={tours.length > 0 ? tours : fallbackTours}

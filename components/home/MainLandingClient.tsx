@@ -78,6 +78,7 @@ type Props = {
   guides: LandingGuide[];
   tours: LandingTour[];
   userName?: string | null;
+  userRole?: string | null;
 };
 
 const numberFormatter = new Intl.NumberFormat("ko-KR");
@@ -469,10 +470,37 @@ export default function MainLandingClient({ guideHref, guides, tours, userName }
             <BrandLogo href="/" size="lg" tone="light" variant="signature" />
             
             <div className="flex items-center gap-4">
-              <HeaderActions variant="light" />
+              {userName ? (
+                <>
+                  <HeaderActions variant="light" />
+                  <Link
+                    href={userRole === 'guide' || userRole === 'admin' ? '/guide/profile' : '/traveler/profile'}
+                    className="flex items-center gap-2 rounded-full border border-white/20 bg-white/8 px-4 py-2 text-xs font-bold text-white transition hover:border-white/30 hover:bg-white/12"
+                  >
+                    <User className="w-3 h-3" />
+                    마이페이지
+                  </Link>
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/login"
+                    className="px-3 py-2 text-xs font-bold text-white/90 hover:text-white transition"
+                  >
+                    로그인
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-black text-white transition hover:border-white/30 hover:bg-white/20 shadow-lg"
+                  >
+                    회원가입
+                  </Link>
+                </div>
+              )}
+              
               <Link
                 href={guideHref}
-                className="rounded-full border border-white/20 bg-white/8 px-4 py-2 text-xs font-medium text-white/72 transition hover:border-white/30 hover:bg-white/12 hover:text-white"
+                className="rounded-full border border-white/20 bg-white/8 px-4 py-2 text-xs font-medium text-white/72 transition hover:border-white/30 hover:bg-white/12 hover:text-white sm:block hidden"
               >
                 가이드 메뉴
               </Link>
