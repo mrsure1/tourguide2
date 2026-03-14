@@ -30,18 +30,37 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
     try {
       const supabase = createClient();
       if (!supabase) throw new Error("Supabase client is not available");
+
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const redirectTo = `${siteUrl.replace(/\/$/, "")}/auth/callback?next=/update-password`;
+      
+      console.log("[ForgotPassword] Requesting reset for:", email, "Redirecting to:", redirectTo);
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
+        redirectTo: redirectTo,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("[ForgotPassword] Error from Supabase:", error);
+        throw error;
+      }
 
+      console.log("[ForgotPassword] Reset email sent successfully");
       setStatus("success");
     } catch (error: any) {
       console.error("Password reset error:", error);
       setStatus("error");
-      setErrorMessage(error.message || "비밀번호 재설정 이메일 전송에 실패했습니다.");
+      
+      // 구체적인 에러 메시지 제공
+      let msg = "비밀번호 재설정 이메일 전송에 실패했습니다.";
+      if (error.status === 429) {
+        msg = "이메일 발송 한도를 초과했습니다. 잠시 후 다시 시도해주세요. (시간당 최대 3회)";
+      } else if (error.message?.includes("Email not found")) {
+        msg = "가입되지 않은 이메일 주소입니다.";
+      } else {
+        msg = error.message || msg;
+      }
+      setErrorMessage(msg);
     } finally {
       setIsLoading(false);
     }
@@ -67,9 +86,12 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
           {status === "success" ? (
             <div className="mt-4 animate-fade-in">
               <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-6">
-                <p className="text-emerald-800 text-sm leading-relaxed">
-                  <span className="font-bold">{email}</span> 주소로 비밀번호 재설정 링크가 포함된 이메일을 발송했습니다. 
-                  이메일함을 확인해주세요. (스팸함도 확인 부탁드립니다)
+                <p className="text-emerald-800 text-sm leading-relaxed space-y-2">
+                  <span><span className="font-bold">{email}</span> 주소로 비밀번호 재설정 링크가 포함된 이메일을 발송했습니다.</span><br/>
+                  <span className="block mt-2 text-xs opacity-90">
+                    * 가입되지 않은 이메일이거나, 시간당 발송 한도(3회) 초과 시 메일이 발송되지 않습니다.<br/>
+                    * 메일이 오지 않는다면 <b>스팸 메일함</b>을 확인하시거나, 가입하신 이메일이 맞는지 다시 한 번 확인해주세요.
+                  </span>
                 </p>
               </div>
               <Button fullWidth size="lg" className="rounded-xl h-12 font-bold" onClick={onClose}>

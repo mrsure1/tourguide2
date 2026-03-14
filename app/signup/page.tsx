@@ -59,13 +59,13 @@ function SignupForm() {
 
                     // 이미 해당 역할이라면 즉시 이동 (루프 방지)
                     if (data.role === role) {
-                        window.location.href = role === 'guide' ? '/guide/dashboard' : '/traveler/home';
+                        window.location.href = role === 'guide' ? '/guide/dashboard' : '/';
                         return;
                     }
 
                     // 역할이 가이드이거나 어드민인 경우, 모든 역할 접근 허용
                     if ((data.role === 'guide' || data.role === 'admin') && (role === 'traveler' || role === 'guide')) {
-                        window.location.href = role === 'guide' ? '/guide/dashboard' : '/traveler/home';
+                        window.location.href = role === 'guide' ? '/guide/dashboard' : '/';
                         return;
                     }
 

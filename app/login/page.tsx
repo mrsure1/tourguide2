@@ -161,7 +161,7 @@ export default function Login() {
                 </h2>
                 <p className="mt-2 text-center text-sm text-slate-600 font-light">
                     Korea Guide Match에 처음이신가요?{" "}
-                    <Link href="/role-selection" className="font-medium text-blue-600 hover:text-blue-800 transition-colors">
+                    <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-800 transition-colors">
                         회원가입하기
                     </Link>
                 </p>

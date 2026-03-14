@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const code = searchParams.get('code')
 
     // if "next" is in param, use it as the redirect URL
-    const next = searchParams.get('next') ?? '/role-selection'
+    const next = searchParams.get('next') ?? '/'
 
     // if "role" is in param, we might want to attach it to the profile
     const roleParam = searchParams.get('role')
@@ -80,10 +80,10 @@ export async function GET(request: Request) {
             // 역할에 따른 서비스 화면으로 이동
             let finalNext = userRole === 'admin'
                 ? '/admin/dashboard'
-                : (userRole === 'guide' ? '/guide/dashboard' : '/traveler/home');
+                : (userRole === 'guide' ? '/guide/dashboard' : '/');
 
             // if next is explicitly provided and is not the default, prioritize it
-            if (next && next !== '/role-selection') {
+            if (next && next !== '/') {
                 finalNext = next;
             }
 
