@@ -8,6 +8,7 @@ import { Camera, MapPin, Globe, Tag, User, Mail, Info, Plus, X, DollarSign, Load
 import { updateProfile } from "./actions";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { DeleteAccountButton } from "@/components/auth/DeleteAccountButton";
 
 export default function ProfileClient({ profile, detail }: { profile: any, detail: any }) {
     const [isPending, startTransition] = useTransition();
@@ -224,11 +225,16 @@ export default function ProfileClient({ profile, detail }: { profile: any, detai
                 </CardContent>
             </Card>
 
-            <div className="flex justify-end gap-3 pt-6 pb-12">
-                <Button type="button" onClick={() => router.back()} disabled={isPending} variant="outline" className="bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 h-11 px-6 shadow-sm">취소</Button>
-                <Button type="submit" disabled={isPending} className="bg-accent hover:bg-blue-600 h-11 px-8 shadow-md font-bold">
-                    {isPending ? '저장 중...' : '저장하기'}
-                </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-6 pb-12 border-t border-slate-100 mt-8">
+                <div>
+                    <DeleteAccountButton />
+                </div>
+                <div className="flex gap-3">
+                    <Button type="button" onClick={() => router.back()} disabled={isPending} variant="outline" className="bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 h-11 px-6 shadow-sm">취소</Button>
+                    <Button type="submit" disabled={isPending} className="bg-accent hover:bg-blue-600 h-11 px-8 shadow-md font-bold">
+                        {isPending ? '저장 중...' : '저장하기'}
+                    </Button>
+                </div>
             </div>
         </form>
     );

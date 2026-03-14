@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { User, Settings, Heart, History, Shield, Bell, ChevronRight, LogOut } from "lucide-react";
 import Link from "next/link";
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { DeleteAccountButton } from "@/components/auth/DeleteAccountButton";
 
 export default async function TravelerProfile() {
     const supabase = await createClient();
@@ -104,8 +105,11 @@ export default async function TravelerProfile() {
                 </CardContent>
             </Card>
 
-            <div className="pt-4">
+            <div className="pt-4 flex flex-col gap-3">
                 <LogoutButton className="w-full h-14 rounded-2xl border-rose-100 text-rose-500 hover:bg-rose-50 hover:text-rose-600 font-bold transition-all shadow-sm" />
+                <div className="flex justify-center">
+                    <DeleteAccountButton />
+                </div>
             </div>
         </div>
     );
