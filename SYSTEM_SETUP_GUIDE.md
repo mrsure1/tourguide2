@@ -74,4 +74,25 @@
 
 ---
 
+## 5. 커스텀 도메인 연결 (Custom Domain Setup)
+
+Vercel의 기본 주소(`*.vercel.app`) 대신 사용자님이 보유한 `mrsure.kr` 도메인을 연결하는 방법입니다.
+
+### 🏢 도메인 구조 선택
+- **추천**: `guidematch.mrsure.kr` (서브도메인 방식)
+- **이유**: 설정이 간편하고 주 서비스(`mrsure.kr`)와 독립적으로 운영하기 좋습니다.
+
+### 🛠 연결 단계
+1. **Vercel 설정**:
+   - [Settings > Domains]에서 `guidematch.mrsure.kr` 추가.
+   - Vercel이 제시하는 **CNAME** 레코드 값(예: `cname.vercel-dns.com`)을 복사합니다.
+2. **도메인 관리 사이트(Hostinger 등) 설정**:
+   - DNS 설정 메뉴에서 새로운 레코드 추가.
+   - **타입(Type)**: `CNAME`
+   - **이름(Name)**: `guidematch`
+   - **값(Value)**: Vercel에서 복사한 CNAME 값
+3. **확인**: 설정 후 약 10분~1시간 이내에 `guidematch.mrsure.kr`로 접속이 가능해집니다.
+
+---
+
 이 가이드는 프로젝트의 '생존 가이드'이며, 새로운 인프라가 추가될 때마다 업데이트되어야 합니다.

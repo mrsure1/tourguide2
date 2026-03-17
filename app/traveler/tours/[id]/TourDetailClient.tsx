@@ -31,12 +31,65 @@ export default function TourDetailClient({ tour }: TourDetailClientProps) {
     const defaultGuests = (isNaN(defaultAdults) ? 2 : defaultAdults) + (isNaN(defaultChildren) ? 0 : defaultChildren);
 
     const [isPending, setIsPending] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
     const [guests, setGuests] = useState(defaultGuests || 2);
     const [dateRange, setDateRange] = useState<{ from: string; to: string }>({
         from: startDateParam,
         to: endDateParam
     });
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
+    // 좋아요 상태 로드
+    useEffect(() => {
+        const checkLikeStatus = async () => {
+            try {
+                const res = await fetch(`/api/tours/${tour.id}/like/status`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setIsLiked(data.isLiked);
+                }
+            } catch (error) {
+                console.error("Failed to check like status:", error);
+            }
+        };
+        checkLikeStatus();
+    }, [tour.id]);
+
+    const handleToggleLike = async () => {
+        try {
+            const res = await fetch(`/api/tours/${tour.id}/like`, { method: 'POST' });
+            if (res.status === 401) {
+                alert("좋아요 기능을 사용하려면 로그인이 필요합니다.");
+                return;
+            }
+            if (res.ok) {
+                const data = await res.json();
+                setIsLiked(data.isLiked);
+            }
+        } catch (error) {
+            console.error("Failed to toggle like:", error);
+            alert("좋아요 처리 중 오류가 발생했습니다.");
+        }
+    };
+
+    const handleShare = async () => {
+        const shareData = {
+            title: tour.title,
+            text: tour.description?.substring(0, 100),
+            url: window.location.href,
+        };
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(window.location.href);
+                alert("링크가 클립보드에 복사되었습니다.");
+            }
+        } catch (error) {
+            console.error("Error sharing:", error);
+        }
+    };
 
     const handleBooking = async () => {
         if (!dateRange.from) {
@@ -167,10 +220,21 @@ export default function TourDetailClient({ tour }: TourDetailClientProps) {
                         <ChevronLeft className="w-6 h-6" />
                     </button>
                     <div className="flex gap-3">
-                        <button className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/50 hover:text-red-400 transition-colors">
-                            <Heart className="w-5 h-5" />
+                        <button
+                            onClick={handleToggleLike}
+                            className={cn(
+                                "w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-colors",
+                                isLiked
+                                    ? "bg-white text-red-500 shadow-lg"
+                                    : "bg-black/30 text-white hover:bg-black/50 hover:text-red-400"
+                            )}
+                        >
+                            <Heart className={cn("w-5 h-5", isLiked && "fill-current")} />
                         </button>
-                        <button className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/50 transition-colors">
+                        <button
+                            onClick={handleShare}
+                            className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/50 transition-colors"
+                        >
                             <Share2 className="w-5 h-5" />
                         </button>
                     </div>
