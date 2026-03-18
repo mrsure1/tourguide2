@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Calendar } from "@/components/ui/Calendar"
 import { Ban } from "lucide-react"
-
+import { trackClientConversion } from "@/lib/analytics/client"
 export default function BookingWidgetClient({
     guideId,
     isProfileComplete,
@@ -54,16 +54,16 @@ export default function BookingWidgetClient({
 
     const handleBooking = async () => {
         if (!isProfileComplete) {
-            alert("이 가이드는 아직 상세 정보를 등록하지 않았습니다.");
+            alert("??媛?대뱶???꾩쭅 ?곸꽭 ?뺣낫瑜??깅줉?섏? ?딆븯?듬땲??");
             return;
         }
         if (!dateRange.from) {
-            alert("투어 날짜를 선택해주세요.")
+            alert("?ъ뼱 ?좎쭨瑜??좏깮?댁＜?몄슂.")
             return
         }
 
         startTransition(async () => {
-            // 1. 중복 예약 여부 먼저 체크
+            // 1. 以묐났 ?덉빟 ?щ? 癒쇱? 泥댄겕
             try {
                 const checkRes = await fetch('/api/bookings/check-overlap', {
                     method: 'POST',
@@ -77,17 +77,17 @@ export default function BookingWidgetClient({
                 if (checkRes.ok) {
                     const checkData = await checkRes.json();
                     if (checkData.isOverlap) {
-                        // 중복 시 경고창 띄우고 취소하면 중단
+                        // 以묐났 ??寃쎄퀬李??꾩슦怨?痍⑥냼?섎㈃ 以묐떒
                         if (!confirm(checkData.message)) {
                             return;
                         }
                     }
                 }
             } catch (e) {
-                console.error("중복 체크 중 오류 발생:", e);
+                console.error("以묐났 泥댄겕 以??ㅻ쪟 諛쒖깮:", e);
             }
 
-            // 2. 실제 예약 생성 진행
+            // 2. ?ㅼ젣 ?덉빟 ?앹꽦 吏꾪뻾
             const formData = new FormData()
             formData.append('guide_id', guideId)
             formData.append('start_date', dateRange.from)
@@ -101,11 +101,17 @@ export default function BookingWidgetClient({
             })
 
             if (res.ok) {
-                alert("예약 신청이 완료되었습니다!")
+                const data = await res.json().catch(() => null)
+                trackClientConversion("booking_created", {
+                    booking_id: data?.booking?.id,
+                    value: totalPrice,
+                    currency: "KRW",
+                })
+                alert("예약 요청이 완료되었습니다.")
                 router.push('/traveler/bookings')
             } else {
                 const data = await res.json()
-                alert(`예약 실패: ${data.error}`)
+                alert(`?덉빟 ?ㅽ뙣: ${data.error}`)
             }
         })
     }
@@ -113,14 +119,14 @@ export default function BookingWidgetClient({
     return (
         <Card className="border-slate-200 shadow-xl shadow-slate-200/50">
             <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4">
-                <CardTitle className="text-lg">일정 매칭 & 예약하기</CardTitle>
-                <p className="text-sm text-slate-500 mt-1 font-light">투어 일정을 선택해 주세요.</p>
+                <CardTitle className="text-lg">?쇱젙 留ㅼ묶 & ?덉빟?섍린</CardTitle>
+                <p className="text-sm text-slate-500 mt-1 font-light">?ъ뼱 ?쇱젙???좏깮??二쇱꽭??</p>
             </CardHeader>
             <CardContent className="pt-6 space-y-6">
 
                 <div className={`space-y-4 ${!isProfileComplete ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="space-y-4">
-                        <label className="block text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wider">투어 일정 선택</label>
+                        <label className="block text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wider">?ъ뼱 ?쇱젙 ?좏깮</label>
                         <Calendar
                             mode="range"
                             selected={dateRange}
@@ -145,8 +151,8 @@ export default function BookingWidgetClient({
                         />
                         {dateRange.from && (
                             <div className="flex gap-2 text-xs font-bold text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                                <div className="flex-1">시작: {dateRange.from}</div>
-                                {dateRange.to && <div className="flex-1">종료: {dateRange.to}</div>}
+                                <div className="flex-1">?쒖옉: {dateRange.from}</div>
+                                {dateRange.to && <div className="flex-1">醫낅즺: {dateRange.to}</div>}
                             </div>
                         )}
                     </div>
@@ -154,8 +160,8 @@ export default function BookingWidgetClient({
                     {rateType === 'hourly' && (
                         <div className="space-y-2 p-3 bg-blue-50/50 rounded-xl border border-blue-100">
                             <div className="flex justify-between items-center">
-                                <label className="text-sm font-bold text-slate-700">이용 시간 (시간)</label>
-                                <span className="text-accent font-bold">{durationHours}시간</span>
+                                <label className="text-sm font-bold text-slate-700">?댁슜 ?쒓컙 (?쒓컙)</label>
+                                <span className="text-accent font-bold">{durationHours}?쒓컙</span>
                             </div>
                             <input
                                 type="range"
@@ -165,20 +171,20 @@ export default function BookingWidgetClient({
                                 onChange={(e) => setDurationHours(parseInt(e.target.value))}
                                 className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-accent"
                             />
-                            <p className="text-[10px] text-slate-500">가이드와 만날 시간을 설정해주세요.</p>
+                            <p className="text-[10px] text-slate-500">媛?대뱶? 留뚮궇 ?쒓컙???ㅼ젙?댁＜?몄슂.</p>
                         </div>
                     )}
                 </div>
 
                 {!isProfileComplete && (
                     <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-center">
-                        <p className="text-xs font-bold text-amber-700">가이드가 아직 프로필을 작성 중입니다.</p>
-                        <p className="text-[10px] text-amber-600 mt-1">상세 정보가 등록된 후 예약이 가능합니다.</p>
+                        <p className="text-xs font-bold text-amber-700">媛?대뱶媛 ?꾩쭅 ?꾨줈?꾩쓣 ?묒꽦 以묒엯?덈떎.</p>
+                        <p className="text-[10px] text-amber-600 mt-1">?곸꽭 ?뺣낫媛 ?깅줉?????덉빟??媛?ν빀?덈떎.</p>
                     </div>
                 )}
 
                 <div className={`space-y-2 border-b border-slate-100 pb-6 ${!isProfileComplete ? 'opacity-50 pointer-events-none' : ''}`}>
-                    <label className="block text-sm font-bold text-slate-700">참여 인원</label>
+                    <label className="block text-sm font-bold text-slate-700">李몄뿬 ?몄썝</label>
                     <div className="flex items-center justify-between border border-slate-200 rounded-xl p-2 bg-white shadow-sm">
                         <button
                             onClick={() => setGuests(Math.max(1, guests - 1))}
@@ -194,15 +200,15 @@ export default function BookingWidgetClient({
 
                 <div className={`bg-slate-900 rounded-2xl p-5 text-white shadow-lg space-y-3 ${!isProfileComplete ? 'opacity-50' : ''}`}>
                     <div className="flex justify-between items-center opacity-80">
-                        <span className="text-xs font-medium">기준 요금 ({rateType === 'hourly' ? '시간당' : '일일'})</span>
-                        <span className="text-xs font-bold font-mono">₩ {hourlyRate.toLocaleString()}</span>
+                        <span className="text-xs font-medium">기준 요금 ({rateType === 'hourly' ? '시간당' : '일당'})</span>
+                        <span className="text-xs font-bold font-mono">??{hourlyRate.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-end border-t border-white/10 pt-3">
                         <div>
                             <p className="text-[10px] uppercase tracking-tighter opacity-60 font-bold">Estimated Total</p>
-                            <p className="text-sm font-medium">예상 총 금액</p>
+                            <p className="text-sm font-medium">?덉긽 珥?湲덉븸</p>
                         </div>
-                        <p className="text-2xl font-black">₩ {totalPrice > 0 ? totalPrice.toLocaleString() : 0}</p>
+                        <p className="text-2xl font-black">??{totalPrice > 0 ? totalPrice.toLocaleString() : 0}</p>
                     </div>
                 </div>
 
@@ -212,10 +218,11 @@ export default function BookingWidgetClient({
                         onClick={handleBooking}
                         disabled={isPending || !dateRange.from || !isProfileComplete}
                     >
-                        {isPending ? "처리 중..." : !isProfileComplete ? "프로필 준비 중" : "예약 신청하기"}
+                        {isPending ? "처리 중..." : !isProfileComplete ? "프로필 준비 중" : "예약 요청하기"}
                     </Button>
                 </div>
             </CardContent>
         </Card>
     )
 }
+

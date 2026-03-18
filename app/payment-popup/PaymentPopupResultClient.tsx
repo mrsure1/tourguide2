@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { CheckCircle2, ChevronLeft, ShieldAlert, X } from "lucide-react";
+import { trackClientConversion } from "@/lib/analytics/client";
 
 const messages: Record<string, string> = {
   success: "결제가 정상적으로 완료되었습니다. 예약 내역을 새로고침하고 이 창을 닫습니다.",
@@ -25,6 +26,11 @@ export default function PaymentPopupResultClient() {
 
   useEffect(() => {
     if (status !== "success") return;
+
+    trackClientConversion("payment_success", {
+      booking_id: bookingId || undefined,
+      payment_provider: "toss",
+    });
 
     if (window.opener && !window.opener.closed) {
       window.opener.location.href = `${window.location.origin}/traveler/bookings?payment=success`;

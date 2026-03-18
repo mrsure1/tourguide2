@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
+import { trackServerConversion } from '@/lib/analytics/server'
 
 export async function signup(formData: FormData) {
     const supabase = await createClient()
@@ -53,6 +54,20 @@ export async function signup(formData: FormData) {
             role: role,
             full_name: fullName,
         }, { onConflict: 'id' });
+
+        await trackServerConversion(
+            'signup',
+            {
+                userId: data.user.id,
+                email,
+                eventId: `signup:${data.user.id}`,
+            },
+            {
+                clientIp: headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || headersList.get('x-real-ip') || undefined,
+                userAgent: headersList.get('user-agent') || undefined,
+                eventSourceUrl: `${origin.replace(/\/$/, '')}/signup`,
+            },
+        );
     }
 
     revalidatePath('/', 'layout')

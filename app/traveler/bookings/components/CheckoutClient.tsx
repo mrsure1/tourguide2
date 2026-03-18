@@ -19,7 +19,7 @@ import {
 import { AlertModal } from "@/components/ui/AlertModal";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-
+import { trackClientConversion } from "@/lib/analytics/client";
 const clientKey =
   process.env.NEXT_PUBLIC_TOSS_WIDGET_CLIENT_KEY || "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
 
@@ -39,11 +39,11 @@ type AlertConfig = {
 };
 
 const errorGuide: Record<string, string> = {
-  USER_CANCEL: "결제가 취소되었습니다. 다른 결제 수단을 선택하거나 이전 단계로 돌아갈 수 있습니다.",
-  user_cancel: "결제가 취소되었습니다. 다른 결제 수단을 선택하거나 이전 단계로 돌아갈 수 있습니다.",
-  INVALID_CARD_COMPANY: "선택한 결제 수단 정보가 올바르지 않습니다. 다시 시도해주세요.",
-  PAY_PROCESS_CANCELED: "결제 진행이 중단되었습니다. 입력한 정보를 확인한 뒤 다시 시도해주세요.",
-  internal: "결제 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+  USER_CANCEL: "寃곗젣媛 痍⑥냼?섏뿀?듬땲?? ?ㅻⅨ 寃곗젣 ?섎떒???좏깮?섍굅???댁쟾 ?④퀎濡??뚯븘媛????덉뒿?덈떎.",
+  user_cancel: "寃곗젣媛 痍⑥냼?섏뿀?듬땲?? ?ㅻⅨ 寃곗젣 ?섎떒???좏깮?섍굅???댁쟾 ?④퀎濡??뚯븘媛????덉뒿?덈떎.",
+  INVALID_CARD_COMPANY: "?좏깮??寃곗젣 ?섎떒 ?뺣낫媛 ?щ컮瑜댁? ?딆뒿?덈떎. ?ㅼ떆 ?쒕룄?댁＜?몄슂.",
+  PAY_PROCESS_CANCELED: "寃곗젣 吏꾪뻾??以묐떒?섏뿀?듬땲?? ?낅젰???뺣낫瑜??뺤씤?????ㅼ떆 ?쒕룄?댁＜?몄슂.",
+  internal: "寃곗젣 泥섎━ 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎. ?좎떆 ???ㅼ떆 ?쒕룄?댁＜?몄슂.",
 };
 
 function getPopupFeatures() {
@@ -130,9 +130,9 @@ export default function CheckoutClient({
       errorGuide[errorCode] ||
       errorGuide[errorCode.toLowerCase()] ||
       errorMessage ||
-      "결제를 완료하지 못했습니다. 입력 정보와 약관 동의를 다시 확인해주세요.";
+      "寃곗젣瑜??꾨즺?섏? 紐삵뻽?듬땲?? ?낅젰 ?뺣낫? ?쎄? ?숈쓽瑜??ㅼ떆 ?뺤씤?댁＜?몄슂.";
 
-    showAlert("결제 진행 안내", detail);
+    showAlert("寃곗젣 吏꾪뻾 ?덈궡", detail);
   }, [searchParams]);
 
   useEffect(() => {
@@ -232,7 +232,7 @@ export default function CheckoutClient({
     }
 
     if (!paymentWidget) {
-      showAlert("결제 위젯 안내", "결제 위젯이 아직 준비되지 않았습니다. 잠시 후 다시 시도해주세요.");
+      showAlert("寃곗젣 ?꾩젽 ?덈궡", "寃곗젣 ?꾩젽???꾩쭅 以鍮꾨릺吏 ?딆븯?듬땲?? ?좎떆 ???ㅼ떆 ?쒕룄?댁＜?몄슂.");
       return;
     }
 
@@ -241,15 +241,15 @@ export default function CheckoutClient({
     try {
       await paymentWidget.requestPayment({
         orderId: booking.id,
-        orderName: booking.tour?.title || `${booking.guide?.full_name} 가이드 투어`,
+        orderName: booking.tour?.title || `${booking.guide?.full_name} 媛?대뱶 ?ъ뼱`,
         successUrl: `${window.location.origin}/api/payments/toss/success${popupSuffix}`,
         failUrl: `${window.location.origin}/api/payments/toss/fail${popupSuffix}`,
         customerEmail: travelerEmail || "customer@email.com",
-        customerName: travelerName || "고객",
+        customerName: travelerName || "怨좉컼",
         windowTarget: popupMode ? "self" : "iframe",
       });
     } catch (error: any) {
-      if (error?.message === "취소되었습니다." || error?.code === "USER_CANCEL") {
+      if (error?.message === "痍⑥냼?섏뿀?듬땲??" || error?.code === "USER_CANCEL") {
         return;
       }
 
@@ -257,9 +257,9 @@ export default function CheckoutClient({
         errorGuide[error?.code] ||
         errorGuide[error?.message] ||
         error?.message ||
-        "결제 수단 선택과 필수 약관 동의를 다시 확인해주세요.";
+        "寃곗젣 ?섎떒 ?좏깮怨??꾩닔 ?쎄? ?숈쓽瑜??ㅼ떆 ?뺤씤?댁＜?몄슂.";
 
-      showAlert("결제 정보 확인", detail);
+      showAlert("寃곗젣 ?뺣낫 ?뺤씤", detail);
     }
   };
 
@@ -277,23 +277,30 @@ export default function CheckoutClient({
       const result = await res.json();
 
       if (!res.ok) {
-        showAlert("결제 실패", `결제 승인 실패: ${result.error}`);
+        showAlert("결제 실패", `결제 확인 실패: ${result.error}`);
         return;
       }
+
+      trackClientConversion("payment_success", {
+        booking_id: booking.id,
+        payment_provider: "paypal",
+        value: Number(booking.total_price),
+        currency: "KRW",
+      });
 
       if (popupMode) {
         window.location.href = `/payment-popup?status=success&bookingId=${booking.id}`;
         return;
       }
 
-      showAlert("결제 성공", "결제가 성공적으로 완료되었습니다.");
+      showAlert("寃곗젣 ?깃났", "寃곗젣媛 ?깃났?곸쑝濡??꾨즺?섏뿀?듬땲??");
       window.setTimeout(() => {
         router.push("/traveler/bookings");
         router.refresh();
       }, 1200);
     } catch (error) {
       console.error("PayPal capture error:", error);
-      showAlert("결제 오류", "PayPal 결제 승인 중 오류가 발생했습니다.");
+      showAlert("寃곗젣 ?ㅻ쪟", "PayPal 寃곗젣 ?뱀씤 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.");
     }
   };
 
@@ -306,8 +313,7 @@ export default function CheckoutClient({
         onClick={handlePopupBack}
       >
         <ChevronLeft className="mr-2 h-4 w-4" />
-        뒤로가기
-      </Button>
+        ?ㅻ줈媛湲?      </Button>
       <p className="text-sm font-semibold tracking-[-0.02em] text-slate-900">GuideMatch 결제창</p>
       <Button
         type="button"
@@ -316,7 +322,7 @@ export default function CheckoutClient({
         onClick={closePopupOrReturn}
       >
         <X className="mr-2 h-4 w-4" />
-        닫기
+        ?リ린
       </Button>
     </div>
   ) : null;
@@ -332,14 +338,13 @@ export default function CheckoutClient({
             className="mb-4 inline-flex items-center text-sm font-medium text-slate-500 transition-colors hover:text-accent"
           >
             <ChevronLeft className="mr-1 h-4 w-4" />
-            예약 내역으로 돌아가기
-          </Link>
+            ?덉빟 ?댁뿭?쇰줈 ?뚯븘媛湲?          </Link>
         )}
         <h1 className="flex items-center gap-3 text-3xl font-extrabold tracking-tight text-slate-900">
           <ShieldCheck className="h-8 w-8 text-emerald-500" />
-          안전한 결제
+          ?덉쟾??寃곗젣
         </h1>
-        <p className="mt-2 text-slate-500">여행자 정보와 결제 수단을 확인하고 예약을 확정하세요.</p>
+        <p className="mt-2 text-slate-500">?ы뻾???뺣낫? 寃곗젣 ?섎떒???뺤씤?섍퀬 ?덉빟???뺤젙?섏꽭??</p>
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -348,13 +353,13 @@ export default function CheckoutClient({
             <CardHeader className="border-b border-slate-100/80 bg-slate-50/50 pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <User className="h-5 w-5 text-accent" />
-                예약자 정보
+                ?덉빟???뺣낫
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wide text-slate-500">이름</label>
+                  <label className="text-xs font-bold uppercase tracking-wide text-slate-500">?대쫫</label>
                   <input
                     type="text"
                     value={travelerName}
@@ -378,13 +383,13 @@ export default function CheckoutClient({
               <div className="space-y-2">
                 <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-500">
                   <FileText className="h-4 w-4" />
-                  가이드에게 보낼 메시지
+                  媛?대뱶?먭쾶 蹂대궪 硫붿떆吏
                 </label>
                 <textarea
                   value={travelerMessage}
                   onChange={(event) => setTravelerMessage(event.target.value)}
                   className="min-h-[100px] w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm transition-all placeholder:text-slate-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-accent"
-                  placeholder="만나는 장소나 전달할 요청 사항이 있으면 적어주세요"
+                  placeholder="가이드에게 전달할 요청사항이 있으면 적어주세요"
                 />
               </div>
             </CardContent>
@@ -394,7 +399,7 @@ export default function CheckoutClient({
             <CardHeader className="border-b border-slate-100/80 bg-slate-50/50 pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <CreditCard className="h-5 w-5 text-accent" />
-                결제 수단
+                寃곗젣 ?섎떒
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0 md:p-6">
@@ -408,7 +413,7 @@ export default function CheckoutClient({
                   onClick={() => setPaymentMethod("toss")}
                 >
                   <span className="text-lg font-bold text-blue-600">toss</span>
-                  <span className="ml-2 text-sm">토스페이</span>
+                  <span className="ml-2 text-sm">?좎뒪?섏씠</span>
                 </button>
                 <button
                   type="button"
@@ -439,9 +444,9 @@ export default function CheckoutClient({
                 {paymentMethod === "paypal" ? (
                   <div className="mx-5 animate-fade-in rounded-xl border border-slate-100 bg-slate-50 p-6 md:mx-0">
                     <div className="mb-6 text-center">
-                      <p className="mb-2 font-medium text-slate-600">결제 금액 (USD)</p>
+                      <p className="mb-2 font-medium text-slate-600">寃곗젣 湲덉븸 (USD)</p>
                       <p className="text-3xl font-black text-[#003087]">${usdAmount}</p>
-                      <p className="mt-2 text-xs text-slate-400">안내: 환산 금액은 데모 기준입니다.</p>
+                      <p className="mt-2 text-xs text-slate-400">?덈궡: ?섏궛 湲덉븸? ?곕え 湲곗??낅땲??</p>
                     </div>
                     <PayPalScriptProvider
                       options={{
@@ -495,7 +500,7 @@ export default function CheckoutClient({
                       >
                         {isWidgetLoading
                           ? "준비 중..."
-                          : `${paymentMethod === "kakao" ? "카카오페이" : "토스페이"}로 ₩ ${booking.total_price.toLocaleString()} 결제하기`}
+                          : `${paymentMethod === "kakao" ? "카카오페이" : "토스페이"}로 ${booking.total_price.toLocaleString()} 결제하기`}
                       </Button>
                     </div>
                   </div>
@@ -521,10 +526,10 @@ export default function CheckoutClient({
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent" />
                 <div className="absolute bottom-4 left-5 right-5">
                   <h3 className="mb-1 text-lg font-bold leading-tight text-white drop-shadow-md">
-                    {booking.tour?.title || `${booking.guide?.full_name} 가이드 투어`}
+                    {booking.tour?.title || `${booking.guide?.full_name} 媛?대뱶 ?ъ뼱`}
                   </h3>
                   <p className="flex justify-between text-sm font-medium text-slate-200 drop-shadow-md">
-                    <span>{booking.guide?.full_name} 가이드</span>
+                    <span>{booking.guide?.full_name} 媛?대뱶</span>
                   </p>
                 </div>
               </div>
@@ -539,7 +544,7 @@ export default function CheckoutClient({
                   <div className="flex items-center gap-3 text-sm">
                     <Clock className="h-4 w-4 text-slate-400" />
                     <span className="font-medium text-slate-900">
-                      {booking.tour?.duration ? `${booking.tour.duration}시간` : "-"}
+                      {booking.tour?.duration ? `${booking.tour.duration}?쒓컙` : "-"}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
@@ -551,32 +556,34 @@ export default function CheckoutClient({
                   <div className="flex items-center gap-3 text-sm">
                     <CreditCard className="h-4 w-4 text-slate-400" />
                     <span className="font-medium text-slate-900">
-                      예약번호: {booking.id.split("-")[0].toUpperCase()}
+                      ?덉빟踰덊샇: {booking.id.split("-")[0].toUpperCase()}
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-3 border-b border-slate-200 py-6">
                   <div className="flex justify-between text-sm">
-                    <span className="font-medium text-slate-500">이용 인원</span>
-                    <span className="font-bold text-slate-900">{booking.guests ? `${booking.guests}명` : "미정"}</span>
+                    <span className="font-medium text-slate-500">?댁슜 ?몄썝</span>
+                    <span className="font-bold text-slate-900">
+                      {booking.guests ? `${booking.guests}명` : "미정"}
+                    </span>
                   </div>
                 </div>
 
                 <div className="space-y-4 pb-2 pt-6">
                   <div className="flex items-end justify-between">
-                    <span className="text-sm font-bold text-slate-900">총 결제 금액</span>
+                    <span className="text-sm font-bold text-slate-900">珥?寃곗젣 湲덉븸</span>
                     <span className="text-2xl font-extrabold text-accent">
-                      ₩ {booking.total_price?.toLocaleString()}
+                      ??{booking.total_price?.toLocaleString()}
                     </span>
                   </div>
                   <div className="mt-4 rounded-lg border border-slate-100 bg-slate-50 p-3 text-xs leading-relaxed text-slate-500">
-                    <p className="mb-1 font-semibold text-slate-700">취소 규정</p>
-                    투어 일정 3일 전까지: 전액 환불
+                    <p className="mb-1 font-semibold text-slate-700">痍⑥냼 洹쒖젙</p>
+                    ?ъ뼱 ?쇱젙 3???꾧퉴吏: ?꾩븸 ?섎텋
                     <br />
-                    투어 일정 2일 전~당일: 환불 불가
+                    ?ъ뼱 ?쇱젙 2?????뱀씪: ?섎텋 遺덇?
                     <br />
-                    가이드 사정으로 취소 시에는 예외 없이 전액 환불됩니다.
+                    媛?대뱶 ?ъ젙?쇰줈 痍⑥냼 ?쒖뿉???덉쇅 ?놁씠 ?꾩븸 ?섎텋?⑸땲??
                   </div>
                 </div>
               </CardContent>
@@ -594,3 +601,4 @@ export default function CheckoutClient({
     </div>
   );
 }
+
