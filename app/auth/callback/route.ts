@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     const cookieStore = await cookies();
     const cookieRole = cookieStore.get('oauth_role')?.value;
 
-    const role = roleParam || cookieRole;
+    const requestedRole = roleParam || cookieRole;
 
     if (code) {
         const supabase = await createClient()
@@ -26,6 +26,17 @@ export async function GET(request: Request) {
         if (!error && session) {
             const userId = session.user.id;
             const metadata = session.user.user_metadata;
+            const userEmail = session.user.email?.toLowerCase() || '';
+
+            const adminEmails = (process.env.ADMIN_EMAILS || '')
+                .split(',')
+                .map((email) => email.trim().toLowerCase())
+                .filter(Boolean);
+            const adminAllowlistEnabled = adminEmails.length > 0;
+            const isAdminEmail = !!userEmail && adminEmails.includes(userEmail);
+
+            const sanitizeRole = (value?: string | null) =>
+                value === 'guide' || value === 'traveler' ? value : null;
 
             // 1. 기존 프로필 정보 조회
             const { data: existingProfile } = await supabase
@@ -34,19 +45,16 @@ export async function GET(request: Request) {
                 .eq('id', userId)
                 .maybeSingle();
 
-            // 1. 역할 결정 우선순위
-            // a. 관리자 하드코딩 (최우선)
-            let userRole = (session.user.email === 'leeyob@gmail.com') ? 'admin' : null;
+            const safeRequestedRole = sanitizeRole(requestedRole);
+            const safeMetadataRole = sanitizeRole(metadata?.role);
 
-            // b. 관리자가 아닌 경우: URL 파라미터 > 기존 프로필 > 메타데이터
-            if (!userRole) {
-                const { data: existingProfile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', userId)
-                    .maybeSingle();
+            // 역할 결정 우선순위: 요청(role) > 기존 프로필 > 메타데이터 > 기본값
+            let userRole = safeRequestedRole || existingProfile?.role || safeMetadataRole || 'traveler';
 
-                userRole = role || existingProfile?.role || metadata?.role || 'traveler';
+            if (isAdminEmail) {
+                userRole = 'admin';
+            } else if (adminAllowlistEnabled && userRole === 'admin') {
+                userRole = 'traveler';
             }
 
             const userFullName = metadata?.full_name || metadata?.name || session.user.email?.split('@')[0] || 'User';
