@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "siteName": "Korea Guide Match",
+    "siteTitle": "Korea Guide Match - Premium Korea Travel Guide Matching",
+    "siteDescription": "신뢰할 수 있는 로컬 한국 가이드를 만나 맞춤형 투어와 매끄러운 예약 경험을 제공합니다."
+  },
+  "languageSwitcher": {
+    "label": "언어 변경",
+    "english": "English",
+    "korean": "한국어"
+  },
+  "navigation": {
+    "myPage": "마이페이지",
+    "login": "로그인",
+    "signup": "회원가입",
+    "guideMenu": "가이드 메뉴"
+  },
+  "footer": {
+    "customerSupport": "고객 지원",
+    "liveChat": "실시간 챗봇 상담",
+    "liveChatDesc": "빠른 답변이 필요할 땐 챗봇에게.",
+    "liveChatUnavailable": "채널톡 위젯이 아직 로드되지 않았거나 설정되지 않았습니다.",
+    "inquiryMail": "1:1 문의 메일",
+    "inquiryMailDesc": "직접 양식을 작성해 문의합니다.",
+    "faq": "자주 묻는 질문",
+    "company": "회사 소개",
+    "about": "가이드매치 소개",
+    "partners": "파트너 & 가이드",
+    "guideApply": "가이드 지원하기/등록하기",
+    "guidePolicy": "가이드 운영 정책 및 수수료 안내",
+    "partnership": "기업 제휴 및 B2B 문의",
+    "legal": "법적 고지",
+    "terms": "이용약관",
+    "privacy": "개인정보 처리방침",
+    "social": "소셜 미디어",
+    "companyName": "가이드매치 (GuideMatch)",
+    "businessInfo1": "상호명: (주)가이드매치 | 대표자: 이진영 | 사업자등록번호: 000-00-00000",
+    "businessInfo2": "통신판매업 신고번호: 제 2026-서울강남-0000호",
+    "businessInfo3": "주소: 경기도 고양시 덕양구",
+    "businessInfo4": "이메일: support@guidematch.com",
+    "copyright": "GuideMatch Inc. All rights reserved.",
+    "ssl": "SSL 보안 서버",
+    "security": "정보보호 인증 마크"
+  }
+}

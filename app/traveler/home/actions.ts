@@ -19,6 +19,9 @@ export async function fetchToursAction({
         .from('tours')
         .select(`
             *,
+            title_en,
+            description_en,
+            region_en,
             profiles (
                 full_name,
                 avatar_url,
@@ -31,10 +34,13 @@ export async function fetchToursAction({
         `)
         .eq('is_active', true)
         .order('created_at', { ascending: false })
-        .range(from, to);
+    .range(from, to);
 
     if (keyword) {
-        query = query.or(`title.ilike.%${keyword}%,description.ilike.%${keyword}%,region.ilike.%${keyword}%`);
+        // 여행자 화면은 영어 컬럼을 우선 검색합니다.
+        query = query.or(
+            `title_en.ilike.%${keyword}%,description_en.ilike.%${keyword}%,region_en.ilike.%${keyword}%,title.ilike.%${keyword}%,description.ilike.%${keyword}%,region.ilike.%${keyword}%`
+        );
     }
 
     const { data, error } = await query;

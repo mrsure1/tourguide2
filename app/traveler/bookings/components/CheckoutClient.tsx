@@ -86,6 +86,7 @@ export default function CheckoutClient({
   const guideDetail = Array.isArray(booking.guide?.guides_detail)
     ? booking.guide?.guides_detail[0]
     : booking.guide?.guides_detail;
+  const tourTitle = booking.tour?.title_en || "Recommended tour";
   const usdAmount = (booking.total_price / 1400).toFixed(2);
 
   const showAlert = (title: string, message: string) => {
@@ -241,7 +242,7 @@ export default function CheckoutClient({
     try {
       await paymentWidget.requestPayment({
         orderId: booking.id,
-        orderName: booking.tour?.title || `${booking.guide?.full_name} 媛?대뱶 ?ъ뼱`,
+        orderName: tourTitle || `${booking.guide?.full_name} tour`,
         successUrl: `${window.location.origin}/api/payments/toss/success${popupSuffix}`,
         failUrl: `${window.location.origin}/api/payments/toss/fail${popupSuffix}`,
         customerEmail: travelerEmail || "customer@email.com",
@@ -465,7 +466,7 @@ export default function CheckoutClient({
                                   currency_code: "USD",
                                   value: usdAmount,
                                 },
-                                description: booking.tour?.title || "Tour Booking",
+                                description: tourTitle || "Tour Booking",
                               },
                             ],
                           })
@@ -526,7 +527,7 @@ export default function CheckoutClient({
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent" />
                 <div className="absolute bottom-4 left-5 right-5">
                   <h3 className="mb-1 text-lg font-bold leading-tight text-white drop-shadow-md">
-                    {booking.tour?.title || `${booking.guide?.full_name} 媛?대뱶 ?ъ뼱`}
+                    {tourTitle || `${booking.guide?.full_name} tour`}
                   </h3>
                   <p className="flex justify-between text-sm font-medium text-slate-200 drop-shadow-md">
                     <span>{booking.guide?.full_name} 媛?대뱶</span>

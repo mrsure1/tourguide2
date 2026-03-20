@@ -9,6 +9,13 @@ import { useState, useEffect, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { signup } from "./actions";
 import { User } from "lucide-react";
+import { useI18n } from "@/components/providers/LocaleProvider";
+import { localizePath } from "@/lib/i18n/routing";
+
+type ExistingProfile = {
+    full_name?: string | null;
+    role?: string | null;
+};
 
 function SignupForm() {
     const searchParams = useSearchParams();
@@ -19,8 +26,10 @@ function SignupForm() {
     const role = (roleParam === "guide" || roleParam === "traveler") ? roleParam : "traveler";
 
     const [isExistingUser, setIsExistingUser] = useState(false);
-    const [existingProfile, setExistingProfile] = useState<any>(null);
+    const [existingProfile, setExistingProfile] = useState<ExistingProfile | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const { locale, messages } = useI18n();
+    const t = messages.auth.signup;
 
     const handleOAuthSignup = async (provider: 'google' | 'kakao') => {
         const supabase = createClient();
@@ -59,13 +68,13 @@ function SignupForm() {
 
                     // 이미 해당 역할이라면 즉시 이동 (루프 방지)
                     if (data.role === role) {
-                        window.location.href = role === 'guide' ? '/guide/dashboard' : '/';
+                        window.location.href = localizePath(locale, role === 'guide' ? '/guide/dashboard' : '/');
                         return;
                     }
 
                     // 역할이 가이드이거나 어드민인 경우, 모든 역할 접근 허용
                     if ((data.role === 'guide' || data.role === 'admin') && (role === 'traveler' || role === 'guide')) {
-                        window.location.href = role === 'guide' ? '/guide/dashboard' : '/';
+                        window.location.href = localizePath(locale, role === 'guide' ? '/guide/dashboard' : '/');
                         return;
                     }
 
@@ -90,23 +99,23 @@ function SignupForm() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                         </div>
-                        <h3 className="text-2xl font-black text-slate-900 mb-3">이메일을 확인해주세요!</h3>
+                        <h3 className="text-2xl font-black text-slate-900 mb-3">{t.successTitle}</h3>
                         <p className="text-slate-600 leading-relaxed mb-8">
-                            <span className="font-bold text-blue-600">{registeredEmail}</span>(으)로 인증 링크가 발송되었습니다.<br />
-                            링크를 클릭하시면 가입이 완료됩니다.
+                            {t.successDescriptionPrefix ? <>{t.successDescriptionPrefix} </> : null}
+                            <span className="font-bold text-blue-600">{registeredEmail}</span>{t.successDescriptionSuffix}
                         </p>
                         <div className="space-y-4">
                             <div className="p-4 bg-white/60 rounded-2xl text-xs text-slate-500 text-left border border-white">
-                                <p className="font-bold text-slate-700 mb-1">💡 이메일이 오지 않았나요?</p>
+                                <p className="font-bold text-slate-700 mb-1">💡 {t.emailHelpTitle}</p>
                                 <ul className="list-disc ml-4 space-y-1">
-                                    <li>스팸 메일함(Spam)을 확인해주세요.</li>
-                                    <li>이메일 주소를 오타 없이 입력했는지 확인해주세요.</li>
-                                    <li>인증 메일은 최대 5분까지 소요될 수 있습니다.</li>
+                                    <li>{t.emailHelp1}</li>
+                                    <li>{t.emailHelp2}</li>
+                                    <li>{t.emailHelp3}</li>
                                 </ul>
                             </div>
-                            <Link href="/login" className="block w-full">
+                            <Link href={localizePath(locale, "/login")} className="block w-full">
                                 <Button fullWidth variant="outline" className="h-14 rounded-2xl mt-4 border-slate-200 text-slate-600 hover:bg-slate-50 font-bold">
-                                    로그인 화면으로 돌아가기
+                                    {t.backToLogin}
                                 </Button>
                             </Link>
                         </div>
@@ -120,17 +129,17 @@ function SignupForm() {
         <div className="w-full">
             <div className="sm:mx-auto sm:w-full sm:max-w-md animate-fade-in-up relative z-10">
                 <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900 tracking-tight">
-                    계정 만들기
+                    {t.title}
                 </h2>
                 <div className="mt-3 flex justify-center items-center gap-2">
                     <span className="text-sm text-slate-600 font-light">
-                        현재 선택된 역할:
+                        {t.selectedRole}
                     </span>
                     <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${role === "guide"
                         ? "bg-indigo-50 text-indigo-700 ring-indigo-600/20"
                         : "bg-blue-50 text-blue-700 ring-blue-600/20"
                         }`}>
-                        {role === "guide" ? "가이드" : "여행자"}
+                        {role === "guide" ? t.roleGuide : t.roleTraveler}
                     </span>
                 </div>
             </div>
@@ -142,10 +151,12 @@ function SignupForm() {
                             <div className="w-20 h-20 bg-gradient-to-tr from-emerald-500 to-emerald-700 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-500/30 rotate-3">
                                 <User className="w-10 h-10 text-white" />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 mb-2">가이드 등록 안내</h3>
+                            <h3 className="text-2xl font-black text-slate-900 mb-2">{t.existingGuideTitle}</h3>
                             <p className="text-slate-600 leading-relaxed mb-8 font-light break-keep">
-                                <span className="font-bold text-slate-900">{existingProfile?.full_name || '회원'}</span>님은 현재 <span className="font-bold text-blue-600">여행자</span> 계정입니다.<br />
-                                가이드 활동을 위해서는 전문 가이드용 <span className="font-bold text-emerald-600">새 계정 가입</span>이 필요합니다.
+                                {t.existingGuideDescriptionPrefix ? <>{t.existingGuideDescriptionPrefix} </> : null}
+                                <span className="font-bold text-slate-900">{existingProfile?.full_name || t.memberFallback}</span>
+                                {t.existingGuideDescriptionMiddle}<br />
+                                {t.existingGuideDescriptionSuffix}
                             </p>
 
                             <div className="space-y-4">
@@ -156,17 +167,17 @@ function SignupForm() {
                                         setIsProcessing(true);
                                         const supabase = createClient();
                                         await supabase.auth.signOut();
-                                        window.location.href = "/signup?role=guide";
+                                        window.location.href = localizePath(locale, "/signup?role=guide");
                                     }}
                                     disabled={isProcessing}
                                     className="h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-500/20"
                                 >
-                                    {isProcessing ? "로그아웃 중..." : "로그아웃 후 새 가이드 계정 만들기"}
+                                    {isProcessing ? t.loggingOut : t.logoutAndCreateGuide}
                                 </Button>
 
-                                <Link href="/traveler/home" className="block">
+                                <Link href={localizePath(locale, "/")} className="block">
                                     <Button fullWidth variant="ghost" className="h-12 rounded-2xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 font-medium">
-                                        여행자 홈으로 돌아가기
+                                        {t.backToTravelerHome}
                                     </Button>
                                 </Link>
                             </div>
@@ -184,7 +195,7 @@ function SignupForm() {
                                             <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
-                                            <span className="font-bold">알림</span>
+                                            <span className="font-bold">{t.alertTitle}</span>
                                         </div>
                                         <p className="leading-relaxed opacity-90">{message}</p>
                                     </div>
@@ -192,52 +203,52 @@ function SignupForm() {
 
                                 <div>
                                     <Input
-                                        label="이름"
+                                        label={t.nameLabel}
                                         id="name"
                                         name="name"
                                         type="text"
                                         autoComplete="name"
                                         required
-                                        placeholder="홍길동"
+                                        placeholder={t.namePlaceholder}
                                         className="bg-white/50 focus:bg-white transition-colors"
                                     />
                                 </div>
 
                                 <div>
                                     <Input
-                                        label="이메일 주소"
+                                        label={t.emailLabel}
                                         id="email"
                                         name="email"
                                         type="email"
                                         autoComplete="email"
                                         required
-                                        placeholder="your@email.com"
+                                        placeholder={t.emailPlaceholder}
                                         className="bg-white/50 focus:bg-white transition-colors"
                                     />
                                 </div>
 
                                 <div>
                                     <Input
-                                        label="비밀번호"
+                                        label={t.passwordLabel}
                                         id="password"
                                         name="password"
                                         type="password"
                                         autoComplete="new-password"
                                         required
-                                        placeholder="••••••••"
+                                        placeholder={t.passwordPlaceholder}
                                         className="bg-white/50 focus:bg-white transition-colors"
                                     />
                                 </div>
 
                                 <div>
                                     <Input
-                                        label="비밀번호 확인"
+                                        label={t.confirmPasswordLabel}
                                         id="password-confirm"
                                         name="password-confirm"
                                         type="password"
                                         autoComplete="new-password"
                                         required
-                                        placeholder="••••••••"
+                                        placeholder={t.confirmPasswordPlaceholder}
                                         className="bg-white/50 focus:bg-white transition-colors"
                                     />
                                 </div>
@@ -251,14 +262,15 @@ function SignupForm() {
                                         className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600 transition-colors cursor-pointer"
                                     />
                                     <label htmlFor="terms" className="ml-2 block text-sm text-slate-700 cursor-pointer">
-                                        <Link href="/terms" target="_blank" className="font-medium text-blue-600 hover:text-blue-800 transition-colors">이용약관</Link> 및{" "}
-                                        <Link href="/terms?type=privacy" target="_blank" className="font-medium text-blue-600 hover:text-blue-800 transition-colors">개인정보처리방침</Link>에 동의합니다.
+                                        {t.agreePrefix ? <>{t.agreePrefix} </> : null}
+                                        <Link href={localizePath(locale, "/terms")} target="_blank" className="font-medium text-blue-600 hover:text-blue-800 transition-colors">{t.terms}</Link> {t.agreeMiddle}{" "}
+                                        <Link href={localizePath(locale, "/terms?type=privacy")} target="_blank" className="font-medium text-blue-600 hover:text-blue-800 transition-colors">{t.privacy}</Link>
                                     </label>
                                 </div>
 
                                 <div className="pt-4">
                                     <Button fullWidth size="lg" className="rounded-xl py-6 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30 border-0 text-base font-semibold hover:-translate-y-0.5 transition-all duration-300">
-                                        가입 완료하기
+                                        {t.submit}
                                     </Button>
                                 </div>
 
@@ -268,7 +280,7 @@ function SignupForm() {
                                             <div className="w-full border-t border-slate-200" />
                                         </div>
                                         <div className="relative flex justify-center text-sm">
-                                            <span className="bg-transparent px-3 text-slate-500 font-light backdrop-blur-sm">소셜 계정으로 빠른 가입</span>
+                                            <span className="bg-transparent px-3 text-slate-500 font-light backdrop-blur-sm">{t.socialDivider}</span>
                                         </div>
                                     </div>
 
@@ -303,10 +315,10 @@ function SignupForm() {
                     <Link href={`/login${role ? `?role=${role}` : ''}`} className="block">
                         <div className="p-4 bg-white/40 backdrop-blur-sm border border-white/60 rounded-2xl text-center hover:bg-white/60 hover:shadow-md transition-all duration-300">
                             <p className="text-sm text-slate-600 font-medium mb-1">
-                                이미 가입하셨나요?
+                                {t.alreadyHaveAccount}
                             </p>
                             <div className="flex items-center justify-center gap-2 text-blue-600 font-bold">
-                                <span>안전하게 로그인하기</span>
+                                <span>{t.safeLogin}</span>
                                 <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>

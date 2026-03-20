@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     }
 
     revalidatePath('/traveler/bookings');
-    revalidatePath('/traveler/home');
+    revalidatePath('/');
 
     return NextResponse.json({ success: true });
 }

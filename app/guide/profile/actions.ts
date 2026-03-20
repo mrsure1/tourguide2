@@ -3,6 +3,48 @@
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 
+async function translateBioToEnglish(bio: string) {
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "")
+    try {
+        const response = await fetch(new URL("/api/translate", siteUrl), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                fields: {
+                    bio,
+                },
+            }),
+            cache: "no-store",
+        })
+
+        if (!response.ok) {
+            return ""
+        }
+
+        const data = await response.json()
+        const translated = data?.translations?.bio
+
+        if (typeof translated !== "string" || !translated.trim()) {
+            return ""
+        }
+
+        return translated.trim()
+    } catch {
+        return ""
+    }
+}
+
+async function supportsGuideBioI18n(supabase: Awaited<ReturnType<typeof createClient>>) {
+    const { error } = await supabase
+        .from('guides_detail')
+        .select('bio_i18n')
+        .limit(1)
+
+    return !error
+}
+
 export async function updateProfile(formData: FormData) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -19,6 +61,9 @@ export async function updateProfile(formData: FormData) {
     const languages = languagesStr ? languagesStr.split(',').map(s => s.trim()).filter(Boolean) : []
     const hourlyRate = Number(formData.get('hourly_rate')) || 0;
     const rateType = (formData.get('rate_type') as string) || 'daily';
+    const bioKo = bio.trim();
+    const canStoreBioI18n = await supportsGuideBioI18n(supabase);
+    const bioEn = bioKo && canStoreBioI18n ? await translateBioToEnglish(bioKo) : "";
 
     // Update profiles
     const { error: profileError } = await supabase
@@ -36,11 +81,19 @@ export async function updateProfile(formData: FormData) {
         .from('guides_detail')
         .upsert({
             id: user.id,
-            bio,
+            bio: bioKo,
             location,
             languages,
             hourly_rate: hourlyRate,
-            rate_type: rateType
+            rate_type: rateType,
+            ...(canStoreBioI18n && bioKo
+                ? {
+                    bio_i18n: {
+                        ko: bioKo,
+                        en: bioEn,
+                    },
+                }
+                : {})
         })
 
     if (guideError) return { error: guideError.message }
@@ -48,6 +101,7 @@ export async function updateProfile(formData: FormData) {
     revalidatePath('/guide/profile')
     revalidatePath('/guide/dashboard')
     revalidatePath('/traveler/search')
+    revalidatePath('/')
     revalidatePath(`/traveler/guides/${user.id}`)
 
     return { success: true }

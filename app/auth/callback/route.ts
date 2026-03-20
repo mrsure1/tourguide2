@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers';
+import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, detectLocaleFromAcceptLanguage, isSupportedLocale } from '@/lib/i18n/config';
+import { localizePath } from '@/lib/i18n/routing';
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
@@ -16,6 +18,10 @@ export async function GET(request: Request) {
     // Check for cookie-based role which persists reliably during OAuth flow
     const cookieStore = await cookies();
     const cookieRole = cookieStore.get('oauth_role')?.value;
+    const localeCookie = cookieStore.get(LOCALE_COOKIE_NAME)?.value;
+    const locale = isSupportedLocale(localeCookie)
+        ? localeCookie
+        : detectLocaleFromAcceptLanguage(request.headers.get('accept-language')) || DEFAULT_LOCALE;
 
     const requestedRole = roleParam || cookieRole;
 
@@ -95,7 +101,7 @@ export async function GET(request: Request) {
                 finalNext = next;
             }
 
-            const response = NextResponse.redirect(`${origin}${finalNext}`);
+            const response = NextResponse.redirect(`${origin}${localizePath(locale, finalNext)}`);
             response.cookies.delete('oauth_role');
             return response;
 
@@ -103,5 +109,5 @@ export async function GET(request: Request) {
     }
 
     // fallback for failed auth or no code
-    return NextResponse.redirect(`${origin}/login?message=Could not authenticate user`)
+    return NextResponse.redirect(`${origin}${localizePath(locale, "/login?message=Could not authenticate user")}`)
 }

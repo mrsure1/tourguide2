@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent } from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/components/providers/LocaleProvider";
+import { localizePath } from "@/lib/i18n/routing";
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
+  const { locale } = useI18n();
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +53,7 @@ export default function UpdatePasswordPage() {
       
       // 3초 후 로그인 페이지로 리다이렉트
       setTimeout(() => {
-        router.push("/login?message=" + encodeURIComponent("비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 로그인해주세요."));
+        router.push(localizePath(locale, "/login?message=" + encodeURIComponent("비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 로그인해주세요.")));
       }, 3000);
       
     } catch (error: any) {

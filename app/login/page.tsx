@@ -10,11 +10,15 @@ import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ForgotPasswordModal } from "@/components/ui/ForgotPasswordModal";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { useI18n } from "@/components/providers/LocaleProvider";
+import { localizePath } from "@/lib/i18n/routing";
 
 function LoginForm() {
     const searchParams = useSearchParams();
     const message = searchParams.get('message');
     const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+    const { messages } = useI18n();
+    const t = messages.auth.login;
 
     const handleOAuthLogin = async (provider: 'google' | 'kakao') => {
         const supabase = createClient();
@@ -48,26 +52,26 @@ function LoginForm() {
                 )}
                 <div>
                     <Input
-                        label="이메일 주소"
+                        label={t.emailLabel}
                         id="email"
                         name="email"
                         type="email"
                         autoComplete="email"
                         required
-                        placeholder="your@email.com"
+                        placeholder={t.emailPlaceholder}
                         className="bg-white/50 focus:bg-white transition-colors"
                     />
                 </div>
 
                 <div>
                     <Input
-                        label="비밀번호"
+                        label={t.passwordLabel}
                         id="password"
                         name="password"
                         type="password"
                         autoComplete="current-password"
                         required
-                        placeholder="••••••••"
+                        placeholder={t.passwordPlaceholder}
                         className="bg-white/50 focus:bg-white transition-colors"
                     />
                 </div>
@@ -81,7 +85,7 @@ function LoginForm() {
                             className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600 transition-colors cursor-pointer"
                         />
                         <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-700 cursor-pointer select-none">
-                            로그인 유지
+                            {t.rememberMe}
                         </label>
                     </div>
 
@@ -94,14 +98,14 @@ function LoginForm() {
                             }}
                             className="font-medium text-blue-600 hover:text-blue-800 transition-colors"
                         >
-                            비밀번호를 잊으셨나요?
+                            {t.forgotPassword}
                         </button>
                     </div>
                 </div>
 
                 <div className="pt-2">
                     <Button fullWidth size="lg" className="rounded-xl py-6 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30 border-0 text-base font-semibold hover:-translate-y-0.5 transition-all duration-300">
-                        로그인
+                        {t.submit}
                     </Button>
                 </div>
 
@@ -111,7 +115,7 @@ function LoginForm() {
                             <div className="w-full border-t border-slate-200" />
                         </div>
                         <div className="relative flex justify-center text-sm">
-                            <span className="bg-transparent px-3 text-slate-500 font-light backdrop-blur-sm">소셜 계정으로 계속하기</span>
+                            <span className="bg-transparent px-3 text-slate-500 font-light backdrop-blur-sm">{t.socialDivider}</span>
                         </div>
                     </div>
 
@@ -148,6 +152,9 @@ function LoginForm() {
 }
 
 export default function Login() {
+    const { locale, messages } = useI18n();
+    const t = messages.auth.login;
+
     return (
         <main className="flex-1 bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8 min-h-[calc(100vh-80px)] relative overflow-hidden bg-mesh">
             {/* Background Decorative Elements */}
@@ -156,28 +163,28 @@ export default function Login() {
 
             <div className="sm:mx-auto sm:w-full sm:max-w-md animate-fade-in-up relative z-10">
                 <div className="flex justify-center mb-6">
-                    <BrandLogo href="/" size="lg" tone="dark" variant="signature" showTagline={false} />
+                    <BrandLogo href={localizePath(locale, "/")} size="lg" tone="dark" variant="signature" showTagline={false} />
                 </div>
                 <h2 className="text-center text-3xl font-extrabold text-slate-900 tracking-tight">
-                    계정 로그인
+                    {t.title}
                 </h2>
                 <p className="mt-2 text-center text-sm text-slate-600 font-light">
-                    Korea Guide Match에 처음이신가요?{" "}
-                    <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-800 transition-colors">
-                        회원가입하기
+                    {t.subtitlePrefix}{" "}
+                    <Link href={localizePath(locale, "/signup")} className="font-medium text-blue-600 hover:text-blue-800 transition-colors">
+                        {t.subtitleLink}
                     </Link>
                 </p>
                 <div className="mt-4 flex justify-center gap-4 text-xs text-slate-400 font-light">
-                    <Link href="/terms" className="hover:text-slate-600 transition-colors">이용약관</Link>
+                    <Link href={localizePath(locale, "/terms")} className="hover:text-slate-600 transition-colors">{t.terms}</Link>
                     <span className="text-slate-200">|</span>
-                    <Link href="/terms?type=privacy" className="hover:text-slate-600 transition-colors">개인정보처리방침</Link>
+                    <Link href={localizePath(locale, "/terms?type=privacy")} className="hover:text-slate-600 transition-colors">{t.privacy}</Link>
                 </div>
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md animate-fade-in-up animation-delay-200 relative z-10">
                 <Card className="premium-card bg-white/80 backdrop-blur-xl border-white/50 shadow-xl overflow-hidden">
                     <CardContent className="pt-8 pb-10 px-6 sm:px-10">
-                        <Suspense fallback={<div className="text-center text-sm">Loading form...</div>}>
+                        <Suspense fallback={<div className="text-center text-sm">{t.loading}</div>}>
                             <LoginForm />
                         </Suspense>
                     </CardContent>

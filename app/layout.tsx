@@ -1,56 +1,40 @@
 import type { Metadata } from "next";
 import AnalyticsScripts from "@/components/analytics/AnalyticsScripts";
+import { Footer } from "@/components/layout/Footer";
+import { ChannelTalk } from "@/components/support/ChannelTalk";
+import { LocaleProvider } from "@/components/providers/LocaleProvider";
+import { getDictionary } from "@/lib/i18n/dictionary";
+import { getRequestLocale } from "@/lib/i18n/get-request-locale";
+import { toOpenGraphLocale } from "@/lib/i18n/config";
+import { localizePath } from "@/lib/i18n/routing";
+import { headers } from "next/headers";
 import "./globals.css";
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
-const siteName = "Korea Guide Match";
-const siteTitle = `${siteName} - Premium Korea Travel Guide Matching`;
-const siteDescription =
-  "Connect with trusted local Korean guides for personalized tours and seamless bookings.";
+const siteUrl = "https://tourguide2-five.vercel.app";
 const ogImage = `${siteUrl}/hero-korea.png`;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: siteTitle,
-  description: siteDescription,
-  applicationName: siteName,
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    type: "website",
-    locale: "ko_KR",
-    url: siteUrl,
-    siteName,
-    title: siteTitle,
-    description: siteDescription,
-    images: [
-      {
-        url: ogImage,
-        width: 1200,
-        height: 630,
-        alt: `${siteName} preview image`,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteTitle,
-    description: siteDescription,
-    images: [ogImage],
-  },
+  title: "GuideMatch - Find your perfect guide in Korea",
+  description: "Experience Korea with local experts who share your language and interests.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getRequestLocale();
+  const messages = await getDictionary(locale);
+
   return (
-    <html lang="ko">
+    <html lang={locale}>
       <body className="antialiased min-h-screen flex flex-col bg-slate-50">
-        <AnalyticsScripts />
-        {children}
+        <LocaleProvider locale={locale} messages={messages}>
+          <AnalyticsScripts />
+          {children}
+          <Footer />
+          <ChannelTalk />
+        </LocaleProvider>
       </body>
     </html>
   );

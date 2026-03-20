@@ -1,420 +1,459 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-
+import { useI18n } from "@/components/providers/LocaleProvider";
+import { localizePath } from "@/lib/i18n/routing";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Calendar } from "@/components/ui/Calendar";
-import { cn } from "@/lib/utils";
-import { Star, MapPin, Clock, Users, Heart, Share2, ChevronLeft, ChevronRight, CheckCircle2, Calendar as CalendarIcon, Minus, Plus } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Heart,
+  MapPin,
+  Minus,
+  Plus,
+  Share2,
+  Star,
+  Users,
+} from "lucide-react";
 
 interface TourDetailClientProps {
-    tour: any;
+  tour: any;
 }
 
 export default function TourDetailClient({ tour }: TourDetailClientProps) {
-    const router = useRouter();
-    const searchParams = useSearchParams();
+  const router = useRouter();
+  const { locale } = useI18n();
+  const searchParams = useSearchParams();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-    // Set default values from URL parameters
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const defaultDateStr = tomorrow.toISOString().split('T')[0];
-    const startDateParam = searchParams.get('startDate') || defaultDateStr;
-    const endDateParam = searchParams.get('endDate') || startDateParam;
+  const title = tour.title_en || "Recommended tour";
+  const description = tour.description_en || "A concise itinerary with local highlights.";
+  const region = tour.region_en || "Seoul";
+  const includedItems = Array.isArray(tour.included_items_en)
+    ? tour.included_items_en
+    : Array.isArray(tour.included_items)
+      ? tour.included_items
+      : [];
 
-    const pAdults = searchParams.get('adults');
-    const pChildren = searchParams.get('children');
-    const defaultAdults = pAdults ? parseInt(pAdults, 10) : 2;
-    const defaultChildren = pChildren ? parseInt(pChildren, 10) : 0;
-    const defaultGuests = (isNaN(defaultAdults) ? 2 : defaultAdults) + (isNaN(defaultChildren) ? 0 : defaultChildren);
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const defaultDateStr = tomorrow.toISOString().split("T")[0];
+  const startDateParam = searchParams.get("startDate") || defaultDateStr;
+  const endDateParam = searchParams.get("endDate") || startDateParam;
 
-    const [isPending, setIsPending] = useState(false);
-    const [isLiked, setIsLiked] = useState(false);
-    const [guests, setGuests] = useState(defaultGuests || 2);
-    const [dateRange, setDateRange] = useState<{ from: string; to: string }>({
-        from: startDateParam,
-        to: endDateParam
+  const pAdults = searchParams.get("adults");
+  const pChildren = searchParams.get("children");
+  const defaultAdults = pAdults ? parseInt(pAdults, 10) : 2;
+  const defaultChildren = pChildren ? parseInt(pChildren, 10) : 0;
+  const defaultGuests =
+    (Number.isNaN(defaultAdults) ? 2 : defaultAdults) +
+    (Number.isNaN(defaultChildren) ? 0 : defaultChildren);
+
+  const [isPending, setIsPending] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [guests, setGuests] = useState(defaultGuests || 2);
+  const [dateRange, setDateRange] = useState<{ from: string; to: string }>({
+    from: startDateParam,
+    to: endDateParam,
+  });
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [currentIdx, setCurrentIdx] = useState(0);
+
+  useEffect(() => {
+    const checkLikeStatus = async () => {
+      try {
+        const res = await fetch(`/api/tours/${tour.id}/like/status`);
+        if (res.ok) {
+          const data = await res.json();
+          setIsLiked(data.isLiked);
+        }
+      } catch (error) {
+        console.error("Failed to check like status:", error);
+      }
+    };
+
+    checkLikeStatus();
+  }, [tour.id]);
+
+  const handleToggleLike = async () => {
+    try {
+      const res = await fetch(`/api/tours/${tour.id}/like`, { method: "POST" });
+      if (res.status === 401) {
+        alert("Please log in to use the like feature.");
+        return;
+      }
+
+      if (res.ok) {
+        const data = await res.json();
+        setIsLiked(data.isLiked);
+      }
+    } catch (error) {
+      console.error("Failed to toggle like:", error);
+      alert("An error occurred while updating the like status.");
+    }
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title,
+      text: description.substring(0, 100),
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        alert("The link has been copied to your clipboard.");
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
+
+  const handleBooking = async () => {
+    if (!dateRange.from) {
+      alert("Please select a date.");
+      return;
+    }
+
+    setIsPending(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("guide_id", tour.guide_id);
+      formData.append("tour_id", tour.id);
+      formData.append("start_date", dateRange.from);
+      formData.append("end_date", dateRange.to || dateRange.from);
+      formData.append("total_price", Math.round(tour.price * guests * 1.05).toString());
+      formData.append("guests", guests.toString());
+
+      const res = await fetch("/api/bookings/create", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        alert("Your booking request has been submitted successfully.");
+        router.push("/traveler/bookings");
+      } else {
+        const data = await res.json();
+        alert(`Booking failed: ${data.error || "An unknown error occurred."}`);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred while processing the booking.");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const scroll = (direction: "left" | "right") => {
+    if (!scrollRef.current) return;
+    const { clientWidth } = scrollRef.current;
+    scrollRef.current.scrollBy({
+      left: direction === "left" ? -clientWidth : clientWidth,
+      behavior: "smooth",
     });
-    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  };
 
-    // 좋아요 상태 로드
-    useEffect(() => {
-        const checkLikeStatus = async () => {
-            try {
-                const res = await fetch(`/api/tours/${tour.id}/like/status`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setIsLiked(data.isLiked);
-                }
-            } catch (error) {
-                console.error("Failed to check like status:", error);
-            }
-        };
-        checkLikeStatus();
-    }, [tour.id]);
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, clientWidth } = scrollRef.current;
+    setCurrentIdx(Math.round(scrollLeft / clientWidth));
+  };
 
-    const handleToggleLike = async () => {
-        try {
-            const res = await fetch(`/api/tours/${tour.id}/like`, { method: 'POST' });
-            if (res.status === 401) {
-                alert("좋아요 기능을 사용하려면 로그인이 필요합니다.");
-                return;
-            }
-            if (res.ok) {
-                const data = await res.json();
-                setIsLiked(data.isLiked);
-            }
-        } catch (error) {
-            console.error("Failed to toggle like:", error);
-            alert("좋아요 처리 중 오류가 발생했습니다.");
-        }
-    };
+  const photos = tour.photo ? tour.photo.split(",") : [];
+  const subtotal = tour.price * guests;
+  const serviceFee = Math.round(subtotal * 0.05);
+  const total = Math.round(subtotal + serviceFee);
 
-    const handleShare = async () => {
-        const shareData = {
-            title: tour.title,
-            text: tour.description?.substring(0, 100),
-            url: window.location.href,
-        };
+  return (
+    <div className="min-h-[calc(100vh-64px)] bg-white pb-20">
+      <div className="relative h-[40vh] w-full overflow-hidden bg-slate-900 md:h-[50vh]">
+        {photos.length > 0 ? (
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="flex h-full w-full snap-x snap-mandatory overflow-x-auto scroll-smooth scrollbar-none"
+          >
+            {photos.map((photo: string, index: number) => (
+              <div key={index} className="relative h-full w-full shrink-0 snap-start">
+                <img src={photo} alt={`${title} - ${index + 1}`} className="h-full w-full object-cover opacity-80" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-slate-800 text-slate-500">
+            <MapPin className="h-16 w-16" />
+          </div>
+        )}
 
-        try {
-            if (navigator.share) {
-                await navigator.share(shareData);
-            } else {
-                await navigator.clipboard.writeText(window.location.href);
-                alert("링크가 클립보드에 복사되었습니다.");
-            }
-        } catch (error) {
-            console.error("Error sharing:", error);
-        }
-    };
+        {photos.length > 1 && (
+          <>
+            <button
+              onClick={() => scroll("left")}
+              className="absolute left-4 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white opacity-0 backdrop-blur-md transition hover:bg-white/40 group-hover:opacity-100"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <button
+              onClick={() => scroll("right")}
+              className="absolute right-4 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white opacity-0 backdrop-blur-md transition hover:bg-white/40 group-hover:opacity-100"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          </>
+        )}
 
-    const handleBooking = async () => {
-        if (!dateRange.from) {
-            alert("투어 날짜를 선택해주세요.");
-            return;
-        }
+        {photos.length > 1 && (
+          <div className="absolute bottom-12 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+            {photos.map((_: string, i: number) => (
+              <div
+                key={i}
+                className={`h-2 rounded-full transition-all duration-300 ${currentIdx === i ? "w-4 bg-white" : "w-2 bg-white/40"}`}
+              />
+            ))}
+          </div>
+        )}
 
-        setIsPending(true);
-        try {
-            const formData = new FormData();
-            formData.append('guide_id', tour.guide_id);
-            formData.append('tour_id', tour.id);
-            formData.append('start_date', dateRange.from);
-            formData.append('end_date', dateRange.to || dateRange.from);
-            formData.append('total_price', Math.round(tour.price * guests * 1.05).toString());
-            formData.append('guests', guests.toString());
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
 
-            const res = await fetch('/api/bookings/create', {
-                method: 'POST',
-                body: formData
-            });
+        <div className="absolute left-4 right-4 top-6 z-10 flex items-center justify-between md:left-8 md:right-8">
+          <button
+            onClick={() => router.back()}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-md transition-colors hover:bg-black/50"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
 
-            if (res.ok) {
-                alert("예약 신청이 성공적으로 완료되었습니다!");
-                router.push('/traveler/bookings');
-            } else {
-                const data = await res.json();
-                alert(`예약 실패: ${data.error || '원인을 알 수 없는 오류입니다.'}`);
-            }
-        } catch (error) {
-            console.error(error);
-            alert("예약 처리 중 오류가 발생했습니다.");
-        } finally {
-            setIsPending(false);
-        }
-    };
-
-    const [currentIdx, setCurrentIdx] = useState(0);
-    const scrollRef = useRef<HTMLDivElement>(null);
-
-    const handleScroll = () => {
-        if (scrollRef.current) {
-            const { scrollLeft, clientWidth } = scrollRef.current;
-            const idx = Math.round(scrollLeft / clientWidth);
-            setCurrentIdx(idx);
-        }
-    };
-
-    const scroll = (direction: 'left' | 'right') => {
-        if (scrollRef.current) {
-            const { clientWidth } = scrollRef.current;
-            const move = direction === 'left' ? -clientWidth : clientWidth;
-            scrollRef.current.scrollBy({ left: move, behavior: 'smooth' });
-        }
-    };
-
-    const photos = tour.photo ? tour.photo.split(',') : [];
-
-    return (
-        <div className="bg-white min-h-[calc(100vh-64px)] animate-fade-in pb-20">
-            {/* Header image & Quick Nav */}
-            <div className="relative h-[40vh] md:h-[50vh] w-full bg-slate-900 overflow-hidden group">
-                {photos.length > 0 ? (
-                    <div
-                        ref={scrollRef}
-                        onScroll={handleScroll}
-                        className="flex h-full w-full snap-x snap-mandatory overflow-x-auto scrollbar-none scroll-smooth"
-                    >
-                        {photos.map((photo: string, index: number) => (
-                            <div key={index} className="relative h-full w-full shrink-0 snap-start">
-                                <img
-                                    src={photo}
-                                    alt={`${tour.title} - ${index + 1}`}
-                                    className="w-full h-full object-cover opacity-80"
-                                />
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500">
-                        <MapPin className="w-16 h-16" />
-                    </div>
-                )}
-
-                {/* Carousel Navigation Buttons (Arrows) */}
-                {photos.length > 1 && (
-                    <>
-                        <button
-                            onClick={() => scroll('left')}
-                            className={cn(
-                                "absolute left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition hover:bg-white/40",
-                                currentIdx === 0 && "hidden"
-                            )}
-                        >
-                            <ChevronLeft className="w-6 h-6" />
-                        </button>
-                        <button
-                            onClick={() => scroll('right')}
-                            className={cn(
-                                "absolute right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition hover:bg-white/40",
-                                currentIdx === photos.length - 1 && "hidden"
-                            )}
-                        >
-                            <ChevronRight className="w-6 h-6" />
-                        </button>
-                    </>
-                )}
-
-                {/* Carousel Indicators (Dots) */}
-                {photos.length > 1 && (
-                    <div className="absolute bottom-12 left-1/2 flex -translate-x-1/2 gap-2 z-10">
-                        {photos.map((_: any, i: number) => (
-                            <div
-                                key={i}
-                                className={cn(
-                                    "h-2 w-2 rounded-full transition-all duration-300",
-                                    currentIdx === i ? "bg-white w-4" : "bg-white/40"
-                                )}
-                            />
-                        ))}
-                    </div>
-                )}
-
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent pointer-events-none" />
-
-                <div className="absolute top-6 left-4 md:left-8 right-4 md:right-8 flex justify-between items-center z-10">
-                    <button onClick={() => router.back()} className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/50 transition-colors">
-                        <ChevronLeft className="w-6 h-6" />
-                    </button>
-                    <div className="flex gap-3">
-                        <button
-                            onClick={handleToggleLike}
-                            className={cn(
-                                "w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-colors",
-                                isLiked
-                                    ? "bg-white text-red-500 shadow-lg"
-                                    : "bg-black/30 text-white hover:bg-black/50 hover:text-red-400"
-                            )}
-                        >
-                            <Heart className={cn("w-5 h-5", isLiked && "fill-current")} />
-                        </button>
-                        <button
-                            onClick={handleShare}
-                            className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/50 transition-colors"
-                        >
-                            <Share2 className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20">
-                <div className="flex flex-col md:flex-row gap-8">
-                    {/* Main Content */}
-                    <div className="flex-1 bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
-                        <div className="flex items-center gap-2 mb-4 text-sm font-bold text-blue-600">
-                            <span className="bg-blue-50 px-3 py-1 rounded-full border border-blue-100">베스트셀러</span>
-                            <span className="bg-slate-50 px-3 py-1 rounded-full border border-slate-200 text-slate-600 font-medium flex items-center gap-1">
-                                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" /> 4.9 (128)
-                            </span>
-                        </div>
-
-                        <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight mb-6">
-                            {tour.title}
-                        </h1>
-
-                        <div className="flex flex-wrap gap-6 mb-8 py-6 border-y border-slate-100">
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                                    <MapPin className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <div className="text-xs text-slate-500 font-medium mb-0.5">지역</div>
-                                    <div className="text-sm font-bold text-slate-900">{tour.region}</div>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
-                                    <Clock className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <div className="text-xs text-slate-500 font-medium mb-0.5">소요 시간</div>
-                                    <div className="text-sm font-bold text-slate-900">{tour.duration}시간</div>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
-                                    <Users className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <div className="text-xs text-slate-500 font-medium mb-0.5">투어 인원</div>
-                                    <div className="text-sm font-bold text-slate-900">최대 {tour.max_guests}인</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mb-10">
-                            <h2 className="text-xl font-bold text-slate-900 mb-4">투어 소개</h2>
-                            <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
-                                {tour.description}
-                            </p>
-                        </div>
-
-                        <div className="mb-10">
-                            <h2 className="text-xl font-bold text-slate-900 mb-4">포함 사항</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {Array.isArray(tour.included_items) && tour.included_items.length > 0 ? (
-                                    tour.included_items.map((item: string, i: number) => (
-                                        <div key={i} className="flex items-center gap-2 text-slate-700 text-sm">
-                                            <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                                            <span>{item}</span>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="text-slate-400 text-sm">포함 사항이 없습니다.</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Booking Card */}
-                    <div className="w-full md:w-96 shrink-0 mt-8 md:mt-0">
-                        <div className="sticky top-24">
-                            <Card className="bg-white shadow-2xl shadow-slate-200 border-0 rounded-3xl overflow-visible">
-                                <CardContent className="p-6 md:p-8">
-                                    <div className="mb-6">
-                                        <div className="text-sm font-medium text-slate-500 mb-1">1인 기준</div>
-                                        <div className="text-3xl font-black text-slate-900 tracking-tight">
-                                            ₩ {tour.price?.toLocaleString()}
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4 mb-8">
-                                        <div className="relative">
-                                            <div
-                                                className="p-4 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:border-blue-300 transition-colors"
-                                                onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
-                                            >
-                                                <div className="text-xs font-bold text-slate-500 mb-1 flex items-center gap-1">
-                                                    <CalendarIcon className="w-3 h-3" /> 일정 선택
-                                                </div>
-                                                <div className="text-sm font-semibold text-slate-900">
-                                                    {dateRange.from ? (
-                                                        <>
-                                                            {dateRange.from}
-                                                            {dateRange.to && dateRange.to !== dateRange.from && ` ~ ${dateRange.to}`}
-                                                        </>
-                                                    ) : "날짜를 선택하세요"}
-                                                </div>
-                                            </div>
-
-                                            {isDatePickerOpen && (
-                                                <div className="absolute top-full left-0 right-0 z-[100] mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2">
-                                                    <Calendar
-                                                        mode="range"
-                                                        selected={dateRange}
-                                                        onSelect={(range) => {
-                                                            if (range) {
-                                                                setDateRange(range);
-                                                                if (range.from && range.to) {
-                                                                    setIsDatePickerOpen(false);
-                                                                }
-                                                            }
-                                                        }}
-                                                        defaultMonth={dateRange.from ? new Date(dateRange.from) : new Date()}
-                                                        minDate={new Date().toISOString().split('T')[0]}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex justify-between items-center text-slate-900">
-                                            <div>
-                                                <div className="text-xs font-bold text-slate-500 mb-1">인원</div>
-                                                <div className="text-sm font-semibold">총 {guests}명</div>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <button
-                                                    onClick={() => setGuests(Math.max(1, guests - 1))}
-                                                    className="w-8 h-8 rounded-full border border-slate-200 bg-white flex items-center justify-center hover:bg-slate-50 transition-colors"
-                                                >
-                                                    <Minus className="w-3.5 h-3.5" />
-                                                </button>
-                                                <span className="text-sm font-bold min-w-4 text-center">{guests}</span>
-                                                <button
-                                                    onClick={() => setGuests(guests + 1)}
-                                                    className="w-8 h-8 rounded-full border border-slate-200 bg-white flex items-center justify-center hover:bg-slate-50 transition-colors"
-                                                >
-                                                    <Plus className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-3 pt-6 border-t border-slate-100 mb-8">
-                                        <div className="flex justify-between text-slate-600 text-sm">
-                                            <span>₩ {tour.price?.toLocaleString()} x {guests}인</span>
-                                            <span>₩ {(tour.price * guests)?.toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between text-slate-600 text-sm">
-                                            <span>서비스 수수료</span>
-                                            <span>₩ {(tour.price * guests * 0.05)?.toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between text-lg font-black text-slate-900 pt-3 border-t border-slate-100">
-                                            <span>총 합계</span>
-                                            <span>₩ {Math.round(tour.price * guests * 1.05).toLocaleString()}</span>
-                                        </div>
-                                    </div>
-
-                                    <Button
-                                        fullWidth
-                                        size="lg"
-                                        className="h-14 bg-slate-900 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-slate-900/10 text-base font-bold transition-all disabled:opacity-50"
-                                        onClick={handleBooking}
-                                        disabled={isPending}
-                                    >
-                                        {isPending ? '처리 중...' : '예약 진행하기'}
-                                    </Button>
-                                    <p className="text-center text-xs text-slate-400 mt-4">예약 확정 전에는 결제되지 않습니다.</p>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleToggleLike}
+              className={`flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-md transition-colors ${
+                isLiked ? "bg-white text-red-500 shadow-lg" : "bg-black/30 text-white hover:bg-black/50 hover:text-red-400"
+              }`}
+            >
+              <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
+            </button>
+            <button
+              onClick={handleShare}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-md transition-colors hover:bg-black/50"
+            >
+              <Share2 className="h-5 w-5" />
+            </button>
+          </div>
         </div>
-    );
+      </div>
+
+      <div className="relative z-20 mx-auto -mt-20 max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-8 md:flex-row">
+          <div className="flex-1 rounded-3xl border border-slate-100 bg-white p-6 shadow-xl shadow-slate-200/50 md:p-8">
+            <div className="mb-4 flex items-center gap-2 text-sm font-bold text-blue-600">
+              <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1">Best Seller</span>
+              <span className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 font-medium text-slate-600">
+                <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" /> 4.9 (128)
+              </span>
+            </div>
+
+            <h1 className="mb-6 text-3xl font-black leading-tight tracking-tight text-slate-900 md:text-4xl">
+              {title}
+            </h1>
+
+            <div className="mb-8 flex flex-wrap gap-6 border-y border-slate-100 py-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                  <MapPin className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="mb-0.5 text-xs font-medium text-slate-500">Region</div>
+                  <div className="text-sm font-bold text-slate-900">{region}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+                  <Clock className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="mb-0.5 text-xs font-medium text-slate-500">Duration</div>
+                  <div className="text-sm font-bold text-slate-900">{tour.duration} hours</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="mb-0.5 text-xs font-medium text-slate-500">Guests</div>
+                  <div className="text-sm font-bold text-slate-900">Up to {tour.max_guests} people</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-10">
+              <h2 className="mb-4 text-xl font-bold text-slate-900">Tour Overview</h2>
+              <p className="whitespace-pre-wrap leading-relaxed text-slate-600">{description}</p>
+            </div>
+
+            <div className="mb-10">
+              <h2 className="mb-4 text-xl font-bold text-slate-900">Included</h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {includedItems.length > 0 ? (
+                  includedItems.map((item: string, i: number) => (
+                    <div key={i} className="flex items-center gap-2 text-sm text-slate-700">
+                      <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-500" />
+                      <span>{item}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-400">No included items listed.</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full shrink-0 md:w-96">
+            <div className="sticky top-24">
+              <Card className="overflow-visible rounded-3xl border-0 bg-white shadow-2xl shadow-slate-200">
+                <CardContent className="p-6 md:p-8">
+                  <div className="mb-6">
+                    <div className="mb-1 text-sm font-medium text-slate-500">Per person</div>
+                    <div className="text-3xl font-black tracking-tight text-slate-900">
+                      ₩{tour.price?.toLocaleString()}
+                    </div>
+                  </div>
+
+                  {/* Guide Info Link */}
+                  <div className="mb-6 p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                         <img 
+                           src={tour.profiles?.avatar_url || `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(tour.guide_id)}`} 
+                           alt={tour.profiles?.full_name} 
+                           className="w-full h-full object-cover"
+                         />
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Guide</div>
+                        <div className="text-sm font-bold text-slate-900">{tour.profiles?.full_name || "GuideMatch"}</div>
+                      </div>
+                    </div>
+                    <Link 
+                      href={localizePath(locale, `/traveler/guides/${tour.guide_id}`)}
+                      className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      {locale === 'ko' ? '프로필 보기' : 'View Profile'}
+                    </Link>
+                  </div>
+
+                  <div className="mb-8 space-y-4">
+                    <div className="relative">
+                      <div
+                        className="cursor-pointer rounded-xl border border-slate-200 bg-slate-50 p-4 transition-colors hover:border-blue-300"
+                        onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                      >
+                        <div className="mb-1 flex items-center gap-1 text-xs font-bold text-slate-500">
+                          <CalendarIcon className="h-3 w-3" /> Select dates
+                        </div>
+                        <div className="text-sm font-semibold text-slate-900">
+                          {dateRange.from ? (
+                            <>
+                              {dateRange.from}
+                              {dateRange.to && dateRange.to !== dateRange.from && ` ~ ${dateRange.to}`}
+                            </>
+                          ) : (
+                            "Select a date"
+                          )}
+                        </div>
+                      </div>
+
+                      {isDatePickerOpen && (
+                        <div className="absolute left-0 right-0 top-full z-[100] mt-2 rounded-2xl border border-slate-100 bg-white p-2 shadow-2xl">
+                          <Calendar
+                            mode="range"
+                            selected={dateRange}
+                            onSelect={(range) => {
+                              if (range) {
+                                setDateRange(range);
+                                if (range.from && range.to) {
+                                  setIsDatePickerOpen(false);
+                                }
+                              }
+                            }}
+                            defaultMonth={dateRange.from ? new Date(dateRange.from) : new Date()}
+                            minDate={new Date().toISOString().split("T")[0]}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-900">
+                      <div>
+                        <div className="mb-1 text-xs font-bold text-slate-500">Guests</div>
+                        <div className="text-sm font-semibold">Total {guests}</div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setGuests(Math.max(1, guests - 1))}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white transition-colors hover:bg-slate-50"
+                        >
+                          <Minus className="h-3.5 w-3.5" />
+                        </button>
+                        <span className="min-w-4 text-center text-sm font-bold">{guests}</span>
+                        <button
+                          onClick={() => setGuests(guests + 1)}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white transition-colors hover:bg-slate-50"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mb-8 space-y-3 border-t border-slate-100 pt-6">
+                    <div className="flex justify-between text-sm text-slate-600">
+                      <span>₩{tour.price?.toLocaleString()} x {guests}</span>
+                      <span>₩{subtotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-slate-600">
+                      <span>Service fee</span>
+                      <span>₩{serviceFee.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-slate-100 pt-3 text-lg font-black text-slate-900">
+                      <span>Total</span>
+                      <span>₩{total.toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    fullWidth
+                    size="lg"
+                    className="h-14 rounded-xl bg-slate-900 text-base font-bold text-white shadow-lg shadow-slate-900/10 transition-all hover:bg-blue-600 disabled:opacity-50"
+                    onClick={handleBooking}
+                    disabled={isPending}
+                  >
+                    {isPending ? "Processing..." : "Book now"}
+                  </Button>
+
+                  <p className="mt-4 text-center text-xs text-slate-400">
+                    You will not be charged until the booking is confirmed.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

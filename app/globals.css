@@ -215,3 +215,10 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* 큰 제목(Hero/Section Title)용 줄 간격 유틸리티 */
+/* 한국어 제목은 영문 대비 시각 밀도가 높아 기본 leading-tight(1.25)만으로는 답답해 보임 */
+/* 1.35 ~ 1.4 정도가 시인성과 밀도 사이에서 가장 균형 잡힌 값 */
+.hero-title {
+  line-height: 1.35;
+}

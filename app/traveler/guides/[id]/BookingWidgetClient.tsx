@@ -1,103 +1,111 @@
 "use client"
 
-import { useState, useTransition, Suspense } from "react"
+import { useState, useTransition } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Calendar } from "@/components/ui/Calendar"
 import { Ban } from "lucide-react"
 import { trackClientConversion } from "@/lib/analytics/client"
+
+type AvailabilityDate = {
+    start_date: string
+}
+
 export default function BookingWidgetClient({
     guideId,
     isProfileComplete,
     rateType,
     hourlyRate,
-    unavailableDates = []
+    unavailableDates = [],
 }: {
-    guideId: string,
-    isProfileComplete: boolean,
-    rateType: string,
-    hourlyRate: number,
-    unavailableDates: any[]
+    guideId: string
+    isProfileComplete: boolean
+    rateType: string
+    hourlyRate: number
+    unavailableDates: AvailabilityDate[]
 }) {
     const router = useRouter()
     const searchParams = useSearchParams()
 
-    // Set default values from URL parameters
-    const defaultStart = searchParams.get('startDate') || ""
-    const defaultEnd = searchParams.get('endDate') || defaultStart
-    const pAdults = searchParams.get('adults')
-    const pChildren = searchParams.get('children')
+    const defaultStart = searchParams.get("startDate") || ""
+    const defaultEnd = searchParams.get("endDate") || defaultStart
+    const pAdults = searchParams.get("adults")
+    const pChildren = searchParams.get("children")
     const defaultAdults = pAdults ? parseInt(pAdults, 10) : 1
     const defaultChildren = pChildren ? parseInt(pChildren, 10) : 0
-    const defaultGuests = (isNaN(defaultAdults) ? 1 : defaultAdults) + (isNaN(defaultChildren) ? 0 : defaultChildren)
+    const defaultGuests =
+        (isNaN(defaultAdults) ? 1 : defaultAdults) +
+        (isNaN(defaultChildren) ? 0 : defaultChildren)
 
     const [isPending, startTransition] = useTransition()
-    const [dateRange, setDateRange] = useState<{ from: string; to: string }>({ from: defaultStart, to: defaultEnd })
-    const [durationHours, setDurationHours] = useState(4) // Default 4 hours for hourly booking
+    const [dateRange, setDateRange] = useState<{ from: string; to: string }>({
+        from: defaultStart,
+        to: defaultEnd,
+    })
+    const [durationHours, setDurationHours] = useState(4)
     const [guests, setGuests] = useState(defaultGuests || 1)
 
-    // Calculate total price based on rateType
     const start = dateRange.from ? new Date(dateRange.from) : null
     const end = dateRange.to ? new Date(dateRange.to) : null
     let days = 0
+
     if (start && end && end >= start) {
-        const diffTime = Math.abs(end.getTime() - start.getTime());
-        days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        const diffTime = Math.abs(end.getTime() - start.getTime())
+        days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
     } else if (start && !end) {
-        days = 1;
+        days = 1
     }
 
-    const totalPrice = rateType === 'hourly'
-        ? hourlyRate * durationHours * guests
-        : hourlyRate * days * guests;
+    const safeUnavailableDates = Array.isArray(unavailableDates) ? unavailableDates : []
+
+    const totalPrice =
+        rateType === "hourly"
+            ? hourlyRate * durationHours * guests
+            : hourlyRate * days * guests
 
     const handleBooking = async () => {
         if (!isProfileComplete) {
-            alert("??媛?대뱶???꾩쭅 ?곸꽭 ?뺣낫瑜??깅줉?섏? ?딆븯?듬땲??");
-            return;
+            alert("가이드 프로필이 아직 완전히 준비되지 않아 예약을 진행할 수 없습니다.")
+            return
         }
+
         if (!dateRange.from) {
-            alert("?ъ뼱 ?좎쭨瑜??좏깮?댁＜?몄슂.")
+            alert("예약 일정을 선택해주세요.")
             return
         }
 
         startTransition(async () => {
-            // 1. 以묐났 ?덉빟 ?щ? 癒쇱? 泥댄겕
             try {
-                const checkRes = await fetch('/api/bookings/check-overlap', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                const checkRes = await fetch("/api/bookings/check-overlap", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         startDate: dateRange.from,
-                        endDate: dateRange.to || dateRange.from
-                    })
-                });
+                        endDate: dateRange.to || dateRange.from,
+                    }),
+                })
 
                 if (checkRes.ok) {
-                    const checkData = await checkRes.json();
-                    if (checkData.isOverlap) {
-                        // 以묐났 ??寃쎄퀬李??꾩슦怨?痍⑥냼?섎㈃ 以묐떒
-                        if (!confirm(checkData.message)) {
-                            return;
-                        }
+                    const checkData = await checkRes.json()
+                    if (checkData.isOverlap && !confirm(checkData.message)) {
+                        return
                     }
                 }
-            } catch (e) {
-                console.error("以묐났 泥댄겕 以??ㅻ쪟 諛쒖깮:", e);
+            } catch (error) {
+                console.error("Failed to validate booking overlap:", error)
             }
 
-            // 2. ?ㅼ젣 ?덉빟 ?앹꽦 吏꾪뻾
             const formData = new FormData()
-            formData.append('guide_id', guideId)
-            formData.append('start_date', dateRange.from)
-            formData.append('end_date', dateRange.to || dateRange.from)
-            formData.append('total_price', totalPrice.toString())
-            formData.append('guests', guests.toString())
+            formData.append("guide_id", guideId)
+            formData.append("start_date", dateRange.from)
+            formData.append("end_date", dateRange.to || dateRange.from)
+            formData.append("total_price", totalPrice.toString())
+            formData.append("guests", guests.toString())
 
-            const res = await fetch('/api/bookings/create', {
-                method: 'POST',
-                body: formData
+            const res = await fetch("/api/bookings/create", {
+                method: "POST",
+                body: formData,
             })
 
             if (res.ok) {
@@ -108,113 +116,139 @@ export default function BookingWidgetClient({
                     currency: "KRW",
                 })
                 alert("예약 요청이 완료되었습니다.")
-                router.push('/traveler/bookings')
-            } else {
-                const data = await res.json()
-                alert(`?덉빟 ?ㅽ뙣: ${data.error}`)
+                router.push("/traveler/bookings")
+                return
             }
+
+            const data = await res.json().catch(() => ({ error: "알 수 없는 오류가 발생했습니다." }))
+            alert(`예약 요청에 실패했습니다: ${data.error}`)
         })
     }
 
     return (
         <Card className="border-slate-200 shadow-xl shadow-slate-200/50">
-            <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4">
-                <CardTitle className="text-lg">?쇱젙 留ㅼ묶 & ?덉빟?섍린</CardTitle>
-                <p className="text-sm text-slate-500 mt-1 font-light">?ъ뼱 ?쇱젙???좏깮??二쇱꽭??</p>
+            <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
+                <CardTitle className="text-lg">일정 선택 및 예약</CardTitle>
+                <p className="mt-1 text-sm font-light text-slate-500">
+                    원하는 일정과 인원을 선택해 예약을 진행하세요.
+                </p>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-
-                <div className={`space-y-4 ${!isProfileComplete ? 'opacity-50 pointer-events-none' : ''}`}>
+            <CardContent className="space-y-6 pt-6">
+                <div className={`space-y-4 ${!isProfileComplete ? "pointer-events-none opacity-50" : ""}`}>
                     <div className="space-y-4">
-                        <label className="block text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wider">?ъ뼱 ?쇱젙 ?좏깮</label>
+                        <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                            여행 일정 선택
+                        </label>
                         <Calendar
                             mode="range"
                             selected={dateRange}
                             onSelect={setDateRange}
                             defaultMonth={dateRange.from ? new Date(dateRange.from) : undefined}
-                            minDate={new Date().toISOString().split('T')[0]}
-                            disabledDates={unavailableDates.map(u => u.start_date.split('T')[0])}
+                            minDate={new Date().toISOString().split("T")[0]}
+                            disabledDates={safeUnavailableDates.map((date) => date.start_date.split("T")[0])}
                             renderDay={(fullDate, isCurrentMonth) => {
-                                const isBlocked = unavailableDates.some(u => {
-                                    const d = u.start_date.split('T')[0];
-                                    return d === fullDate;
-                                });
+                                const isBlocked = safeUnavailableDates.some((date) => {
+                                    const blockedDate = date.start_date.split("T")[0]
+                                    return blockedDate === fullDate
+                                })
+
                                 if (isBlocked && isCurrentMonth) {
                                     return (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-slate-100/50 rounded-xl pointer-events-none">
-                                            <Ban className="w-4 h-4 text-slate-300" />
+                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-slate-100/50">
+                                            <Ban className="h-4 w-4 text-slate-300" />
                                         </div>
                                     )
                                 }
-                                return null;
+
+                                return null
                             }}
                         />
                         {dateRange.from && (
-                            <div className="flex gap-2 text-xs font-bold text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                                <div className="flex-1">?쒖옉: {dateRange.from}</div>
-                                {dateRange.to && <div className="flex-1">醫낅즺: {dateRange.to}</div>}
+                            <div className="flex gap-2 rounded-lg border border-slate-100 bg-slate-50 p-2 text-xs font-bold text-slate-600">
+                                <div className="flex-1">시작일: {dateRange.from}</div>
+                                {dateRange.to && <div className="flex-1">종료일: {dateRange.to}</div>}
                             </div>
                         )}
                     </div>
 
-                    {rateType === 'hourly' && (
-                        <div className="space-y-2 p-3 bg-blue-50/50 rounded-xl border border-blue-100">
-                            <div className="flex justify-between items-center">
-                                <label className="text-sm font-bold text-slate-700">?댁슜 ?쒓컙 (?쒓컙)</label>
-                                <span className="text-accent font-bold">{durationHours}?쒓컙</span>
+                    {rateType === "hourly" && (
+                        <div className="space-y-2 rounded-xl border border-blue-100 bg-blue-50/50 p-3">
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-bold text-slate-700">이용 시간</label>
+                                <span className="font-bold text-accent">{durationHours}시간</span>
                             </div>
                             <input
                                 type="range"
                                 min="1"
                                 max="12"
                                 value={durationHours}
-                                onChange={(e) => setDurationHours(parseInt(e.target.value))}
-                                className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-accent"
+                                onChange={(e) => setDurationHours(parseInt(e.target.value, 10))}
+                                className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-accent"
                             />
-                            <p className="text-[10px] text-slate-500">媛?대뱶? 留뚮궇 ?쒓컙???ㅼ젙?댁＜?몄슂.</p>
+                            <p className="text-[10px] text-slate-500">
+                                가이드와 만날 예상 시간을 조정해보세요.
+                            </p>
                         </div>
                     )}
                 </div>
 
                 {!isProfileComplete && (
-                    <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-center">
-                        <p className="text-xs font-bold text-amber-700">媛?대뱶媛 ?꾩쭅 ?꾨줈?꾩쓣 ?묒꽦 以묒엯?덈떎.</p>
-                        <p className="text-[10px] text-amber-600 mt-1">?곸꽭 ?뺣낫媛 ?깅줉?????덉빟??媛?ν빀?덈떎.</p>
+                    <div className="rounded-xl border border-amber-100 bg-amber-50 p-3 text-center">
+                        <p className="text-xs font-bold text-amber-700">
+                            가이드 상세 프로필이 아직 완전히 준비되지 않았습니다.
+                        </p>
+                        <p className="mt-1 text-[10px] text-amber-600">
+                            프로필 정보가 보완되면 예약 기능이 활성화됩니다.
+                        </p>
                     </div>
                 )}
 
-                <div className={`space-y-2 border-b border-slate-100 pb-6 ${!isProfileComplete ? 'opacity-50 pointer-events-none' : ''}`}>
-                    <label className="block text-sm font-bold text-slate-700">李몄뿬 ?몄썝</label>
-                    <div className="flex items-center justify-between border border-slate-200 rounded-xl p-2 bg-white shadow-sm">
+                <div
+                    className={`space-y-2 border-b border-slate-100 pb-6 ${!isProfileComplete ? "pointer-events-none opacity-50" : ""}`}
+                >
+                    <label className="block text-sm font-bold text-slate-700">예약 인원</label>
+                    <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
                         <button
                             onClick={() => setGuests(Math.max(1, guests - 1))}
-                            className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center hover:bg-slate-50 text-slate-600 border border-slate-100 transition-colors"
-                        >-</button>
-                        <span className="text-sm font-bold text-slate-900">{guests} 명</span>
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-100 text-slate-600 transition-colors hover:bg-slate-50"
+                        >
+                            -
+                        </button>
+                        <span className="text-sm font-bold text-slate-900">{guests}명</span>
                         <button
                             onClick={() => setGuests(guests + 1)}
-                            className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center hover:bg-slate-50 text-slate-600 border border-slate-100 transition-colors"
-                        >+</button>
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-100 text-slate-600 transition-colors hover:bg-slate-50"
+                        >
+                            +
+                        </button>
                     </div>
                 </div>
 
-                <div className={`bg-slate-900 rounded-2xl p-5 text-white shadow-lg space-y-3 ${!isProfileComplete ? 'opacity-50' : ''}`}>
-                    <div className="flex justify-between items-center opacity-80">
-                        <span className="text-xs font-medium">기준 요금 ({rateType === 'hourly' ? '시간당' : '일당'})</span>
-                        <span className="text-xs font-bold font-mono">??{hourlyRate.toLocaleString()}</span>
+                <div
+                    className={`space-y-3 rounded-2xl bg-slate-900 p-5 text-white shadow-lg ${!isProfileComplete ? "opacity-50" : ""}`}
+                >
+                    <div className="flex items-center justify-between opacity-80">
+                        <span className="text-xs font-medium">
+                            기본 요금 ({rateType === "hourly" ? "시간당" : "일당"})
+                        </span>
+                        <span className="font-mono text-xs font-bold">₩{hourlyRate.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between items-end border-t border-white/10 pt-3">
+                    <div className="flex items-end justify-between border-t border-white/10 pt-3">
                         <div>
-                            <p className="text-[10px] uppercase tracking-tighter opacity-60 font-bold">Estimated Total</p>
-                            <p className="text-sm font-medium">?덉긽 珥?湲덉븸</p>
+                            <p className="text-[10px] font-bold uppercase tracking-tighter opacity-60">
+                                Estimated Total
+                            </p>
+                            <p className="text-sm font-medium">예상 결제 금액</p>
                         </div>
-                        <p className="text-2xl font-black">??{totalPrice > 0 ? totalPrice.toLocaleString() : 0}</p>
+                        <p className="text-2xl font-black">
+                            ₩{totalPrice > 0 ? totalPrice.toLocaleString() : 0}
+                        </p>
                     </div>
                 </div>
 
                 <div className="space-y-3 pt-2">
                     <Button
-                        className="w-full h-14 rounded-2xl bg-accent hover:bg-accent/90 text-white font-bold text-lg shadow-lg shadow-accent/20 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+                        className="h-14 w-full rounded-2xl bg-accent text-lg font-bold text-white shadow-lg shadow-accent/20 transition-all hover:scale-[1.02] hover:bg-accent/90 active:scale-95 disabled:opacity-50"
                         onClick={handleBooking}
                         disabled={isPending || !dateRange.from || !isProfileComplete}
                     >
@@ -225,4 +259,3 @@ export default function BookingWidgetClient({
         </Card>
     )
 }
-

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { startTransition, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -24,11 +24,13 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { useI18n } from "@/components/providers/LocaleProvider";
 import {
   expandLanguageSearchTerms,
   GUIDE_LANGUAGE_FILTER_OPTIONS,
   normalizeSearchText,
 } from "@/lib/search/language";
+import { localizePath } from "@/lib/i18n/routing";
 
 type GuideDetail = {
   location?: string | null;
@@ -136,6 +138,7 @@ export default function SearchClient({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { locale } = useI18n();
 
   const [activeTab, setActiveTab] = useState<"guide" | "tour">(
     (searchParams.get("type") as "guide" | "tour") || "guide",
@@ -169,24 +172,24 @@ export default function SearchClient({
     const q = searchParams.get("q") || "";
     const type = searchParams.get("type");
 
-    let hasChanged = false;
+    const shouldSyncKeyword = searchKeyword !== q;
+    const shouldSyncTab = (type === "guide" || type === "tour") && activeTab !== type;
+    const hasChanged = shouldSyncKeyword || shouldSyncTab;
 
-    if (searchKeyword !== q) {
-      setSearchKeyword(q);
-      hasChanged = true;
-    }
-
-    if ((type === "guide" || type === "tour") && activeTab !== type) {
-      setActiveTab(type);
-      hasChanged = true;
-    }
-
-    // 페이지네이션 리셋 제어
     if (hasChanged) {
-      setGuidePage(1);
-      setTourPage(1);
+      startTransition(() => {
+        if (shouldSyncKeyword) {
+          setSearchKeyword(q);
+        }
 
-      // 검색 결과가 있는 경우 부드럽게 스크롤
+        if (shouldSyncTab && (type === "guide" || type === "tour")) {
+          setActiveTab(type);
+        }
+
+        setGuidePage(1);
+        setTourPage(1);
+      });
+
       if (q.trim()) {
         const timeoutId = setTimeout(() => {
           const resultsElement = document.getElementById('search-results');
@@ -510,7 +513,7 @@ export default function SearchClient({
               setSelectedLanguage('상관없음');
               setSortBy('추천순');
               resetPagination();
-              router.replace('/traveler/home?type=guide', { scroll: false });
+              router.replace(localizePath(locale, '/?type=guide'), { scroll: false });
               setIsMobileMenuOpen(false);
             }}
           >
@@ -531,7 +534,7 @@ export default function SearchClient({
               setSelectedCategory('전체');
               setSortBy('추천순');
               resetPagination();
-              router.replace('/traveler/home?type=tour', { scroll: false });
+              router.replace(localizePath(locale, '/?type=tour'), { scroll: false });
               setIsMobileMenuOpen(false);
             }}
           >

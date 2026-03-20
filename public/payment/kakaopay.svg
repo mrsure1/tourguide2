@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="216" height="76" viewBox="0 0 216 76" role="img" aria-labelledby="title desc">
+  <title id="title">KakaoPay</title>
+  <desc id="desc">KakaoPay wordmark on a yellow rounded pill</desc>
+  <rect width="216" height="76" rx="38" fill="#FAE100"/>
+  <path d="M53.2 21c-13.5 0-24.4 9.6-24.4 21.5 0 7 3.9 13.3 10 17.1L35.6 70l11.3-6.9c2 .3 4.1.5 6.3.5 13.5 0 24.4-9.6 24.4-21.5C77.6 30.6 66.7 21 53.2 21Z" fill="#000"/>
+  <text x="84" y="53" fill="#000" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700">pay</text>
+</svg>

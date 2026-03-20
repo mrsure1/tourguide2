@@ -4,8 +4,13 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Loader2, Sparkles, MapPin, Calendar as CalendarIcon, Clock, Star, Download, Search, History } from 'lucide-react';
 import Link from 'next/link';
+import { useI18n } from "@/components/providers/LocaleProvider";
+import { localizePath } from "@/lib/i18n/routing";
 
 export default function ArchivePage() {
+    const { locale } = useI18n();
+    const localePath = (href: string) => localizePath(locale, href);
+
     // Mock data for past tours
     const pastTours = [
         {
@@ -170,7 +175,7 @@ export default function ArchivePage() {
                             </div>
                             <p className="text-lg font-bold text-slate-700 mb-2">이용 내역이 없습니다</p>
                             <p className="text-sm text-slate-500 mb-6 max-w-sm">아직 완료되거나 취소된 투어가 없습니다. <br />새로운 한국의 매력을 찾아 여행을 떠나보세요.</p>
-                            <Link href="/">
+                            <Link href={localePath("/")}>
                                 <Button className="bg-accent hover:bg-blue-600 font-bold px-6 shadow-md">
                                     투어 찾아보기
                                 </Button>

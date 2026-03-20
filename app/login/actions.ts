@@ -69,7 +69,7 @@ export async function login(formData: FormData) {
     revalidatePath('/guide', 'layout')
     revalidatePath('/traveler', 'layout')
     revalidatePath('/guide/dashboard')
-    revalidatePath('/traveler/home')
+    revalidatePath('/')
 
     redirect(targetRole === 'admin' ? '/admin/dashboard' : (targetRole === 'guide' ? '/guide/dashboard' : '/'))
 }

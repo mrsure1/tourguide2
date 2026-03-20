@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button'
 import { Trash2, AlertTriangle, X, Loader2 } from 'lucide-react'
 import { deleteAccount } from '@/app/auth/delete-account/actions'
 import { useRouter } from 'next/navigation'
+import { useI18n } from "@/components/providers/LocaleProvider"
+import { localizePath } from "@/lib/i18n/routing"
 
 interface DeleteAccountButtonProps {
     className?: string
@@ -14,13 +16,14 @@ export function DeleteAccountButton({ className }: DeleteAccountButtonProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [isPending, startTransition] = useTransition()
     const router = useRouter()
+    const { locale } = useI18n()
 
     const handleDelete = () => {
         startTransition(async () => {
             const result = await deleteAccount()
             if (result.success) {
                 setIsOpen(false)
-                router.push('/')
+                router.push(localizePath(locale, '/'))
                 router.refresh()
             } else if (result.error) {
                 alert(result.error)

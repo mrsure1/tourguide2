@@ -28,15 +28,7 @@ export default async function AdminGuidesPage() {
             id,
             full_name,
             avatar_url,
-            guides_detail (
-                id,
-                location,
-                languages,
-                bio,
-                hourly_rate,
-                is_verified,
-                created_at
-            )
+            guides_detail (*)
         `)
         .eq('role', 'guide');
 

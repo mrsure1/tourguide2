@@ -1,0 +1,70 @@
+{
+  "card": {
+    "verified": "Verified",
+    "new": "New",
+    "hourlyGuide": "Hourly guide",
+    "viewDetails": "View details",
+    "viewTourDetailsSr": "Open tour details"
+  },
+  "search": {
+    "datePlaceholder": "Add dates",
+    "invalidDateRange": "Select dates",
+    "destinationLabel": "Destination",
+    "destinationPlaceholder": "Where do you want to go?",
+    "recommendedDestinations": "Suggested destinations",
+    "destinationOptionFallback": "Tour and guide coverage area",
+    "dateLabel": "Dates",
+    "travelersLabel": "Travelers",
+    "guestPlaceholder": "Add guests",
+    "adults": "Adults",
+    "children": "Children",
+    "adultCount": "Adults {count}",
+    "childrenCount": "Children {count}",
+    "searchButton": "Search"
+  },
+  "hero": {
+    "loggedInBadge": "{name}, explore guides and tours for your next trip",
+    "loggedOutBadge": "Choose your destination and dates to compare guides and tours in one place",
+    "titleLine1": "Pick where to go next",
+    "titleLine2": "and find the right guide and experience instantly",
+    "description": "Start with destination, dates, and guest count, then compare local guide matching and tour products in one view. You can quickly discover regional picks and travel themes that fit your plan."
+  },
+  "sections": {
+    "guideResultsTitle": "Guide search results",
+    "guideResultsDescription": "Guides matching your request.",
+    "tourResultsTitle": "Tour search results",
+    "tourResultsDescription": "Tours matching your request.",
+    "emptyResultsTitle": "No exact matches found",
+    "emptyResultsDescription": "We could not find an exact match, but we picked the best guides and tours below for you.",
+    "verifiedExperts": "Verified Experts",
+    "recommendedGuidesTitlePrefix": "Recommended",
+    "recommendedGuidesTitleAccent": "expert guides",
+    "recommendedGuidesDescription": "Meet trusted local experts selected for quality, fit, and on-the-ground experience.",
+    "localExperienceTitlePrefix": "Distinctive",
+    "localExperienceTitleAccent": "local experiences",
+    "localExperienceDescription": "Go beyond standard sightseeing and discover immersive experiences shaped by local insight.",
+    "themeFood": "Food trails",
+    "themePhoto": "Photo spots",
+    "themeHistory": "History routes",
+    "themeNight": "Night views",
+    "themeLocal": "Local favorites",
+    "trendingTours": "Rising tours this week",
+    "halfDayExperiences": "Half-day local experiences",
+    "halfDayDescription": "Short, well-paced, and memorable",
+    "allToursTitle": "All tours",
+    "allToursDescription": "Browse the full catalog."
+  },
+  "guideDetail": {
+    "avatarAlt": "Guide profile picture",
+    "expertGuide": "{location} Expert Guide",
+    "locationFormat": "📍 {location}",
+    "languagesFormat": "Languages: {languages}",
+    "introductionTitle": "Introduction",
+    "noBio": "No introduction available yet.",
+    "reviewTitle": "Traveler Reviews",
+    "anonymousTraveler": "Anonymous Traveler",
+    "noReview": "No reviews yet.\nBe the first to travel with this guide!",
+    "loadingBooking": "Loading booking information..."
+  }
+}
+

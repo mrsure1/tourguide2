@@ -1,43 +1,58 @@
--- ==========================================
--- tours 테이블 (투어 상품 정보)
--- ==========================================
-CREATE TABLE IF NOT EXISTS public.tours (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    guide_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
-    region TEXT NOT NULL,
-    duration INTEGER NOT NULL, -- 소요 시간 (시간 단위)
-    price INTEGER NOT NULL, -- 가격 (원화)
-    max_guests INTEGER NOT NULL DEFAULT 4, -- 최대 인원
-    photo TEXT, -- 썸네일 이미지 URL 또는 Base64
-    included_items TEXT[] DEFAULT '{}', -- 포함 사항
-    is_active BOOLEAN DEFAULT true, -- 활성/비활성 상태
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- tours 테이블 생성 스크립트
+-- 새 구조:
+-- 1. 한국어 원문은 *_ko
+-- 2. 영어 번역본은 *_en
+-- 3. 기존 title/description/region은 하위 호환용으로 유지
+
+create table if not exists public.tours (
+    id uuid primary key default gen_random_uuid(),
+    guide_id uuid not null references public.profiles(id) on delete cascade,
+
+    -- 하위 호환용 legacy 컬럼
+    title text not null,
+    description text not null,
+    region text not null,
+
+    -- 다국어 컬럼
+    title_ko text not null,
+    title_en text,
+    description_ko text not null,
+    description_en text,
+    region_ko text not null,
+    region_en text,
+    meeting_point_ko text,
+    meeting_point_en text,
+    included_items_ko text[] default '{}'::text[],
+    included_items_en text[] default '{}'::text[],
+
+    duration integer not null,
+    price integer not null,
+    max_guests integer not null default 4,
+    photo text,
+    included_items text[] default '{}',
+    is_active boolean default true,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- RLS 설정
-ALTER TABLE public.tours ENABLE ROW LEVEL SECURITY;
+alter table public.tours enable row level security;
 
--- 정책: 누구나 조회 가능
-DROP POLICY IF EXISTS "Allow public read access on tours" ON public.tours;
-CREATE POLICY "Allow public read access on tours" 
-ON public.tours FOR SELECT 
-USING (true);
+drop policy if exists "Allow public read access on tours" on public.tours;
+create policy "Allow public read access on tours"
+on public.tours for select
+using (true);
 
--- 정책: 가이드는 자신의 투어만 관리 가능 (생성/수정/삭제)
-DROP POLICY IF EXISTS "Allow individual tour management" ON public.tours;
-CREATE POLICY "Allow individual tour management" 
-ON public.tours FOR ALL 
-USING (auth.uid() = guide_id);
+drop policy if exists "Allow individual tour management" on public.tours;
+create policy "Allow individual tour management"
+on public.tours for all
+using (auth.uid() = guide_id);
 
--- 인덱스 추가 (검색 및 필터링 성능)
-CREATE INDEX IF NOT EXISTS idx_tours_guide_id ON public.tours(guide_id);
-CREATE INDEX IF NOT EXISTS idx_tours_region ON public.tours(region);
+create index if not exists idx_tours_guide_id on public.tours(guide_id);
+create index if not exists idx_tours_region on public.tours(region);
+create index if not exists idx_tours_region_ko on public.tours(region_ko);
+create index if not exists idx_tours_title_en on public.tours(title_en);
 
--- 업데이트 시간 자동 갱신 트리거
-DROP TRIGGER IF EXISTS update_tours_modtime ON public.tours;
-CREATE TRIGGER update_tours_modtime 
-BEFORE UPDATE ON public.tours 
-FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+drop trigger if exists update_tours_modtime on public.tours;
+create trigger update_tours_modtime
+before update on public.tours
+for each row execute procedure update_modified_column();

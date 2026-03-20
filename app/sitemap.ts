@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next";
+import { DEFAULT_LOCALE, type Locale, SUPPORTED_LOCALES } from "@/lib/i18n/config";
+import { localizePath } from "@/lib/i18n/routing";
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
 
@@ -15,10 +17,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/archive", priority: 0.4, changeFrequency: "monthly" as const },
   ];
 
-  return publicRoutes.map((route) => ({
-    url: `${siteUrl}${route.path}`,
-    lastModified: now,
-    changeFrequency: route.changeFrequency,
-    priority: route.priority,
-  }));
+  return SUPPORTED_LOCALES.flatMap((locale) =>
+    publicRoutes.map((route) => ({
+      url: `${siteUrl}${localizePath(locale as Locale, route.path)}`,
+      lastModified: now,
+      changeFrequency: route.changeFrequency,
+      priority: locale === DEFAULT_LOCALE && route.path === "/" ? route.priority : route.priority - 0.05,
+    })),
+  );
 }

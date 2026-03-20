@@ -4,9 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useI18n } from "@/components/providers/LocaleProvider";
+import { localizePath } from "@/lib/i18n/routing";
 
 export default function HomeSearchClient({ initialKeyword = "" }: { initialKeyword?: string }) {
     const router = useRouter();
+    const { locale } = useI18n();
     const [keyword, setKeyword] = useState(initialKeyword);
 
     const handleSearch = (e?: React.FormEvent) => {
@@ -19,7 +22,8 @@ export default function HomeSearchClient({ initialKeyword = "" }: { initialKeywo
             params.delete('q');
         }
 
-        router.push(`/traveler/home?${params.toString()}`, { scroll: false });
+        const queryString = params.toString();
+        router.push(queryString ? localizePath(locale, `/?${queryString}`) : localizePath(locale, "/"), { scroll: false });
     };
 
     return (

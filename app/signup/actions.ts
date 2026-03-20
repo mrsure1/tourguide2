@@ -25,10 +25,22 @@ export async function signup(formData: FormData) {
     }
 
     // 현재 요청의 오리진(Origin)을 가져와 리다이렉트 URL 생성
+    // referer는 전체 URL(경로+쿼리 포함)이 올 수 있으므로 반드시 origin만 추출해야 함
     const headersList = await headers();
-    const origin = headersList.get('origin') || headersList.get('referer') || (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
-    // trailing slash 제거 및 절대 경로 형성
-    const redirectTo = `${origin.replace(/\/$/, "")}/auth/callback`;
+    const rawOrigin = headersList.get('origin')
+        || headersList.get('referer')
+        || process.env.NEXT_PUBLIC_SITE_URL
+        || 'http://localhost:3000';
+
+    // URL 파싱으로 scheme+host만 안전하게 추출 (Supabase가 전체 URL을 거부하는 문제 방지)
+    let siteOrigin: string;
+    try {
+        const parsed = new URL(rawOrigin);
+        siteOrigin = parsed.origin; // 예: "https://example.com"
+    } catch {
+        siteOrigin = rawOrigin.replace(/\/$/, "");
+    }
+    const redirectTo = `${siteOrigin}/auth/callback`;
 
     // 1. 회원가입
     const { data, error } = await supabase.auth.signUp({
@@ -65,7 +77,7 @@ export async function signup(formData: FormData) {
             {
                 clientIp: headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || headersList.get('x-real-ip') || undefined,
                 userAgent: headersList.get('user-agent') || undefined,
-                eventSourceUrl: `${origin.replace(/\/$/, '')}/signup`,
+                eventSourceUrl: `${siteOrigin}/signup`,
             },
         );
     }
@@ -75,7 +87,7 @@ export async function signup(formData: FormData) {
     // 이메일 인증이 꺼져있는 경우(Confirm Email = Off) 가입 즉시 세션이 생성됩니다.
     // 이 경우 바로 해당 서비스 화면으로 이동시킵니다.
     if (data.session) {
-        redirect(role === 'guide' ? '/guide/dashboard' : '/traveler/home')
+        redirect(role === 'guide' ? '/guide/dashboard' : '/')
     }
 
     // 인증이 필요한 경우 로그인 페이지로 안내합니다.
@@ -106,8 +118,8 @@ export async function switchRole(role: string) {
     revalidatePath('/guide', 'layout')
     revalidatePath('/traveler', 'layout')
     revalidatePath('/guide/dashboard')
-    revalidatePath('/traveler/home')
+    revalidatePath('/')
 
     // 해당 서비스 화면으로 이동
-    redirect(role === 'guide' ? '/guide/dashboard' : '/traveler/home')
+    redirect(role === 'guide' ? '/guide/dashboard' : '/')
 }

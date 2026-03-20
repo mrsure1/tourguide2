@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { CheckCircle2, ChevronLeft, ShieldAlert, X } from "lucide-react";
 import { trackClientConversion } from "@/lib/analytics/client";
+import { useI18n } from "@/components/providers/LocaleProvider";
+import { localizePath } from "@/lib/i18n/routing";
 
 const messages: Record<string, string> = {
   success: "결제가 정상적으로 완료되었습니다. 예약 내역을 새로고침하고 이 창을 닫습니다.",
@@ -18,6 +20,7 @@ const messages: Record<string, string> = {
 export default function PaymentPopupResultClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { locale } = useI18n();
   const status = searchParams.get("status") || "error";
   const rawMessage = searchParams.get("message") || "";
   const bookingId = searchParams.get("bookingId") || "";
@@ -33,7 +36,7 @@ export default function PaymentPopupResultClient() {
     });
 
     if (window.opener && !window.opener.closed) {
-      window.opener.location.href = `${window.location.origin}/traveler/bookings?payment=success`;
+      window.opener.location.href = `${window.location.origin}${localizePath(locale, "/traveler/bookings?payment=success")}`;
     }
 
     const timer = window.setTimeout(() => {
@@ -100,7 +103,7 @@ export default function PaymentPopupResultClient() {
               이전 단계로
             </Button>
           )}
-          <Link href="/traveler/bookings" className="block">
+          <Link href={localizePath(locale, "/traveler/bookings")} className="block">
             <Button
               type="button"
               variant="outline"

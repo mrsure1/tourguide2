@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
 import { NotificationPopup } from "@/components/notification/NotificationPopup";
+import { useI18n } from "@/components/providers/LocaleProvider";
+import { localizePath } from "@/lib/i18n/routing";
 
 export function TravelerNav() {
     const pathname = usePathname();
+    const { locale } = useI18n();
     const navLinks = [
-        { href: "/traveler/search", label: "가이드 탐색" },
-        { href: "/traveler/bookings", label: "내 여행 (예약)" },
-        { href: "/messages", label: "메시지" },
+        { href: localizePath(locale, "/traveler/search"), label: "가이드 검색" },
+        { href: localizePath(locale, "/traveler/bookings"), label: "내 여행 (예약)" },
+        { href: localizePath(locale, "/messages"), label: "메시지" },
     ];
 
     return (

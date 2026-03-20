@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/Card";
 import { Clock, Loader2, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { fetchToursAction } from "./actions";
@@ -9,11 +8,13 @@ import { cn } from "@/lib/utils";
 
 interface Tour {
     id: string;
-    title: string;
+    title?: string | null;
+    title_en?: string | null;
     photo: string | null;
     price: number;
     duration: number;
-    region: string;
+    region: string | null;
+    region_en?: string | null;
     profiles: {
         full_name: string;
         avatar_url: string | null;
@@ -99,6 +100,8 @@ function TourItem({ tour, idx }: { tour: Tour, idx: number }) {
     const photos = tour.photo ? tour.photo.split(',') : ['https://images.unsplash.com/photo-1544750040-4ea9b8a27d38?q=80&w=800'];
     const scrollRef = useRef<HTMLDivElement>(null);
     const [currentIdx, setCurrentIdx] = useState(0);
+    const title = tour.title_en || "Recommended tour";
+    const region = tour.region_en || "Seoul";
 
     const handleScroll = () => {
         if (scrollRef.current) {
@@ -134,11 +137,11 @@ function TourItem({ tour, idx }: { tour: Tour, idx: number }) {
                         >
                             {photos.map((photo, index) => (
                                 <div key={index} className="relative h-full w-full shrink-0 snap-start">
-                                    <img
-                                        src={photo}
-                                        alt={`${tour.title} - ${index + 1}`}
-                                        className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
-                                    />
+                                        <img
+                                            src={photo}
+                                            alt={`${title} - ${index + 1}`}
+                                            className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                                        />
                                 </div>
                             ))}
                         </div>
@@ -192,7 +195,7 @@ function TourItem({ tour, idx }: { tour: Tour, idx: number }) {
                     )}
 
                     <div className="absolute left-4 top-4 z-10 rounded-full bg-white/92 px-3 py-1 text-xs font-semibold text-slate-900 backdrop-blur">
-                        {tour.region}
+                        {region}
                     </div>
                 </div>
 
@@ -201,7 +204,7 @@ function TourItem({ tour, idx }: { tour: Tour, idx: number }) {
                     className="flex flex-1 flex-col gap-4 p-5"
                 >
                     <h3 className="line-clamp-2 text-base font-semibold text-slate-900 group-hover:text-blue-600 transition-colors h-12">
-                        {tour.title}
+                        {title}
                     </h3>
                     <div className="flex items-center justify-between mt-auto border-t border-slate-100 pt-4">
                         <div className="flex items-center gap-4 text-xs text-slate-500 font-medium">

@@ -1,0 +1,70 @@
+{
+  "card": {
+    "verified": "인증",
+    "new": "신규",
+    "hourlyGuide": "시간당 가이드",
+    "viewDetails": "자세히 보기",
+    "viewTourDetailsSr": "상세보기"
+  },
+  "search": {
+    "datePlaceholder": "날짜 추가",
+    "invalidDateRange": "날짜 선택",
+    "destinationLabel": "여행지",
+    "destinationPlaceholder": "어디로 떠날까요?",
+    "recommendedDestinations": "추천 여행지",
+    "destinationOptionFallback": "투어/가이드 제공 지역",
+    "dateLabel": "날짜",
+    "travelersLabel": "여행자",
+    "guestPlaceholder": "게스트 추가",
+    "adults": "성인",
+    "children": "어린이",
+    "adultCount": "성인 {count}명",
+    "childrenCount": "어린이 {count}명",
+    "searchButton": "검색"
+  },
+  "hero": {
+    "loggedInBadge": "{name}님, 이번 여행에 맞는 가이드와 상품을 골라보세요",
+    "loggedOutBadge": "지역과 일정만 고르면 가이드와 여행상품을 바로 비교할 수 있습니다",
+    "titleLine1": "어디로 떠날지 고르면",
+    "titleLine2": "잘 맞는 가이드와 여행을 바로 찾습니다",
+    "description": "지역, 날짜, 인원을 먼저 선택하고 현지 가이드 매칭과 관광상품을 한 화면에서 비교해보세요. 지역별 추천은 물론 여행 테마에 맞는 선택지도 빠르게 찾을 수 있습니다."
+  },
+  "sections": {
+    "guideResultsTitle": "가이드 검색 결과",
+    "guideResultsDescription": "요청하신 조건에 맞는 가이드 목록입니다.",
+    "tourResultsTitle": "투어 검색 결과",
+    "tourResultsDescription": "요청하신 조건에 맞는 투어 상품입니다.",
+    "emptyResultsTitle": "매칭된 검색 결과가 없습니다.",
+    "emptyResultsDescription": "검색한 결과가 정확히는 없지만 다음 추천 상품을 안내해 드립니다. 아래의 전문 가이드 및 인기 투어를 확인해 보세요.",
+    "verifiedExperts": "Verified Experts",
+    "recommendedGuidesTitlePrefix": "맞춤형 추천",
+    "recommendedGuidesTitleAccent": "전문 가이드",
+    "recommendedGuidesDescription": "당신의 취향에 딱 맞는 현지 전문가를 만나보세요. 깐깐한 검증을 거친 베스트 가이드들입니다.",
+    "localExperienceTitlePrefix": "특별한",
+    "localExperienceTitleAccent": "로컬 익스피리언스",
+    "localExperienceDescription": "뻔한 관광지 말고, 현지인처럼 즐기는 생생한 체험들을 테마별로 만나보세요.",
+    "themeFood": "미식 탐방",
+    "themePhoto": "인생샷 투어",
+    "themeHistory": "역사 여행",
+    "themeNight": "야경 명소",
+    "themeLocal": "현지 명소",
+    "trendingTours": "이번 주 급상승 투어",
+    "halfDayExperiences": "반나절 현지 체험",
+    "halfDayDescription": "짧지만 완벽한 여행",
+    "allToursTitle": "전체 투어 상품",
+    "allToursDescription": "모든 상품을 확인하세요."
+  },
+  "guideDetail": {
+    "avatarAlt": "가이드 프로필 사진",
+    "expertGuide": "{location} 전문 가이드",
+    "locationFormat": "📍 {location}",
+    "languagesFormat": "언어: {languages}",
+    "introductionTitle": "가이드 소개",
+    "noBio": "소개글이 아직 없습니다.",
+    "reviewTitle": "여행자 후기",
+    "anonymousTraveler": "익명 방문자",
+    "noReview": "아직 등록된 후기가 없습니다.\n이 가이드와 첫 여행을 떠나보세요!",
+    "loadingBooking": "예약 정보 불러오는 중..."
+  }
+}
+

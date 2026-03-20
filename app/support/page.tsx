@@ -2,8 +2,15 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { Search, MessageCircle, HelpCircle, ChevronRight, BookOpen, FileText } from "lucide-react";
+import { InfoHeader } from "@/components/layout/InfoHeader";
+import { ChannelTalkCard } from "@/components/support/ChannelTalkCard";
+import { getRequestLocale } from "@/lib/i18n/get-request-locale";
+import { localizePath } from "@/lib/i18n/routing";
 
-export default function SupportPage() {
+export default async function SupportPage() {
+    const locale = await getRequestLocale();
+    const localePath = (href: string) => localizePath(locale, href);
+
     const faqs = [
         {
             q: "예약한 투어를 취소하고 싶습니다.",
@@ -31,6 +38,8 @@ export default function SupportPage() {
     ];
 
     return (
+        <div className="w-full">
+            <InfoHeader />
         <div className="min-h-screen bg-slate-50 relative overflow-hidden flex flex-col items-center animate-fade-in">
             {/* Ambient Background */}
             <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-accent/5 rounded-full filter blur-[120px] pointer-events-none -z-10" />
@@ -60,34 +69,40 @@ export default function SupportPage() {
                 </div>
 
                 {/* Quick Links Section */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-16">
-                    <Card className="hover:border-accent/50 hover:shadow-md transition-all duration-300 cursor-pointer group bg-white border-slate-200/60 overflow-hidden relative">
-                        <div className="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110" />
-                        <CardContent className="flex items-center gap-5 p-6 md:p-8">
-                            <div className="w-14 h-14 rounded-2xl bg-blue-100/50 flex items-center justify-center text-accent shrink-0 group-hover:-translate-y-1 transition-transform duration-300">
-                                <MessageCircle className="w-7 h-7" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-bold text-slate-900 text-lg md:text-xl mb-1 group-hover:text-accent transition-colors">1:1 문의하기</h3>
-                                <p className="text-sm text-slate-500">도움이 필요하시면 언제든 남겨주세요.</p>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-accent transition-colors shrink-0" />
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
+                    <ChannelTalkCard />
 
-                    <Card className="hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 cursor-pointer group bg-white border-slate-200/60 overflow-hidden relative">
-                        <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110" />
-                        <CardContent className="flex items-center gap-5 p-6 md:p-8">
-                            <div className="w-14 h-14 rounded-2xl bg-emerald-100/50 flex items-center justify-center text-emerald-600 shrink-0 group-hover:-translate-y-1 transition-transform duration-300">
-                                <HelpCircle className="w-7 h-7" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-bold text-slate-900 text-lg md:text-xl mb-1 group-hover:text-emerald-600 transition-colors">자주 묻는 질문</h3>
-                                <p className="text-sm text-slate-500">가장 많이 찾는 답변을 모았습니다.</p>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors shrink-0" />
-                        </CardContent>
-                    </Card>
+                    <Link href={localePath("/support/inquiry")} className="block outline-none">
+                      <Card className="h-full hover:border-accent/50 hover:shadow-md transition-all duration-300 cursor-pointer group bg-white border-slate-200/60 overflow-hidden relative">
+                          <div className="absolute right-0 top-0 w-24 h-24 bg-accent/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110" />
+                          <CardContent className="flex items-center gap-5 p-6 md:p-8">
+                              <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shrink-0 group-hover:-translate-y-1 transition-transform duration-300">
+                                  <FileText className="w-7 h-7" />
+                              </div>
+                              <div className="flex-1">
+                                  <h3 className="font-bold text-slate-900 text-lg md:text-xl mb-1 group-hover:text-accent transition-colors">1:1 문의 메일</h3>
+                                  <p className="text-[13px] text-slate-500">직접 양식을 작성해 문의합니다.</p>
+                              </div>
+                              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-accent transition-colors shrink-0" />
+                          </CardContent>
+                      </Card>
+                    </Link>
+
+                    <Link href={localePath("/support#faq")} className="block outline-none">
+                      <Card className="h-full hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 cursor-pointer group bg-white border-slate-200/60 overflow-hidden relative">
+                          <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110" />
+                          <CardContent className="flex items-center gap-5 p-6 md:p-8">
+                              <div className="w-14 h-14 rounded-2xl bg-emerald-100/50 flex items-center justify-center text-emerald-600 shrink-0 group-hover:-translate-y-1 transition-transform duration-300">
+                                  <HelpCircle className="w-7 h-7" />
+                              </div>
+                              <div className="flex-1">
+                                  <h3 className="font-bold text-slate-900 text-lg md:text-xl mb-1 group-hover:text-emerald-600 transition-colors">자주 묻는 질문</h3>
+                                  <p className="text-[13px] text-slate-500">가장 많이 찾는 답변 모음.</p>
+                              </div>
+                              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors shrink-0" />
+                          </CardContent>
+                      </Card>
+                    </Link>
                 </div>
 
                 {/* Categories */}
@@ -134,13 +149,14 @@ export default function SupportPage() {
 
                 {/* Footer Links */}
                 <div className="mt-20 pt-8 border-t border-slate-200/80 text-center flex flex-wrap justify-center gap-6 text-sm font-bold text-slate-500">
-                    <Link href="/terms" className="hover:text-slate-900 transition-colors">이용약관</Link>
+                    <Link href={localePath("/terms")} className="hover:text-slate-900 transition-colors">이용약관</Link>
                     <span className="w-1 h-1 rounded-full bg-slate-300 self-center hidden sm:block"></span>
-                    <Link href="/terms?type=privacy" className="hover:text-slate-900 transition-colors">개인정보처리방침</Link>
+                    <Link href={localePath("/terms?type=privacy")} className="hover:text-slate-900 transition-colors">개인정보처리방침</Link>
                     <span className="w-1 h-1 rounded-full bg-slate-300 self-center hidden sm:block"></span>
                     <Link href="#" className="hover:text-slate-900 transition-colors">운영정책</Link>
                 </div>
             </div>
+        </div>
         </div>
     );
 }
