@@ -1,5 +1,6 @@
 import { getTourById } from "@/app/guide/tours/actions";
 import { notFound, unstable_rethrow } from "next/navigation";
+import Link from "next/link";
 import { Suspense } from "react";
 import { getRequestLocale } from "@/lib/i18n/get-request-locale";
 import { getDictionary } from "@/lib/i18n/dictionary";
@@ -49,9 +50,9 @@ export default async function TourDetailPage({ params }: { params: Promise<{ id:
           요청하신 투어 정보를 불러오는 중 예상치 못한 문제가 발생했습니다. <br/>
           잠시 후 다시 시도해 주세요.
         </p>
-        <a href="/" className="px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-colors">
+        <Link href="/" className="px-6 py-3 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-colors">
           홈으로 돌아가기
-        </a>
+        </Link>
       </div>
     );
   }

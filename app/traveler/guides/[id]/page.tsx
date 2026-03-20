@@ -1,10 +1,10 @@
-import { Suspense } from "react"
 import { notFound, unstable_rethrow } from "next/navigation"
 import { getRequestLocale } from "@/lib/i18n/get-request-locale"
 import { getDictionary } from "@/lib/i18n/dictionary"
 import { localizeLanguageList, localizeLocationLabel } from "@/lib/i18n/display"
 import { getGuideData, getGuideReviews } from "@/app/traveler/guides/actions"
 import GuideDetailClient from "./GuideDetailClient"
+import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 
@@ -92,7 +92,7 @@ export default async function GuideDetail({ params }: { params: Promise<{ id: st
             <div className="p-20 text-center">
                 <h1 className="text-2xl font-bold text-slate-900 mb-4">페이지를 로드할 수 없습니다.</h1>
                 <p className="text-slate-500 mb-8">서버와의 연결이 원활하지 않거나 데이터가 존재하지 않습니다.</p>
-                <a href="/" className="px-6 py-2 bg-slate-900 text-white rounded-xl font-bold">홈으로 가기</a>
+                <Link href="/" className="px-6 py-2 bg-slate-900 text-white rounded-xl font-bold">홈으로 가기</Link>
             </div>
         )
     }

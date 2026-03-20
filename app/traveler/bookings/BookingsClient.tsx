@@ -28,10 +28,12 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
     // Ensure state stays in sync with URL (e.g., back button)
     useEffect(() => {
         const tab = searchParams.get("tab");
-        if (tab && tab !== activeStatus) {
-            setActiveStatus(tab);
+        if (!tab) {
+            return;
         }
-    }, [searchParams, activeStatus]);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setActiveStatus((current) => (current === tab ? current : tab));
+    }, [searchParams]);
 
     const now = new Date();
 

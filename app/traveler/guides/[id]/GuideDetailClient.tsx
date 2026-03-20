@@ -1,9 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import Link from "next/link"
 import { Card } from "@/components/ui/Card"
-import { Button } from "@/components/ui/Button"
 // import { Zap } from "lucide-react" 삭제
 import { Suspense } from "react"
 import BookingWidgetClient from "./BookingWidgetClient"
@@ -15,7 +13,6 @@ export default function GuideDetailClient({
     unavailabilities,
     reviews,
     t,
-    locale,
     formattedLocation,
     languagesString,
     localizedBio
@@ -114,7 +111,7 @@ export default function GuideDetailClient({
                                                         ))}
                                                     </div>
                                                 </div>
-                                                <p className="text-slate-600 leading-relaxed italic">"{review.content}"</p>
+                                                <p className="text-slate-600 leading-relaxed italic">&ldquo;{review.content}&rdquo;</p>
                                             </div>
                                         </div>
                                     </Card>
