@@ -1,0 +1,138 @@
+{
+  "metadata": {
+    "title": "GuideMatch Service Value | GuideMatch",
+    "description": "Introducing GuideMatch's tour philosophy, operation standards, and service values implemented through verified local guides and travelers."
+  },
+  "hero": {
+    "badge": "The most sophisticated way to connect local guides and travelers",
+    "titleLine1": "Not just about GuideMatch intro,",
+    "titleLine2": "Explaining the criteria",
+    "titleSuffix": "for travel quality",
+    "description": "GuideMatch creates a structure where verified local guides and travelers connect directly. Starting from the premise that who you travel with determines the density of your journey, we design a booking experience where guide expertise and traveler taste align perfectly.",
+    "matching": {
+      "label": "Matching",
+      "title": "Profile-centric Matching",
+      "desc": "Compare travel purposes and guide strengths directly to choose."
+    },
+    "trust": {
+      "label": "Trust",
+      "title": "Verification-based Trust",
+      "desc": "Operating attitude and expertise are more important than intro text."
+    },
+    "experience": {
+      "label": "Experience",
+      "title": "High-sensitivity Local Experience",
+      "desc": "We aim for travel that interprets the region rather than just consuming famous spots."
+    },
+    "ctaTraveler": "View Tours for Travelers",
+    "ctaGuide": "Start Guide Registration",
+    "standardBadge": "GuideMatch Standard",
+    "standardText": "When traveler's taste and guide's expertise meet accurately, travel becomes much deeper."
+  },
+  "perspective": {
+    "label": "Our Perspective",
+    "title": "Why a travel platform\nneeds brand standards",
+    "description": "Many travel services focus on location and price. However, actual satisfaction varies greatly depending on who you travel with and in what flow. GuideMatch focuses on narrowing that gap. We believe a better experience can be created repeatedly only when there's a structure connecting guide expertise, traveler taste, and field context.",
+    "quote": "A good guide doesn't just show the way. They change the way travelers understand the city."
+  },
+  "values": {
+    "transparency": {
+      "title": "Transparent Booking Structure",
+      "description": "Travelers can clearly check and choose product descriptions, inclusions, schedules, and price structures. Guides explain the value of the experience they designed themselves."
+    },
+    "expertise": {
+      "title": "Verified Local Expertise",
+      "description": "Our profile-centric structure considering city understanding, language skills, tour experience, and attitude helps judge the quality of travel."
+    },
+    "design": {
+      "title": "Real Local Experience Design",
+      "description": "We pursue human-centered experience design that conveys the context and story of the region, beyond just consuming spots."
+    }
+  },
+  "howItWorks": {
+    "label": "How It Works",
+    "title": "The process of travelers\nand guides meeting better",
+    "description": "The core of GuideMatch is the selection process rather than the booking itself. Satisfaction increases when information is clearly visible, comparison is possible, and expectations on site are met. That's why we emphasize explanatory power in the pre-matching stage.",
+    "matchingLabel": "Editorial Matching",
+    "matchingText": "We build a structure where the grounds for selection remain, not just a simple booking flow.",
+    "step1": {
+      "title": "Define travel goals and tastes",
+      "description": "Clearly organize the direction of the desired experience based on city, schedule, persons, and themes. The right guide varies depending on whether it's a family trip, food exploration, or cultural commentary."
+    },
+    "step2": {
+      "title": "Compare profiles and choose directly",
+      "description": "You can choose a partner who fits your trip by looking at the guide's intro, operating style, language, expertise, and suggested routes."
+    },
+    "step3": {
+      "title": "Deeper travel starts on site",
+      "description": "Beyond simple movement and explanation, complete the experience with a speed and atmosphere tailored to the traveler's tendency by understanding the context of the region."
+    }
+  },
+  "benefits": {
+    "label": "Built For Both Sides",
+    "title": "A platform that makes sense\nfor both travelers and guides",
+    "traveler": {
+      "title": "For Travelers",
+      "description": "We provide an information structure where you can actually choose the right person for your trip and predict the outcome, rather than just ending at search results.",
+      "list": [
+        "Directly compare and choose guides matching your travel style",
+        "Free itineraries away from the uniform routes of group packages",
+        "Deeply understand local context without language and culture barriers"
+      ],
+      "tags": ["Curated Match", "Flexible Itinerary", "Local Context"]
+    },
+    "guide": {
+      "title": "For Guides",
+      "description": "A good guide doesn't grow by just getting more bookings. Sustainable operation is possible only when they clearly show their expertise and style and meet customers who fit them.",
+      "list": [
+        "A digital space to showcase your own travel philosophy and expertise",
+        "Increased service satisfaction by connecting with like-minded travelers",
+        "A fair compensation system and protection guaranteed from the booking stage"
+      ],
+      "revenue": {
+        "title": "Revenue",
+        "desc": "Design your settlement flow and sales structure more clearly."
+      },
+      "profile": {
+        "title": "Profile",
+        "desc": "Your profile and content become the guide's brand asset."
+      }
+    }
+  },
+  "gallery": {
+    "label": "Scene Gallery",
+    "title": "Moments where real travel becomes richer",
+    "description": "Images are not just decorations; they are evidence of the depth and presence of the travel that GuideMatch aims for.",
+    "card1": {
+      "title": "Hidden Alley Tour",
+      "description": "Walk through the real back alleys of Seoul that only guides know, not shown on maps."
+    },
+    "card2": {
+      "title": "Local Gourmet Experience",
+      "description": "Meet real flavors in markets and old shops where local lives are lived, not in tourist restaurants."
+    },
+    "card3": {
+      "title": "Rediscovery of Cultural Heritage",
+      "description": "Feel the breath of history reinterpreted in current perspectives, not just textbook explanations."
+    }
+  },
+  "promise": {
+    "label": "GuideMatch Promise",
+    "title": "The core of a more professional-looking service is\nclear standards rather than good-looking sentences",
+    "description": "GuideMatch aims to be a platform that connects people and experiences more sophisticatedly, not just a platform that sells travel. We help travelers find better-fitting guides and guides create more memorable services.",
+    "ctaTour": "Browse Tours",
+    "ctaJoin": "Register as Partner Guide",
+    "trust": {
+      "label": "Trust",
+      "desc": "Travel platform with an explainable trust structure"
+    },
+    "partnership": {
+      "label": "Partnership",
+      "desc": "Operation considering the balance between traveler satisfaction and guide growth"
+    },
+    "locality": {
+      "label": "Locality",
+      "desc": "Local experiences that make you understand rather than just consume the city"
+    }
+  }
+}
