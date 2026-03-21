@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Globe2, HeartHandshake, Map, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { InfoHeader } from "@/components/layout/InfoHeader";
 import { getRequestLocale } from "@/lib/i18n/get-request-locale";
-import { localizePath } from "@/lib/utils";
+import { localizePath } from "@/lib/i18n/routing";
 
 type LocaleCode = "ko" | "en";
 
@@ -78,7 +78,7 @@ const translations: Record<
       headingSuffix: string;
       description: string;
       bullets: string[];
-      pillars: { title: string; body: string; }[];
+      pillars: { icon: any; title: string; body: string; }[];
     };
     cta: {
       heading: string;
