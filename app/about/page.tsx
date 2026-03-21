@@ -1,331 +1,247 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight, Globe2, HeartHandshake, Map, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { InfoHeader } from "@/components/layout/InfoHeader";
-import { getRequestLocale } from "@/lib/i18n/get-request-locale";
-import { localizePath } from "@/lib/i18n/routing";
+import {
+  ArrowRight,
+  BadgeCheck,
+  Briefcase,
+  CalendarCheck2,
+  Camera,
+  CreditCard,
+  Globe2,
+  HeartHandshake,
+  Map,
+  ShieldCheck,
+  Sparkles,
+  Users,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import type { Metadata } from "next";
 
-type LocaleCode = "ko" | "en";
+export const metadata: Metadata = {
+  title: "가이드매치 소개 | GuideMatch",
+  description:
+    "검증된 로컬 가이드와 여행자를 연결하는 GuideMatch의 비전, 운영 기준, 서비스 가치를 소개합니다.",
+};
 
-const localeSwitcher = [
-  { code: "ko", label: "한국어" },
-  { code: "en", label: "English" },
-] as const;
-
-const valueCards: {
-  icon: typeof ShieldCheck;
-  accent: string;
-  iconColor: string;
-  title: Record<LocaleCode, string>;
-  description: Record<LocaleCode, string>;
-}[] = [
+const valueCards = [
   {
+    title: "투명한 예약 구조",
+    description:
+      "여행자는 상품 설명, 포함 사항, 일정, 가격 구조를 분명하게 확인하고 선택할 수 있습니다. 가이드는 자신이 설계한 경험의 가치를 직접 설명합니다.",
     icon: ShieldCheck,
-    accent: "from-blue-500 to-cyan-400",
-    iconColor: "text-blue-600",
-    title: {
-      ko: "투명한 신뢰 (Trust)",
-      en: "Transparent Trust",
-    },
-    description: {
-      ko: "숨겨진 수수료나 패키지 쇼핑 강요 없이, 약속된 일정과 비용 그대로 안전한 여행을 보장합니다.",
-      en: "No hidden fees or forced shopping—just the promised itinerary and costs for a safe trip.",
-    },
+    accent: "from-sky-500 to-cyan-400",
+    iconStyle: "bg-sky-100 text-sky-700",
   },
   {
-    icon: HeartHandshake,
+    title: "검증된 현지 전문성",
+    description:
+      "도시 이해도, 언어 역량, 진행 경험, 응대 태도까지 고려한 프로필 중심 구조로 여행의 품질을 판단할 수 있게 돕습니다.",
+    icon: BadgeCheck,
     accent: "from-emerald-500 to-teal-400",
-    iconColor: "text-emerald-600",
-    title: {
-      ko: "상생 (Coexistence)",
-      en: "Coexistence",
-    },
-    description: {
-      ko: "업계 최저 수준의 합리적인 수수료율을 통해 파트너 가이드의 전문성과 열정에 합당한 보상을 지원합니다.",
-      en: "Fair commissions reward guides for their expertise and passion, fostering a sustainable ecosystem.",
-    },
+    iconStyle: "bg-emerald-100 text-emerald-700",
   },
   {
+    title: "진짜 로컬 경험 설계",
+    description:
+      "명소 소비형 여행에서 끝나지 않도록, 지역의 맥락과 스토리를 전달하는 사람 중심의 경험 설계를 추구합니다.",
     icon: Globe2,
-    accent: "from-purple-500 to-pink-400",
-    iconColor: "text-purple-600",
-    title: {
-      ko: "로컬 경험 (Local)",
-      en: "Local Experience",
-    },
-    description: {
-      ko: "단순 관광지 방문을 넘어 현지인만 아는 진짜 이야기와 생생한 문화를 여행자에게 선사합니다.",
-      en: "Go beyond tourist icons to discover living local stories and the authentic rhythm of everyday life.",
-    },
+    accent: "from-amber-500 to-orange-400",
+    iconStyle: "bg-amber-100 text-amber-700",
   },
 ];
 
-const translations: Record<
-  LocaleCode,
+const processSteps = [
   {
-    hero: {
-      badge: string;
-      titlePrefix: string;
-      titleAccent: string;
-      titleSuffix: string;
-      description: string;
-      primaryCta: string;
-      secondaryCta: string;
-    };
-    story: {
-      headingPrefix: string;
-      headingAccent: string;
-      headingSuffix: string;
-      description: string;
-      bullets: string[];
-      pillars: { icon: any; title: string; body: string; }[];
-    };
-    cta: {
-      heading: string;
-      description: string;
-      label: string;
-    };
-  }
-> = {
-  ko: {
-    hero: {
-      badge: "로컬 여행의 패러다임을 바꿉니다",
-      titlePrefix: "당신만의 ",
-      titleAccent: "완벽한 가이드",
-      titleSuffix: "를 만나는 가장 쉬운 방법",
-      description:
-        "가이드매치는 검증된 로컬 전문가와 특별한 여행을 꿈꾸는 여행자를 직접 연결하여, 중간 마진 없이 투명하고 신뢰할 수 있는 진짜 여행 생태계를 만들어갑니다.",
-      primaryCta: "인기 투어 찾아보기",
-      secondaryCta: "가이드로 합류하기",
-    },
-    story: {
-      headingPrefix: "여행의 스토리는",
-      headingAccent: "누구와 함께하느냐",
-      headingSuffix: "에 따라 달라집니다",
-      description:
-        "가이드매치는 단순한 여행 포털이 아닙니다. 엄격한 심사를 거친 검증된 로컬 전문가들의 프로필과 실제 여행자들의 생생한 리뷰를 바탕으로, 내 취향에 딱 맞는 동반자를 직접 선택할 수 있습니다.",
-      bullets: [
-        "철저한 가이드 신원 및 자격 증명 검증 시스템",
-        "전 세계 다양한 도시 글로벌 네트워크 활성화",
-      ],
-      pillars: [
-        {
-          icon: Users,
-          title: "여행자를 위해",
-          body: "1:1 맞춤형 전담 투어부터 알찬 소규모 그룹 투어까지, 안전하고 편리한 간편 결제를 지원합니다.",
-        },
-        {
-          icon: Map,
-          title: "파트너 가이드를 위해",
-          body: "내 맘대로 일정을 관리하고 나만의 특별한 투어 상품을 기획하여 정당한 수준의 수익을 창출하세요.",
-        },
-      ],
-    },
-    cta: {
-      heading: "지금 바로 새로운 여행을 시작해 볼까요?",
-      description: "가이드매치와 함께 평생 잊지 못할 당신만의 특별한 추억을 만들어보세요.",
-      label: "어디로 떠나고 싶으신가요?",
-    },
-  },
-  en: {
-    hero: {
-      badge: "Reinventing how local travel connects",
-      titlePrefix: "Meet your perfect ",
-      titleAccent: "local guide",
-      titleSuffix: " effortlessly",
-      description:
-        "GuideMatch pairs verified local experts with travelers so you skip the middleman and step into trustworthy, immersive journeys.",
-      primaryCta: "Explore popular tours",
-      secondaryCta: "Join as a guide",
-    },
-    story: {
-      headingPrefix: "Travel stories",
-      headingAccent: "change depending on who you travel with",
-      headingSuffix: "",
-      description:
-        "GuideMatch isn't just another travel portal. We highlight vetted local experts and real traveler reviews so you can choose the companion who matches your pace.",
-      bullets: [
-        "Rigorous verification of guide identity and credentials",
-        "An expanding global network that keeps local insight fresh in every city",
-      ],
-      pillars: [
-        {
-          icon: Users,
-          title: "For travelers",
-          body: "From bespoke private tours to small-group departures, we handle safe, frictionless checkouts.",
-        },
-        {
-          icon: Map,
-          title: "For partner guides",
-          body: "Design your own schedule and turn signature experiences into fair, repeatable income.",
-        },
-      ],
-    },
-    cta: {
-      heading: "Ready to start a new kind of trip?",
-      description: "Let GuideMatch help you craft unforgettable memories.",
-      label: "Where to next?",
-    },
-  },
-};
-
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getRequestLocale();
-
-  return {
-    title: locale === "ko" ? "GuideMatch 소개 | GuideMatch" : "About GuideMatch | GuideMatch",
+    step: "01",
+    title: "여행 목적과 취향을 구체화합니다",
     description:
-      locale === "ko"
-        ? "GuideMatch는 검증된 로컬 가이드와 여행자를 연결해 경험의 밀도를 높이는 서비스를 제공합니다."
-        : "GuideMatch connects verified local guides with travelers for richer, more trustworthy trips.",
-  };
-}
+      "도시, 일정, 인원, 관심 테마를 기준으로 원하는 경험의 방향을 선명하게 정리합니다. 가족 여행인지, 미식 탐방인지, 문화 해설 중심인지에 따라 적합한 가이드는 달라집니다.",
+    icon: Sparkles,
+  },
+  {
+    step: "02",
+    title: "프로필을 비교하고 직접 선택합니다",
+    description:
+      "가이드의 소개, 운영 스타일, 언어, 전문 영역, 제안 가능한 동선을 살펴보며 내 여행과 맞는 파트너를 스스로 선택할 수 있습니다.",
+    icon: Users,
+  },
+  {
+    step: "03",
+    title: "현장에서 더 깊은 여행이 시작됩니다",
+    description:
+      "단순 이동과 설명을 넘어, 지역의 맥락을 이해하고 여행자 성향에 맞춘 속도와 분위기로 경험을 완성합니다.",
+    icon: CalendarCheck2,
+  },
+];
 
-export default async function AboutPage() {
-  const locale = await getRequestLocale();
-  const content = translations[locale];
-  const localePath = (href: string) => localizePath(locale, href);
+const travelerBenefits = [
+  "여행 스타일에 맞는 가이드를 직접 비교하고 선택",
+  "단체 패키지보다 유연한 일정 조정과 밀도 높은 경험",
+  "언어, 테마, 이동 편의성까지 고려한 사전 판단 가능",
+  "간편 결제와 명확한 일정 구조로 예약 부담 최소화",
+];
 
+const guideBenefits = [
+  "자신의 전문 분야와 지역 감도를 투어로 구조화 가능",
+  "과도한 중간 마진 없이 정당한 수익 설계에 집중",
+  "프로필, 리뷰, 운영 이력 중심으로 신뢰 자산 축적",
+  "반복 가능한 대표 코스와 맞춤형 일정 제안 모두 운영 가능",
+];
+
+const galleryCards = [
+  {
+    src: "/images/tours/gyeongbokgung_2.png",
+    alt: "경복궁을 배경으로 한 서울 투어 이미지",
+    title: "도시의 대표 장면도 더 입체적으로",
+    description: "유명한 장소를 보는 것에서 끝나지 않고, 장소가 품은 시대성과 생활 문화를 함께 이해합니다.",
+  },
+  {
+    src: "/images/tours/haeundae.png",
+    alt: "해운대 해변 전경",
+    title: "지역의 분위기를 읽는 이동 동선",
+    description: "단순 방문보다 시간대와 분위기를 설계해 여행의 리듬을 살립니다.",
+  },
+  {
+    src: "/images/tours/jeju_1.png",
+    alt: "제주 자연 풍경 투어 이미지",
+    title: "관광지가 아닌 지역의 맥락으로",
+    description: "자연, 미식, 문화, 산책 코스를 하나의 이야기처럼 연결해 체류 경험을 더 깊게 만듭니다.",
+  },
+];
+
+export default function AboutPage() {
   return (
     <>
       <InfoHeader />
-      <main className="min-h-screen bg-slate-50 text-slate-900">
-        
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-slate-950 py-24 sm:py-32">
-          {/* Background decorations */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_32%),radial-gradient(circle_at_20%_20%,rgba(245,158,11,0.12),transparent_28%)]" />
-          
-          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-            <div className="flex flex-col items-center gap-3 text-white/80 sm:flex-row sm:justify-center mb-6">
-              <p className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold">
+      <main className="min-h-screen bg-[#f6f3ee] text-slate-900">
+        <section className="relative overflow-hidden border-b border-slate-200 bg-[linear-gradient(180deg,#0f172a_0%,#132238_52%,#f6f3ee_52%,#f6f3ee_100%)]">
+          <div className="absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_38%),radial-gradient(circle_at_20%_20%,rgba(245,158,11,0.14),transparent_30%)]" />
+          <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] [background-size:72px_72px]" />
+
+          <div className="relative mx-auto grid max-w-7xl gap-14 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-24">
+            <div className="pt-4 sm:pt-8">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-slate-100 backdrop-blur">
                 <Sparkles className="h-4 w-4 text-cyan-300" />
-                {content.hero.badge}
+                로컬 가이드와 여행자를 가장 정교하게 연결하는 방식
+              </div>
+
+              <h1 className="max-w-3xl text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl lg:text-6xl hero-title">
+                소개 페이지가 아니라,
+                <br className="hidden sm:block" />
+                <span className="text-transparent bg-gradient-to-r from-cyan-300 via-sky-300 to-amber-200 bg-clip-text">
+                  여행의 품질 기준
+                </span>
+                을 설명합니다
+              </h1>
+
+              <p className="mt-7 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+                가이드매치는 검증된 로컬 가이드와 여행자가 직접 연결되는 구조를 만듭니다. 누구와
+                함께 여행하느냐가 경험의 밀도를 결정한다는 전제에서 출발해, 가이드의 전문성과
+                여행자의 취향이 정밀하게 맞물리는 예약 경험을 설계합니다.
               </p>
-              
-              <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur">
-                {localeSwitcher.map(({ code, label }) => (
-                  <Link
-                    key={code}
-                    href={localizePath(code, "/about")}
-                    className={`rounded-full px-3 py-1 transition ${
-                      locale === code
-                        ? "bg-white text-slate-900 shadow-lg shadow-slate-950/30"
-                        : "text-white/70 hover:text-white"
-                    }`}
-                  >
-                    {label}
-                  </Link>
-                ))}
-              </div>
-            </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight mb-8 hero-title">
-              {content.hero.titlePrefix}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
-                {content.hero.titleAccent}
-              </span>
-              {content.hero.titleSuffix}
-            </h1>
-            
-            <p className="mx-auto mt-6 max-w-3xl text-lg sm:text-xl text-white/80 leading-relaxed mb-10">
-              {content.hero.description}
-            </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-              <Link 
-                href={localePath("/")} 
-                className="w-full sm:w-auto px-8 py-4 bg-white text-slate-900 font-bold rounded-2xl hover:bg-slate-50 transition shadow-lg inline-flex items-center justify-center gap-2"
-              >
-                {content.hero.primaryCta}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link 
-                href={localePath("/signup?role=guide")} 
-                className="w-full sm:w-auto px-8 py-4 bg-slate-800 text-white font-bold rounded-2xl border border-slate-700 hover:bg-slate-700 transition inline-flex items-center justify-center"
-              >
-                {content.hero.secondaryCta}
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* Core Values */}
-        <section className="py-24 sm:py-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">
-              {locale === "ko" ? "우리가 추구하는 가치" : "Our Core Values"}
-            </h2>
-            <p className="text-lg text-slate-500">
-              {locale === "ko" 
-                ? "여행자와 가이드 모두가 평등하게 만족하는 여행 플랫폼" 
-                : "A travel platform where both travelers and guides find equal satisfaction"}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {valueCards.map((card) => (
-              <div 
-                key={card.title.ko}
-                className="group relative bg-white p-8 rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300 overflow-hidden"
-              >
-                <div className={`w-14 h-14 bg-gradient-to-r ${card.accent} text-white rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg`}>
-                  <card.icon className="w-7 h-7" />
+              <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">Matching</p>
+                  <p className="mt-3 text-lg font-bold text-white">프로필 중심 매칭</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">여행 목적과 가이드 강점을 직접 비교해 선택합니다.</p>
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors">
-                  {card.title[locale]}
-                </h3>
-                <p className="text-slate-600 leading-relaxed text-sm">
-                  {card.description[locale]}
-                </p>
-                <div className={`absolute bottom-0 left-0 h-1 bg-gradient-to-r ${card.accent} w-0 group-hover:w-full transition-all duration-500`} />
+                <div className="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">Trust</p>
+                  <p className="mt-3 text-lg font-bold text-white">검증 기반 신뢰</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">소개 문구보다 운영 태도와 전문성 판단이 중요합니다.</p>
+                </div>
+                <div className="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">Experience</p>
+                  <p className="mt-3 text-lg font-bold text-white">현지 감도 높은 경험</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">명소를 소비하는 여행이 아니라 지역을 해석하는 여행을 지향합니다.</p>
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
 
-        {/* Story Section */}
-        <section className="bg-white border-y border-slate-200 py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight mb-6">
-                  {content.story.headingPrefix}<br />
-                  <span className="text-blue-600">{content.story.headingAccent}</span> {content.story.headingSuffix}
-                </h2>
-                <p className="text-lg text-slate-600 leading-relaxed mb-8">
-                  {content.story.description}
-                </p>
-                <ul className="space-y-4">
-                  {content.story.bullets.map((bullet, idx) => (
-                    <li key={idx} className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-                        <ShieldCheck className="w-4 h-4" />
-                      </div>
-                      <span className="text-slate-700 font-medium tracking-tight text-sm">{bullet}</span>
-                    </li>
-                  ))}
-                </ul>
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#f4efe7] px-7 py-4 text-sm font-bold text-slate-900 transition-transform hover:-translate-y-0.5"
+                >
+                  여행자용 투어 보기
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/signup?role=guide"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur transition-colors hover:bg-white/15"
+                >
+                  가이드 등록 시작하기
+                </Link>
               </div>
-              
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-tr from-blue-100 to-cyan-50 rounded-[3rem] transform rotate-3 scale-105 -z-10" />
-                <div className="bg-white border border-slate-100 p-8 sm:p-10 rounded-[3rem] shadow-xl">
-                  <div className="space-y-8">
-                    {content.story.pillars.map((pillar, idx) => (
-                      <div key={idx}>
-                        <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center shrink-0">
-                            <pillar.icon className="w-6 h-6 text-slate-500" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-slate-900 mb-1">{pillar.title}</p>
-                            <p className="text-slate-600 text-sm leading-relaxed">{pillar.body}</p>
-                          </div>
-                        </div>
-                        {idx < content.story.pillars.length - 1 && <div className="w-full h-px bg-slate-100 mt-8" />}
+            </div>
+
+            <div className="relative">
+              <div className="absolute -left-6 top-10 hidden h-24 w-24 rounded-full bg-amber-300/30 blur-2xl lg:block" />
+              <div className="absolute -right-8 bottom-28 hidden h-28 w-28 rounded-full bg-cyan-300/20 blur-2xl lg:block" />
+
+              <div className="relative rounded-[2rem] border border-white/12 bg-white/8 p-3 shadow-[0_30px_80px_rgba(15,23,42,0.35)] backdrop-blur">
+                <div className="relative overflow-hidden rounded-[1.6rem]">
+                  <div className="relative aspect-[4/5]">
+                    <Image
+                      src="/hero-korea.png"
+                      alt="한국 여행의 분위기를 보여주는 메인 이미지"
+                      fill
+                      priority
+                      sizes="(max-width: 1024px) 100vw, 42vw"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/85 via-slate-900/35 to-transparent p-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-300">GuideMatch Standard</p>
+                    <p className="mt-3 max-w-sm text-2xl font-bold tracking-[-0.04em] text-white">
+                      여행자의 취향과 가이드의 전문성이 정확히 만날 때, 여행은 훨씬 깊어집니다.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative mx-auto -mt-14 grid max-w-xl gap-4 px-4 sm:grid-cols-[0.84fr_1.16fr] lg:-mt-24 lg:ml-8 lg:px-0">
+                <div className="rounded-[1.75rem] border border-slate-200 bg-[#fcfaf7] p-3 shadow-xl shadow-slate-900/10">
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-[1.2rem]">
+                    <Image
+                      src="/images/guides/guide_busan_woman.png"
+                      alt="가이드 프로필 예시 이미지"
+                      fill
+                      sizes="(max-width: 640px) 100vw, 18vw"
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="rounded-[1.75rem] border border-slate-200 bg-[#fcfaf7] p-5 shadow-xl shadow-slate-900/10">
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-2xl bg-slate-900 p-3 text-white">
+                        <ShieldCheck className="h-5 w-5" />
                       </div>
-                    ))}
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">프로필 기반 신뢰 형성</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                          어떤 테마에 강한지, 어떤 분위기로 여행을 이끄는지 한눈에 파악할 수 있어 선택의
+                          불확실성을 줄입니다.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.75rem] border border-slate-200 bg-[#fcfaf7] p-5 shadow-xl shadow-slate-900/10">
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-2xl bg-amber-100 p-3 text-amber-700">
+                        <HeartHandshake className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">여행자와 가이드 모두를 위한 구조</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                          여행자는 더 나은 경험을 얻고, 가이드는 자신만의 서비스 가치를 지속적으로 쌓아갈 수
+                          있도록 설계합니다.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -333,21 +249,314 @@ export default async function AboutPage() {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-24 sm:py-32">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mb-6 tracking-tight">
-              {content.cta.heading}
+        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-10">
+              <p className="text-sm font-semibold uppercase tracking-[0.26em] text-slate-500">Our Perspective</p>
+              <h2 className="mt-4 text-3xl font-black tracking-[-0.04em] text-slate-900 sm:text-4xl">
+                왜 여행 플랫폼에
+                <br />
+                브랜드 기준이 필요할까요
+              </h2>
+              <p className="mt-6 text-base leading-8 text-slate-600">
+                많은 여행 서비스가 장소와 가격에 집중합니다. 하지만 실제 만족도는 어떤 사람과 어떤 흐름으로
+                여행했는지에서 크게 갈립니다. 가이드매치는 그 간극을 줄이는 데 집중합니다. 가이드의
+                전문성, 여행자의 취향, 현장의 맥락을 연결하는 구조가 있어야 더 나은 경험이 반복적으로
+                만들어질 수 있다고 보기 때문입니다.
+              </p>
+              <div className="mt-8 rounded-[1.5rem] bg-slate-950 px-6 py-5 text-slate-100">
+                <p className="text-sm leading-7">
+                  &quot;좋은 가이드는 단순히 길을 안내하지 않습니다. 여행자가 도시를 이해하는 방식을 바꿉니다.&quot;
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {valueCards.map((card) => {
+                const Icon = card.icon;
+
+                return (
+                  <article
+                    key={card.title}
+                    className="group rounded-[2rem] border border-slate-200 bg-white p-7 shadow-[0_20px_60px_rgba(15,23,42,0.05)] transition-transform duration-300 hover:-translate-y-1"
+                  >
+                    <div className={`inline-flex rounded-2xl p-3 ${card.iconStyle}`}>
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <h3 className="mt-6 text-xl font-bold tracking-[-0.03em] text-slate-900">{card.title}</h3>
+                    <p className="mt-4 text-sm leading-7 text-slate-600">{card.description}</p>
+                    <div className={`mt-8 h-1.5 rounded-full bg-gradient-to-r ${card.accent}`} />
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y border-slate-200 bg-[#efe7dc]">
+          <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-8 lg:py-24">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.26em] text-slate-500">How It Works</p>
+              <h2 className="mt-4 text-3xl font-black tracking-[-0.04em] text-slate-900 sm:text-4xl">
+                여행자와 가이드가
+                <br />
+                더 잘 만나는 과정
+              </h2>
+              <p className="mt-6 max-w-xl text-base leading-8 text-slate-700">
+                가이드매치의 핵심은 예약 자체보다 선택 과정입니다. 정보가 충분히 보이고, 비교가 가능하고,
+                현장에서의 기대치가 맞아야 만족도가 높아집니다. 그래서 우리는 매칭 전 단계의 설명력을
+                중요하게 다룹니다.
+              </p>
+
+              <div className="relative mt-10 overflow-hidden rounded-[2rem] border border-slate-300 bg-white/70 p-3 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur">
+                <div className="relative aspect-[5/4] overflow-hidden rounded-[1.5rem]">
+                  <Image
+                    src="/images/tours/gyeongbokgung_1.png"
+                    alt="서울 도심 투어를 상징하는 이미지"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 36vw"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="absolute bottom-8 left-8 right-8 rounded-[1.5rem] border border-white/40 bg-slate-950/70 p-5 text-white backdrop-blur">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">Editorial Matching</p>
+                  <p className="mt-2 text-lg font-bold tracking-[-0.03em]">
+                    단순 예약 흐름이 아니라, 선택의 근거가 남는 구조를 만듭니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              {processSteps.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <article
+                    key={item.step}
+                    className="rounded-[2rem] border border-slate-200 bg-white p-7 shadow-[0_16px_40px_rgba(15,23,42,0.06)]"
+                  >
+                    <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+                      <div className="flex items-center gap-4">
+                        <div className="rounded-full bg-slate-900 px-4 py-2 text-sm font-bold tracking-[0.18em] text-white">
+                          {item.step}
+                        </div>
+                        <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold tracking-[-0.03em] text-slate-900">{item.title}</h3>
+                        <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+          <div className="mb-10">
+            <p className="text-sm font-semibold uppercase tracking-[0.26em] text-slate-500">Built For Both Sides</p>
+            <h2 className="mt-4 text-3xl font-black tracking-[-0.04em] text-slate-900 sm:text-4xl">
+              여행자에게도, 가이드에게도
+              <br />
+              납득되는 플랫폼
             </h2>
-            <p className="text-lg text-slate-600 mb-10">
-              {content.cta.description}
-            </p>
-            <Link 
-              href={localePath("/")} 
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 hover:scale-105 transition-all shadow-lg shadow-blue-500/30"
-            >
-              {content.cta.label} <ArrowRight className="w-5 h-5" />
-            </Link>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <article className="overflow-hidden rounded-[2.2rem] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+              <div className="relative aspect-[16/10]">
+                <Image
+                  src="/images/tours/jeju_2.png"
+                  alt="여행자 중심 경험을 보여주는 제주 투어 이미지"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 48vw"
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-8">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-2xl bg-sky-100 p-3 text-sky-700">
+                    <Map className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-2xl font-bold tracking-[-0.03em] text-slate-900">여행자를 위해</h3>
+                </div>
+                <p className="mt-4 text-sm leading-7 text-slate-600">
+                  검색 결과에서 끝나는 서비스가 아니라, 실제로 내 여행에 맞는 사람을 선택하고 결과를 예측할 수
+                  있는 정보 구조를 제공합니다.
+                </p>
+                <ul className="mt-6 space-y-3">
+                  {travelerBenefits.map((benefit) => (
+                    <li key={benefit} className="flex items-start gap-3 text-sm leading-7 text-slate-700">
+                      <span className="mt-1 rounded-full bg-slate-900 p-1 text-white">
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </span>
+                      <span>{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-8 flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <span className="rounded-full bg-slate-100 px-3 py-2">Curated Match</span>
+                  <span className="rounded-full bg-slate-100 px-3 py-2">Flexible Itinerary</span>
+                  <span className="rounded-full bg-slate-100 px-3 py-2">Local Context</span>
+                </div>
+              </div>
+            </article>
+
+            <article className="overflow-hidden rounded-[2.2rem] border border-slate-200 bg-[#0f172a] text-white shadow-[0_20px_60px_rgba(15,23,42,0.16)]">
+              <div className="relative aspect-[16/10]">
+                <Image
+                  src="/images/guides/guide_fashion_woman.png"
+                  alt="가이드 파트너십을 보여주는 가이드 이미지"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 48vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/20 to-transparent" />
+              </div>
+              <div className="p-8">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-2xl bg-white/10 p-3 text-amber-200">
+                    <Briefcase className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-2xl font-bold tracking-[-0.03em]">가이드를 위해</h3>
+                </div>
+                <p className="mt-4 text-sm leading-7 text-slate-300">
+                  좋은 가이드는 더 많은 예약을 받는 것만으로 성장하지 않습니다. 자신의 전문성과 스타일을
+                  명확히 보여주고, 그에 맞는 고객을 만나야 지속 가능한 운영이 가능합니다.
+                </p>
+                <ul className="mt-6 space-y-3">
+                  {guideBenefits.map((benefit) => (
+                    <li key={benefit} className="flex items-start gap-3 text-sm leading-7 text-slate-200">
+                      <span className="mt-1 rounded-full bg-white/12 p-1 text-amber-200">
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </span>
+                      <span>{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-[1.3rem] border border-white/10 bg-white/6 p-4">
+                    <div className="flex items-center gap-2 text-amber-200">
+                      <CreditCard className="h-4 w-4" />
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em]">Revenue</span>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-300">정산 흐름과 판매 구조를 더 명확하게 설계할 수 있습니다.</p>
+                  </div>
+                  <div className="rounded-[1.3rem] border border-white/10 bg-white/6 p-4">
+                    <div className="flex items-center gap-2 text-cyan-200">
+                      <Camera className="h-4 w-4" />
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em]">Profile</span>
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-300">프로필과 콘텐츠가 곧 가이드의 브랜드 자산이 됩니다.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section className="border-y border-slate-200 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.26em] text-slate-500">Scene Gallery</p>
+                <h2 className="mt-4 text-3xl font-black tracking-[-0.04em] text-slate-900 sm:text-4xl">
+                  실제 여행이 더 풍부해지는 순간들
+                </h2>
+              </div>
+              <p className="max-w-xl text-sm leading-7 text-slate-600">
+                이미지는 단지 분위기를 보여주기 위한 장식이 아닙니다. 가이드매치가 지향하는 여행의 깊이와
+                현장감을 설명하는 증거로 배치했습니다.
+              </p>
+            </div>
+
+            <div className="mt-10 grid gap-6 lg:grid-cols-3">
+              {galleryCards.map((card, index) => (
+                <article
+                  key={card.title}
+                  className={`overflow-hidden rounded-[2rem] border border-slate-200 bg-[#faf7f2] shadow-[0_18px_48px_rgba(15,23,42,0.06)] ${
+                    index === 1 ? "lg:translate-y-10" : ""
+                  }`}
+                >
+                  <div className="relative aspect-[4/5]">
+                    <Image
+                      src={card.src}
+                      alt={card.alt}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 31vw"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="p-7">
+                    <h3 className="text-xl font-bold tracking-[-0.03em] text-slate-900">{card.title}</h3>
+                    <p className="mt-4 text-sm leading-7 text-slate-600">{card.description}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+          <div className="overflow-hidden rounded-[2.5rem] bg-slate-950 px-6 py-10 text-center text-white shadow-[0_30px_90px_rgba(15,23,42,0.22)] sm:px-10 sm:py-14">
+            <div className="mx-auto max-w-3xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-400">GuideMatch Promise</p>
+              <h2 className="mt-5 text-3xl font-black tracking-[-0.04em] sm:text-4xl">
+                더 전문적으로 보이는 소개 페이지의 핵심은
+                <br className="hidden sm:block" />
+                보기 좋은 문장보다 명확한 기준입니다
+              </h2>
+              <p className="mt-6 text-base leading-8 text-slate-300">
+                가이드매치는 여행을 판매하는 플랫폼이 아니라, 사람과 경험을 더 정교하게 연결하는 플랫폼이
+                되고자 합니다. 여행자라면 더 잘 맞는 가이드를, 가이드라면 더 오래 기억되는 서비스를 만들 수
+                있도록 돕겠습니다.
+              </p>
+
+              <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                <Link
+                  href="/"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-4 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-0.5"
+                >
+                  투어 둘러보기
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/signup?role=guide"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-7 py-4 text-sm font-bold text-white transition-colors hover:bg-white/10"
+                >
+                  파트너 가이드 등록
+                </Link>
+              </div>
+
+              <div className="mt-10 grid gap-4 text-left sm:grid-cols-3">
+                <div className="rounded-[1.4rem] border border-white/10 bg-white/5 p-5">
+                  <div className="flex items-center gap-2 text-cyan-200">
+                    <ShieldCheck className="h-4 w-4" />
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em]">Trust</span>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-300">설명 가능한 신뢰 구조를 갖춘 여행 플랫폼</p>
+                </div>
+                <div className="rounded-[1.4rem] border border-white/10 bg-white/5 p-5">
+                  <div className="flex items-center gap-2 text-amber-200">
+                    <HeartHandshake className="h-4 w-4" />
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em]">Partnership</span>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-300">여행자 만족과 가이드 성장의 균형을 고려한 운영</p>
+                </div>
+                <div className="rounded-[1.4rem] border border-white/10 bg-white/5 p-5">
+                  <div className="flex items-center gap-2 text-emerald-200">
+                    <Globe2 className="h-4 w-4" />
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em]">Locality</span>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-300">도시를 소비하지 않고 이해하게 만드는 로컬 경험</p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>
