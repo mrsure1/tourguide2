@@ -103,7 +103,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
   }, [criteria]);
 
   return (
-    <main className="min-h-screen bg-[#fbf8f3] text-slate-900 [overflow-wrap:normal] [word-break:keep-all] pb-24">
+    <main className="min-h-screen bg-[#fbf8f3] text-slate-900 [overflow-wrap:normal] [word-break:keep-all] pb-12">
       <HeroSection userName={userName} userRole={userRole} withLocale={withLocale}>
         <div className="mx-auto max-w-5xl">
           <SearchForm 
@@ -124,13 +124,13 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
         </div>
       </HeroSection>
 
-      <section id="explore-results" className="relative z-10 mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8">
+      <section id="explore-results" className="relative z-10 mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
 
         {criteria && (
-          <div className="space-y-16 animate-in slide-in-from-bottom-4 fade-in duration-500 mb-20">
+          <div className="space-y-10 animate-in slide-in-from-bottom-4 fade-in duration-500 mb-12">
             {filteredGuides.length > 0 && (
-              <section className="container mx-auto px-4 pt-12 relative border-t border-slate-100">
-                <div className="mb-8">
+              <section className="container mx-auto px-4 pt-8 relative border-t border-slate-100">
+                <div className="mb-4">
                   <h2 className="text-3xl font-black text-slate-900">{landing.sections.guideResultsTitle}</h2>
                   <p className="text-slate-500 mt-2 font-medium">{landing.sections.guideResultsDescription}</p>
                 </div>
@@ -143,8 +143,8 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
             )}
 
             {filteredTours.length > 0 && (
-              <section className="container mx-auto px-4 py-12 relative border-t border-slate-100">
-                <div className="mb-8">
+              <section className="container mx-auto px-4 py-8 relative border-t border-slate-100">
+                <div className="mb-4">
                   <h2 className="text-3xl font-black text-slate-900">{landing.sections.tourResultsTitle}</h2>
                   <p className="text-slate-500 mt-2 font-medium">{landing.sections.tourResultsDescription}</p>
                 </div>
@@ -157,7 +157,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
             )}
 
             {filteredGuides.length === 0 && filteredTours.length === 0 && (
-              <section className="container mx-auto px-4 py-20 text-center border-t border-slate-100">
+              <section className="container mx-auto px-4 py-12 text-center border-t border-slate-100">
                 <h3 className="text-2xl font-bold text-slate-700">{landing.sections.emptyResultsTitle}</h3>
                 <p className="text-slate-500 mt-2">{landing.sections.emptyResultsDescription}</p>
               </section>
@@ -165,9 +165,9 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
           </div>
         )}
 
-        <div className="space-y-20">
-          <section id="recommended-guides" className="container mx-auto px-4 py-10 scroll-mt-20">
-            <div className="mb-8">
+        <div className="space-y-12">
+          <section id="recommended-guides" className="container mx-auto px-4 py-6 scroll-mt-20">
+            <div className="mb-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold mb-4">
                 <Star className="w-3 h-3 fill-current" />
                 <span>{landing.sections.verifiedExperts}</span>
@@ -175,7 +175,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
               <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
                 {landing.sections.recommendedGuidesTitlePrefix} <span className="text-blue-600">{landing.sections.recommendedGuidesTitleAccent}</span>
               </h2>
-              <p className="text-slate-500 mt-4 max-w-2xl text-lg font-medium">{landing.sections.recommendedGuidesDescription}</p>
+              <p className="text-slate-500 mt-2 max-w-2xl text-lg font-medium">{landing.sections.recommendedGuidesDescription}</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {guides.slice(0, 4).map((guide) => (
@@ -184,19 +184,19 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
             </div>
           </section>
 
-          <section id="trending-tours" className="bg-[#fcfaf7] pt-12 pb-16 rounded-3xl scroll-mt-20">
+          <section id="trending-tours" className="bg-[#fcfaf7] pt-10 pb-12 rounded-3xl scroll-mt-20">
             <div className="container mx-auto px-4">
-              <div className="text-center mb-10">
+              <div className="text-center mb-6">
                 <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
                   {landing.sections.localExperienceTitlePrefix} <span className="text-[#ff385c]">{landing.sections.localExperienceTitleAccent}</span>
                 </h2>
-                <p className="mt-4 text-slate-500 text-lg md:text-xl font-medium max-w-2xl mx-auto">{landing.sections.localExperienceDescription}</p>
+                <p className="mt-2 text-slate-500 text-lg md:text-xl font-medium max-w-2xl mx-auto">{landing.sections.localExperienceDescription}</p>
               </div>
 
               <ThemeNavigation />
 
-              <div className="mb-12">
-                <div className="flex items-center gap-3 mb-6">
+              <div className="mb-8">
+                <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-red-100 rounded-lg"><Zap className="w-5 h-5 text-red-500 fill-current" /></div>
                   <h3 className="text-2xl font-bold text-slate-900">{landing.sections.trendingTours}</h3>
                   <div className="h-[2px] flex-1 bg-gradient-to-r from-slate-200 to-transparent ml-4" />
@@ -209,8 +209,8 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
           </section>
 
           {!criteria && (
-            <section className="container mx-auto px-4 py-12 border-t border-slate-100">
-              <div className="mb-8">
+            <section className="container mx-auto px-4 py-8 border-t border-slate-100">
+              <div className="mb-4">
                 <h2 className="text-3xl font-black text-slate-900">{landing.sections.allToursTitle}</h2>
                 <p className="text-slate-500 mt-2 font-medium">{landing.sections.allToursDescription}</p>
               </div>
