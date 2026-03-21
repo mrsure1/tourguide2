@@ -93,7 +93,7 @@ export function HeroSection({ userName, userRole, guideHref, withLocale, childre
               {landing.hero.titleLine2}
             </span>
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg font-medium text-slate-300 sm:text-xl">
+          <p className="mx-auto mt-6 max-w-2xl text-lg font-medium text-slate-300 sm:text-xl whitespace-pre-line">
             {landing.hero.description}
           </p>
         </div>
