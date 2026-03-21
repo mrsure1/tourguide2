@@ -150,7 +150,7 @@ export function SearchForm({
   const canSearch = Boolean(draft.destination.trim());
 
   return (
-    <div className="mt-4 rounded-3xl sm:rounded-[38px] border border-white/15 bg-white/96 p-2 sm:p-3 shadow-[0_30px_80px_rgba(2,6,23,0.26)] backdrop-blur-md">
+    <div className="relative z-[500] mt-4 rounded-3xl sm:rounded-[38px] border border-white/15 bg-white/96 p-2 sm:p-3 shadow-[0_30px_80px_rgba(2,6,23,0.26)] backdrop-blur-md">
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -176,7 +176,7 @@ export function SearchForm({
           </label>
 
           {isDestinationOpen && filteredDestinationOptions.length > 0 && (
-            <div className="absolute left-0 top-full mt-3 z-[100] w-[90vw] sm:w-[400px] lg:w-full rounded-[32px] border border-slate-200 bg-white shadow-[0_30px_100px_rgba(15,23,42,0.2)] lg:shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden">
+            <div className="absolute left-0 top-full mt-3 z-[1000] w-[90vw] sm:w-[400px] lg:w-full rounded-[32px] border border-slate-200 bg-white shadow-[0_30px_100px_rgba(15,23,42,0.2)] lg:shadow-[0_24px_60px_rgba(15,23,42,0.16)] overflow-hidden">
               <div className="border-b border-slate-100/80 px-5 py-4 text-[11px] font-black tracking-widest text-slate-400 bg-slate-50/50">
                 {landing.search.recommendedDestinations}
               </div>
@@ -222,7 +222,7 @@ export function SearchForm({
           </button>
 
           {isDatePickerOpen && (
-            <div className="absolute left-0 lg:-left-12 xl:left-0 top-full mt-3 z-[100] rounded-[32px] bg-white border border-slate-200 p-2 sm:p-4 shadow-[0_30px_100px_rgba(15,23,42,0.2)] lg:shadow-[0_24px_60px_rgba(15,23,42,0.16)] w-[calc(100vw-40px)] sm:w-max min-w-[320px]">
+            <div className="absolute left-0 lg:-left-12 xl:left-0 top-full mt-3 z-[1000] rounded-[32px] bg-white border border-slate-200 p-2 sm:p-4 shadow-[0_30px_100px_rgba(15,23,42,0.2)] lg:shadow-[0_24px_60px_rgba(15,23,42,0.16)] w-[calc(100vw-40px)] sm:w-max min-w-[320px]">
               <Calendar
                 mode="range"
                 minDate={today}
@@ -258,7 +258,7 @@ export function SearchForm({
           </button>
 
           {isGuestPickerOpen && (
-            <div className="absolute right-0 top-full mt-3 z-[100] w-[90vw] sm:w-[360px] max-w-[calc(100vw-32px)] lg:w-[380px] rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_30px_100px_rgba(15,23,42,0.2)] lg:shadow-[0_24px_60px_rgba(15,23,42,0.16)] text-left">
+            <div className="absolute right-0 top-full mt-3 z-[1000] w-[90vw] sm:w-[360px] max-w-[calc(100vw-32px)] lg:w-[380px] rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_30px_100px_rgba(15,23,42,0.2)] lg:shadow-[0_24px_60px_rgba(15,23,42,0.16)] text-left">
               <div className="space-y-4">
                 <GuestStepper
                   label={landing.search.adults}

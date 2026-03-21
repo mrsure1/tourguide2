@@ -84,7 +84,7 @@ export function HeroSection({ userName, userRole, withLocale, children }: HeroSe
         {children}
 
         {/* Hero Text */}
-        <div className="mt-8 text-center lg:mt-12">
+        <div className="relative z-10 mt-8 text-center lg:mt-12">
           <div className="inline-flex items-center gap-3 rounded-full border border-white/12 bg-white/8 px-4 py-2 text-xs font-bold text-blue-300 backdrop-blur-sm">
             <div className="flex h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
             {userName ? replaceName(landing.hero.loggedInBadge, userName) : landing.hero.loggedOutBadge}
