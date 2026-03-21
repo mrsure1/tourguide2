@@ -43,24 +43,26 @@ export function HeroSection({ userName, userRole, guideHref, withLocale, childre
             <BrandLogo href={withLocale("/")} size="lg" tone="light" variant="signature" />
             
             <div className="flex items-center gap-2 sm:gap-4">
-              <Link
-                href={withLocale(guideHref)}
-                className="flex items-center gap-2 rounded-full border border-white/20 bg-white/8 px-3 sm:px-4 py-2 text-[10px] sm:text-xs font-bold text-white transition hover:border-white/30 hover:bg-white/12"
-              >
-                <LayoutDashboard className="w-3 h-3" />
-                {nav.guideMenu}
-              </Link>
-
               {userName && <HeaderActions variant="light" className="hidden sm:flex" />}
               
               {userName ? (
-                <Link
-                  href={withLocale(userRole === 'guide' || userRole === 'admin' ? '/guide/profile' : '/traveler/profile')}
-                  className="flex items-center gap-2 rounded-full border border-white/20 bg-white/8 px-4 py-2 text-xs font-bold text-white transition hover:border-white/30 hover:bg-white/12"
-                >
-                  <User className="w-3 h-3" />
-                  {nav.myPage}
-                </Link>
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <Link
+                    href={withLocale(userRole === 'guide' || userRole === 'admin' ? '/guide/profile' : '/traveler/profile')}
+                    className="flex items-center gap-2 rounded-full border border-white/20 bg-white/8 px-4 py-2 text-xs font-bold text-white transition hover:border-white/30 hover:bg-white/12"
+                  >
+                    <User className="w-3 h-3" />
+                    {nav.myPage}
+                  </Link>
+                  
+                  <Link
+                    href={withLocale(guideHref)}
+                    className="flex items-center gap-2 rounded-full border border-white/20 bg-white/8 px-3 sm:px-4 py-2 text-[10px] sm:text-xs font-bold text-white transition hover:border-white/30 hover:bg-white/12"
+                  >
+                    <LayoutDashboard className="w-3 h-3" />
+                    {nav.guideMenu}
+                  </Link>
+                </div>
               ) : (
                 <Link
                   href={withLocale("/login")}

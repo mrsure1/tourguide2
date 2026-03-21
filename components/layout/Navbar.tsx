@@ -121,12 +121,11 @@ export function Navbar({ profile }: NavbarProps) {
         </nav>
 
         <div className="flex items-center gap-3">
-          <LanguageSwitcher className="hidden md:inline-flex text-[11px] uppercase tracking-wider" />
           <HeaderActions variant="dark" />
 
           <div className="mx-1 hidden h-6 w-px bg-slate-200 sm:block" />
 
-            <Link href={withLocale(isGuide ? "/guide/profile" : "/traveler/profile")} className="shrink-0">
+          <Link href={withLocale(isGuide ? "/guide/profile" : "/traveler/profile")} className="shrink-0">
             <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-white bg-slate-100 shadow-md transition-all hover:ring-2 ring-accent cursor-pointer">
               <img
                 src={
@@ -138,6 +137,8 @@ export function Navbar({ profile }: NavbarProps) {
               />
             </div>
           </Link>
+
+          <LanguageSwitcher className="hidden md:inline-flex text-[11px] uppercase tracking-wider" />
 
           <button
             className="rounded-xl p-2 text-slate-600 transition-colors hover:bg-slate-100 md:hidden"

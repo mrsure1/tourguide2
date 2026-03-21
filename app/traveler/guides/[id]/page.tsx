@@ -67,7 +67,7 @@ export default async function GuideDetail({ params }: { params: Promise<{ id: st
             : gd.bio_i18n?.en || gd.bio || (locale === "en" ? "A local guide who knows the route well." : "로컬 가이드입니다.")
 
         const languagesList = localizeLanguageList(gd.languages, locale)
-        const languagesString = languagesList.length > 0 ? languagesList.join(", ") : (locale === "en" ? "Consultable" : "상담 가능")
+        const languagesString = languagesList.length > 0 ? languagesList.join(", ") : (locale === "en" ? "Korean" : "한국어")
         const formattedLocation = localizeLocationLabel(gd.location, locale) || gd.location || (locale === "en" ? "South Korea" : "한국")
 
         return (
