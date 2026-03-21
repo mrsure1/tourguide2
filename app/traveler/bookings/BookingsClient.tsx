@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/Button";
 import { ReviewModal } from "@/components/review/ReviewModal";
 import { CalendarDays, Clock, Users, Ticket, MapPin, MessageSquare, Download, Repeat, Star, AlertTriangle, CreditCard, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useI18n } from "@/components/providers/LocaleProvider";
+import { localizePath } from "@/lib/i18n/routing";
 
 export default function BookingsClient({ bookings }: { bookings: any[] }) {
+    const { locale } = useI18n();
     const router = useRouter();
     const searchParams = useSearchParams();
     const [activeStatus, setActiveStatus] = useState(searchParams.get("tab") || "upcoming"); // upcoming, past, cancelled
@@ -357,7 +360,7 @@ export default function BookingsClient({ bookings }: { bookings: any[] }) {
                                                 </Button>
                                             </Link>
                                             {booking.status === 'confirmed' && (
-                                                <Link href={getTimeRemaining(booking.updated_at) === "기한 만료" ? "#" : `/traveler/bookings/checkout/${booking.id}`}>
+                                                <Link href={getTimeRemaining(booking.updated_at) === "기한 만료" ? "#" : localizePath(locale, `/traveler/bookings/checkout/${booking.id}`)}>
                                                     <Button
                                                         className={`${getTimeRemaining(booking.updated_at) === "기한 만료" ? "bg-slate-300 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700"} text-white shadow-md flex items-center gap-2`}
                                                         disabled={getTimeRemaining(booking.updated_at) === "기한 만료"}
