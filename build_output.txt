@@ -1,0 +1,6 @@
+﻿??Next.js 16.1.6 (Turbopack)
+- Environments: .env.local, .env
+
+  Creating an optimized production build ...
+??Compiled successfully in 5.6s
+  Running TypeScript ...
