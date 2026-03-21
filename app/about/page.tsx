@@ -1,4 +1,4 @@
-import { InfoHeader } from "@/components/layout/InfoHeader";
+﻿import { InfoHeader } from "@/components/layout/InfoHeader";
 import {
   ArrowRight,
   BadgeCheck,
@@ -18,9 +18,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "가이드매치 소개 | GuideMatch",
+  title: "가이드매치 서비스 가치 | GuideMatch",
   description:
-    "검증된 로컬 가이드와 여행자를 연결하는 GuideMatch의 비전, 운영 기준, 서비스 가치를 소개합니다.",
+    "검증된 로컬 가이드와 여행자를 통해 구현하는 GuideMatch의 투어 철학, 운영 기준, 서비스 가치를 소개합니다.",
 };
 
 const valueCards = [
@@ -76,46 +76,9 @@ const processSteps = [
 
 const travelerBenefits = [
   "여행 스타일에 맞는 가이드를 직접 비교하고 선택",
-  "단체 패키지보다 유연한 일정 조정과 밀도 높은 경험",
-  "언어, 테마, 이동 편의성까지 고려한 사전 판단 가능",
-  "간편 결제와 명확한 일정 구조로 예약 부담 최소화",
-];
-
-const guideBenefits = [
-  "자신의 전문 분야와 지역 감도를 투어로 구조화 가능",
-  "과도한 중간 마진 없이 정당한 수익 설계에 집중",
-  "프로필, 리뷰, 운영 이력 중심으로 신뢰 자산 축적",
-  "반복 가능한 대표 코스와 맞춤형 일정 제안 모두 운영 가능",
-];
-
-const galleryCards = [
-  {
-    src: "/images/tours/gyeongbokgung_2.png",
-    alt: "경복궁을 배경으로 한 서울 투어 이미지",
-    title: "도시의 대표 장면도 더 입체적으로",
-    description: "유명한 장소를 보는 것에서 끝나지 않고, 장소가 품은 시대성과 생활 문화를 함께 이해합니다.",
-  },
-  {
-    src: "/images/tours/haeundae.png",
-    alt: "해운대 해변 전경",
-    title: "지역의 분위기를 읽는 이동 동선",
-    description: "단순 방문보다 시간대와 분위기를 설계해 여행의 리듬을 살립니다.",
-  },
-  {
-    src: "/images/tours/jeju_1.png",
-    alt: "제주 자연 풍경 투어 이미지",
-    title: "관광지가 아닌 지역의 맥락으로",
-    description: "자연, 미식, 문화, 산책 코스를 하나의 이야기처럼 연결해 체류 경험을 더 깊게 만듭니다.",
-  },
-];
-
-export default function AboutPage() {
-  return (
-    <>
-      <InfoHeader />
-      <main className="min-h-screen bg-[#f6f3ee] text-slate-900">
-        <section className="relative overflow-hidden border-b border-slate-200 bg-[linear-gradient(180deg,#0f172a_0%,#132238_52%,#f6f3ee_52%,#f6f3ee_100%)]">
-          <div className="absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_38%),radial-gradient(circle_at_20%_20%,rgba(245,158,11,0.14),transparent_30%)]" />
+  "단체 패�      <main className="min-h-screen bg-[#f6f3ee] text-slate-900">
+        <section className="relative overflow-hidden border-b border-slate-200 bg-[#0f172a]">
+          <div className="absolute inset-x-0 top-0 h-full bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_50%),radial-gradient(circle_at_20%_20%,rgba(245,158,11,0.14),transparent_40%)]" />
           <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] [background-size:72px_72px]" />
 
           <div className="relative mx-auto grid max-w-7xl gap-14 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-24">
@@ -126,7 +89,32 @@ export default function AboutPage() {
               </div>
 
               <h1 className="max-w-3xl text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl lg:text-6xl hero-title">
-                소개 페이지가 아니라,
+                단순한 서비스 안내가 아니라,
+                <br className="hidden sm:block" />
+                <span className="text-transparent bg-gradient-to-r from-cyan-300 via-sky-300 to-amber-200 bg-clip-text">
+                  여행의 품질 기준
+                </span>
+                을 설명합니다
+              </h1>
+
+              <p className="mt-7 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
+                가이드매치는 검증된 로컬 가이드와 여행자가 직접 연결되는 구조를 통해 
+                가장 투명하고 깊이 있는 현지 경험을 설계합니다. 누구와 함께 하느냐가 
+                여정의 밀도를 결정한다는 믿음으로, 전문 가이드의 가치와 여행자의 취향이 
+                가장 정교하게 맞물리는 지점을 제안합니다.
+              </p>
+248,0.18),transparent_38%),radial-gradient(circle_at_20%_20%,rgba(245,158,11,0.14),transparent_30%)]" />
+          <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] [background-size:72px_72px]" />
+
+          <div className="relative mx-auto grid max-w-7xl gap-14 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-24">
+            <div className="pt-4 sm:pt-8">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-slate-100 backdrop-blur">
+                <Sparkles className="h-4 w-4 text-cyan-300" />
+                로컬 가이드와 여행자를 가장 정교하게 연결하는 방식
+              </div>
+
+              <h1 className="max-w-3xl text-4xl font-black tracking-[-0.05em] text-white sm:text-5xl lg:text-6xl hero-title">
+                GuideMatch 소개가 아니라,
                 <br className="hidden sm:block" />
                 <span className="text-transparent bg-gradient-to-r from-cyan-300 via-sky-300 to-amber-200 bg-clip-text">
                   여행의 품질 기준
@@ -507,7 +495,7 @@ export default function AboutPage() {
             <div className="mx-auto max-w-3xl">
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-400">GuideMatch Promise</p>
               <h2 className="mt-5 text-3xl font-black tracking-[-0.04em] sm:text-4xl">
-                더 전문적으로 보이는 소개 페이지의 핵심은
+                더 전문적으로 보이는 서비스의 핵심은
                 <br className="hidden sm:block" />
                 보기 좋은 문장보다 명확한 기준입니다
               </h2>
