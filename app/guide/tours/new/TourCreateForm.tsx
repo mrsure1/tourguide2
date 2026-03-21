@@ -8,6 +8,7 @@ import { ImagePlus, Loader2, Plus, X } from "lucide-react";
 import { createTourAction } from "../actions";
 import { uploadFile } from "@/lib/supabase/storage";
 import { translateTourForm } from "@/lib/tours/translate-tour-form";
+import { compressImage, formatBytes } from "@/lib/utils/image";
 
 type ImageItem = {
   file: File | null;
@@ -44,9 +45,19 @@ export default function TourCreateForm() {
   const handleImageSelect = (files: FileList | null) => {
     if (!files) return;
 
-    const newImages = Array.from(files)
-      .filter((file) => file.type.startsWith("image/"))
-      .map((file) => ({ file, url: URL.createObjectURL(file) }));
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const newImages: ImageItem[] = [];
+
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith("image/")) continue;
+      
+      if (file.size > MAX_FILE_SIZE) {
+        alert(`${file.name}의 용량이 너무 큽니다 (${formatBytes(file.size)}). 10MB 이하의 이미지를 선택해주세요.`);
+        continue;
+      }
+
+      newImages.push({ file, url: URL.createObjectURL(file) });
+    }
 
     setSelectedImages((prev) => [...prev, ...newImages]);
   };
@@ -164,9 +175,14 @@ export default function TourCreateForm() {
       for (let i = 0; i < selectedImages.length; i++) {
         const item = selectedImages[i];
         if (item.file) {
+          // 이미지 압축 및 리사이징 (1200px, 0.8 quality)
+          const compressedBlob = await compressImage(item.file, 1200, 0.8);
           const ext = item.file.name.split(".").pop() || "jpg";
           const path = `new/${timestamp}_${i}.${ext}`;
-          const url = await uploadFile(item.file, path);
+          
+          // Blob을 File 객체로 변환하여 업로드 (또는 Blob 그대로 업로드)
+          const uploadTarget = new File([compressedBlob], `image_${i}.${ext}`, { type: 'image/jpeg' });
+          const url = await uploadFile(uploadTarget, path);
           imageUrls.push(url);
         } else {
           imageUrls.push(item.url);
