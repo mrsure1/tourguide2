@@ -21,17 +21,18 @@ function buildUrl(origin: string, path: string, params: Record<string, QueryValu
   return `${origin}${path}${query ? `?${query}` : ""}`;
 }
 
-function successRedirect(origin: string, popup: boolean, orderId: string) {
+function successRedirect(origin: string, popup: boolean, orderId: string, locale: string = "ko") {
+  const prefix = locale === "en" ? "/en" : "/ko";
   if (popup) {
     return NextResponse.redirect(
-      buildUrl(origin, "/payment-popup", {
+      buildUrl(origin, `${prefix}/payment-popup`, {
         status: "success",
         bookingId: orderId,
       }),
     );
   }
 
-  return NextResponse.redirect(buildUrl(origin, "/traveler/bookings", { payment: "success" }));
+  return NextResponse.redirect(buildUrl(origin, `${prefix}/traveler/bookings`, { payment: "success" }));
 }
 
 function errorRedirect(
@@ -40,11 +41,13 @@ function errorRedirect(
   orderId: string | null,
   error: string,
   message?: string,
+  locale: string = "ko",
 ) {
+  const prefix = locale === "en" ? "/en" : "/ko";
   if (popup) {
     if (!orderId) {
       return NextResponse.redirect(
-        buildUrl(origin, "/payment-popup", {
+        buildUrl(origin, `${prefix}/payment-popup`, {
           status: "error",
           message: error,
         }),
@@ -52,7 +55,7 @@ function errorRedirect(
     }
 
     return NextResponse.redirect(
-      buildUrl(origin, `/payment-popup/${orderId}`, {
+      buildUrl(origin, `${prefix}/payment-popup/${orderId}`, {
         error,
         message: message || error,
       }),
@@ -60,11 +63,11 @@ function errorRedirect(
   }
 
   if (!orderId) {
-    return NextResponse.redirect(buildUrl(origin, "/traveler/bookings", { error }));
+    return NextResponse.redirect(buildUrl(origin, `${prefix}/traveler/bookings`, { error }));
   }
 
   return NextResponse.redirect(
-    buildUrl(origin, `/traveler/bookings/checkout/${orderId}`, {
+    buildUrl(origin, `${prefix}/traveler/bookings/checkout/${orderId}`, {
       error,
     }),
   );
@@ -78,6 +81,7 @@ export async function GET(request: Request) {
   const orderId = searchParams.get("orderId");
   const amountParam = searchParams.get("amount");
   const popup = searchParams.get("popup") === "1";
+  const locale = searchParams.get("locale") || "ko";
 
   if (!paymentKey || !orderId || !amountParam) {
     await reportMessage("Toss callback missing required params", {
@@ -91,7 +95,7 @@ export async function GET(request: Request) {
       },
     });
 
-    return errorRedirect(origin, popup, orderId, "invalid");
+    return errorRedirect(origin, popup, orderId, "invalid", undefined, locale);
   }
 
   const amount = Number(amountParam);
@@ -103,7 +107,7 @@ export async function GET(request: Request) {
       extra: { orderId, amountParam },
     });
 
-    return errorRedirect(origin, popup, orderId, "invalid");
+    return errorRedirect(origin, popup, orderId, "invalid", undefined, locale);
   }
 
   try {
@@ -122,7 +126,7 @@ export async function GET(request: Request) {
         extra: { orderId },
       });
 
-      return errorRedirect(origin, popup, orderId, "booking_not_found");
+      return errorRedirect(origin, popup, orderId, "booking_not_found", undefined, locale);
     }
 
     if (Number(booking.total_price) !== amount) {
@@ -137,12 +141,12 @@ export async function GET(request: Request) {
         },
       });
 
-      return errorRedirect(origin, popup, orderId, "amount_mismatch");
+      return errorRedirect(origin, popup, orderId, "amount_mismatch", undefined, locale);
     }
 
     if (booking.status === "paid" || booking.status === "completed") {
       if (booking.payment_intent_id === paymentKey) {
-        return successRedirect(origin, popup, orderId);
+        return successRedirect(origin, popup, orderId, locale);
       }
 
       await reportMessage("Toss callback rejected for already paid booking", {
@@ -157,7 +161,7 @@ export async function GET(request: Request) {
         },
       });
 
-      return errorRedirect(origin, popup, orderId, "invalid_booking_state");
+      return errorRedirect(origin, popup, orderId, "invalid_booking_state", undefined, locale);
     }
 
     if (booking.status !== "confirmed") {
@@ -171,7 +175,7 @@ export async function GET(request: Request) {
         },
       });
 
-      return errorRedirect(origin, popup, orderId, "invalid_booking_state");
+      return errorRedirect(origin, popup, orderId, "invalid_booking_state", undefined, locale);
     }
 
     if (booking.payment_intent_id && booking.payment_intent_id !== paymentKey) {
@@ -186,7 +190,7 @@ export async function GET(request: Request) {
         },
       });
 
-      return errorRedirect(origin, popup, orderId, "invalid_booking_state");
+      return errorRedirect(origin, popup, orderId, "invalid_booking_state", undefined, locale);
     }
 
     const encryptedSecretKey = `Basic ${Buffer.from(`${widgetSecretKey}:`).toString("base64")}`;
@@ -218,7 +222,7 @@ export async function GET(request: Request) {
           .maybeSingle();
 
         if (latestBooking?.status === "paid" && latestBooking.payment_intent_id === paymentKey) {
-          return successRedirect(origin, popup, orderId);
+          return successRedirect(origin, popup, orderId, locale);
         }
       }
 
@@ -234,7 +238,7 @@ export async function GET(request: Request) {
         },
       });
 
-      return errorRedirect(origin, popup, orderId, errorCode, errorMessage);
+      return errorRedirect(origin, popup, orderId, errorCode, errorMessage, locale);
     }
 
     const tossStatus = String((tossData as { status?: string }).status || "");
@@ -251,7 +255,7 @@ export async function GET(request: Request) {
         extra: { orderId, tossStatus },
       });
 
-      return errorRedirect(origin, popup, orderId, "payment_not_done");
+      return errorRedirect(origin, popup, orderId, "payment_not_done", undefined, locale);
     }
 
     if (!Number.isFinite(tossTotalAmount) || tossTotalAmount !== amount) {
@@ -266,7 +270,7 @@ export async function GET(request: Request) {
         },
       });
 
-      return errorRedirect(origin, popup, orderId, "amount_mismatch");
+      return errorRedirect(origin, popup, orderId, "amount_mismatch", undefined, locale);
     }
 
     const { data: updatedBooking, error: updateError } = await supabase
@@ -290,7 +294,7 @@ export async function GET(request: Request) {
         },
       });
 
-      return errorRedirect(origin, popup, orderId, "internal");
+      return errorRedirect(origin, popup, orderId, "internal", undefined, locale);
     }
 
     if (!updatedBooking) {
@@ -301,7 +305,7 @@ export async function GET(request: Request) {
         .maybeSingle();
 
       if (latestBooking?.status === "paid" && latestBooking.payment_intent_id === paymentKey) {
-        return successRedirect(origin, popup, orderId);
+        return successRedirect(origin, popup, orderId, locale);
       }
 
       await reportMessage("Booking state transition to paid was rejected", {
@@ -316,7 +320,7 @@ export async function GET(request: Request) {
         },
       });
 
-      return errorRedirect(origin, popup, orderId, "invalid_booking_state");
+      return errorRedirect(origin, popup, orderId, "invalid_booking_state", undefined, locale);
     }
 
     await trackServerConversion(
@@ -336,7 +340,7 @@ export async function GET(request: Request) {
     revalidatePath("/traveler/bookings");
     revalidatePath("/admin/payments");
 
-    return successRedirect(origin, popup, orderId);
+    return successRedirect(origin, popup, orderId, locale);
   } catch (error) {
     await reportError(error, {
       source: "api/payments/toss/success:exception",
@@ -344,6 +348,6 @@ export async function GET(request: Request) {
       extra: { orderId, paymentKey },
     });
 
-    return errorRedirect(origin, popup, orderId, "internal");
+    return errorRedirect(origin, popup, orderId, "internal", undefined, locale);
   }
 }
