@@ -184,7 +184,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
             </div>
           </section>
 
-          <section id="trending-tours" className="bg-[#fcfaf7] pt-10 pb-12 rounded-3xl scroll-mt-20">
+          <section id="trending-tours" className="bg-[#fcfaf7] pt-10 pb-6 rounded-3xl scroll-mt-20">
             <div className="container mx-auto px-4">
               <div className="text-center mb-6">
                 <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
@@ -209,7 +209,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
           </section>
 
           {!criteria && (
-            <section className="container mx-auto px-4 py-8 border-t border-slate-100">
+            <section className="container mx-auto px-4 py-4 border-t border-slate-100">
               <div className="mb-4">
                 <h2 className="text-3xl font-black text-slate-900">{landing.sections.allToursTitle}</h2>
                 <p className="text-slate-500 mt-2 font-medium">{landing.sections.allToursDescription}</p>
