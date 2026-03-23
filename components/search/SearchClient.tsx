@@ -31,6 +31,7 @@ import {
   normalizeSearchText,
 } from "@/lib/search/language";
 import { localizePath } from "@/lib/i18n/routing";
+import { localizeLanguageList } from "@/lib/i18n/display";
 
 type GuideDetail = {
   location?: string | null;
@@ -408,9 +409,7 @@ export default function SearchClient({
                 <MapPin className="h-3.5 w-3.5 text-slate-400" /> {detail.location || "지역 미정"}
                 <span className="text-slate-300">|</span>
                 <Globe className="h-3.5 w-3.5 text-slate-400" />{" "}
-                {(Array.isArray(detail.languages) ? detail.languages : detail.languages ? [detail.languages] : ["한국어"]).join(
-                  ", ",
-                )}
+                {localizeLanguageList(detail.languages, locale).join(", ") || (locale === "ko" ? "한국어" : "Korean")}
               </p>
               <p className="line-clamp-2 text-sm font-light leading-relaxed text-slate-600">
                 {detail.bio || "소개글이 없습니다."}

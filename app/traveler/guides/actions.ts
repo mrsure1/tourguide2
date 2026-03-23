@@ -16,7 +16,7 @@ export async function getGuideData(id: string) {
 
     // 2. 상세 정보
     const { data: detail } = await supabase
-        .from("guide_details")
+        .from("guides_detail")
         .select("*")
         .eq("id", id)
         .maybeSingle()

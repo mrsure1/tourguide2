@@ -66,8 +66,6 @@ export default function GuideDetailClient({
                             <span className="text-xs opacity-60">({gd?.review_count || 0})</span>
                         </div>
                         <span className="h-1 w-1 rounded-full bg-slate-300"></span>
-                        <span className="text-sm font-medium">{t.locationFormat?.replace("{location}", formattedLocation) || `📍 ${formattedLocation}`}</span>
-                        <span className="h-1 w-1 rounded-full bg-slate-300"></span>
                         <span className="text-sm font-medium">{t.languagesFormat?.replace("{languages}", languagesString) || `Languages: ${languagesString}`}</span>
                     </div>
                 </div>

@@ -68,7 +68,7 @@ export default async function GuideDetail({ params }: { params: Promise<{ id: st
 
         const languagesList = localizeLanguageList(gd.languages, locale)
         const languagesString = languagesList.length > 0 ? languagesList.join(", ") : (locale === "en" ? "Korean" : "한국어")
-        const formattedLocation = localizeLocationLabel(gd.location, locale) || gd.location || (locale === "en" ? "South Korea" : "한국")
+        const formattedLocation = gd.location ? localizeLocationLabel(gd.location, locale) : (locale === "en" ? "South Korea" : "한국")
 
         return (
             <GuideDetailClient 
