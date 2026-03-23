@@ -130,7 +130,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
           <div className="space-y-10 animate-in slide-in-from-bottom-4 fade-in duration-500 mb-0">
             {filteredGuides.length > 0 && (
               <section className="container mx-auto px-4 pt-4 relative border-t border-slate-100">
-                <div className="mb-4">
+                <div className="mb-4 mt-[3px]">
                   <h2 className="text-3xl font-black text-slate-900">{landing.sections.guideResultsTitle}</h2>
                   <p className="text-slate-500 mt-2 font-medium">{landing.sections.guideResultsDescription}</p>
                 </div>
@@ -144,7 +144,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
 
             {filteredTours.length > 0 && (
               <section className="container mx-auto px-4 py-8 relative border-t border-slate-100">
-                <div className="mb-4">
+                <div className="mb-4 mt-[3px]">
                   <h2 className="text-3xl font-black text-slate-900">{landing.sections.tourResultsTitle}</h2>
                   <p className="text-slate-500 mt-2 font-medium">{landing.sections.tourResultsDescription}</p>
                 </div>
@@ -167,7 +167,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
 
         <div className="space-y-4">
           <section id="recommended-guides" className="container mx-auto px-4 py-0 scroll-mt-20">
-            <div className="mb-4">
+            <div className="mb-4 mt-[3px]">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold mb-4">
                 <Star className="w-3 h-3 fill-current" />
                 <span>{landing.sections.verifiedExperts}</span>
@@ -210,7 +210,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
 
           {!criteria && (
             <section className="container mx-auto px-4 py-4 border-t border-slate-100">
-              <div className="mb-4">
+              <div className="mb-4 mt-[3px]">
                 <h2 className="text-3xl font-black text-slate-900">{landing.sections.allToursTitle}</h2>
                 <p className="text-slate-500 mt-2 font-medium">{landing.sections.allToursDescription}</p>
               </div>
