@@ -134,9 +134,9 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
                   <h2 className="text-3xl font-black text-slate-900">{landing.sections.guideResultsTitle}</h2>
                   <p className="text-slate-500 mt-2 font-medium">{landing.sections.guideResultsDescription}</p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 lg:gap-8">
                   {filteredGuides.slice(0, 8).map((guide) => (
-                    <GuideCard key={guide.id} guide={guide} queryString={searchParamsString} />
+                    <GuideCard key={guide.id} guide={guide} queryString={searchParamsString} compact />
                   ))}
                 </div>
               </section>
@@ -148,9 +148,9 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
                   <h2 className="text-3xl font-black text-slate-900">{landing.sections.tourResultsTitle}</h2>
                   <p className="text-slate-500 mt-2 font-medium">{landing.sections.tourResultsDescription}</p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 lg:gap-8">
                   {filteredTours.map((tour) => (
-                    <TourCard key={tour.id} tour={tour} queryString={searchParamsString} />
+                    <TourCard key={tour.id} tour={tour} queryString={searchParamsString} compact />
                   ))}
                 </div>
               </section>
@@ -177,9 +177,9 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
               </h2>
               <p className="text-slate-500 mt-2 max-w-2xl text-lg font-medium">{landing.sections.recommendedGuidesDescription}</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 lg:gap-8">
               {guides.slice(0, 4).map((guide) => (
-                <GuideCard key={guide.id} guide={guide} queryString={searchParamsString} />
+                <GuideCard key={guide.id} guide={guide} queryString={searchParamsString} compact />
               ))}
             </div>
           </section>
@@ -201,8 +201,8 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
                   <h3 className="text-2xl font-bold text-slate-900">{landing.sections.trendingTours}</h3>
                   <div className="h-[2px] flex-1 bg-gradient-to-r from-slate-200 to-transparent ml-4" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {tours.slice(0, 3).map((tour) => ( tour && <TourCard key={tour.id} tour={tour} queryString={searchParamsString} /> ))}
+                <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+                  {tours.slice(0, 3).map((tour) => ( tour && <TourCard key={tour.id} tour={tour} queryString={searchParamsString} compact /> ))}
                 </div>
               </div>
             </div>
@@ -214,8 +214,8 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
                 <h2 className="text-3xl font-black text-slate-900">{landing.sections.allToursTitle}</h2>
                 <p className="text-slate-500 mt-2 font-medium">{landing.sections.allToursDescription}</p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {tours.map((tour) => ( tour && <TourCard key={tour.id} tour={tour} queryString={searchParamsString} /> ))}
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 lg:gap-8">
+                {tours.map((tour) => ( tour && <TourCard key={tour.id} tour={tour} queryString={searchParamsString} compact /> ))}
               </div>
             </section>
           )}

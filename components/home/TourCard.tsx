@@ -23,7 +23,7 @@ export type LandingTour = {
   reviewCount: number | null;
 };
 
-export function TourCard({ tour, queryString }: { tour: LandingTour, queryString?: string }) {
+export function TourCard({ tour, queryString, compact }: { tour: LandingTour; queryString?: string; compact?: boolean }) {
   const { locale, messages } = useI18n();
   const card = messages.landing.card;
   const newLabel = locale === "ko" ? "신규" : "New";
@@ -48,7 +48,12 @@ export function TourCard({ tour, queryString }: { tour: LandingTour, queryString
   };
 
   return (
-    <div className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-[#e9e4db] bg-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_50px_rgba(15,23,42,0.08)]">
+    <div
+      className={cn(
+        "group flex h-full flex-col overflow-hidden border border-[#e9e4db] bg-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_50px_rgba(15,23,42,0.08)]",
+        compact ? "rounded-2xl sm:rounded-[28px]" : "rounded-[28px]",
+      )}
+    >
       <div className="relative aspect-[4/3] overflow-hidden bg-[#f5f1ea]">
         {/* Image Carousel */}
         <div
@@ -62,7 +67,7 @@ export function TourCard({ tour, queryString }: { tour: LandingTour, queryString
                 src={photo}
                 alt={`${tour.title} - ${index + 1}`}
                 fill
-                sizes="(min-width: 1280px) 24rem, (min-width: 768px) 33vw, 100vw"
+                sizes={compact ? "(min-width: 1024px) 24rem, (min-width: 640px) 40vw, 50vw" : "(min-width: 1280px) 24rem, (min-width: 768px) 33vw, 100vw"}
                 className="object-cover transition duration-500 group-hover:scale-105"
                 unoptimized
               />
@@ -109,7 +114,13 @@ export function TourCard({ tour, queryString }: { tour: LandingTour, queryString
           </div>
         )}
 
-        <Link href={localizePath(locale, `/traveler/tours/${tour.id}${queryString || ''}`)} className="absolute left-4 top-4 z-10 rounded-full bg-white/92 px-3 py-1 text-xs font-semibold text-slate-900 backdrop-blur">
+        <Link
+          href={localizePath(locale, `/traveler/tours/${tour.id}${queryString || ''}`)}
+          className={cn(
+            "absolute z-10 rounded-full bg-white/92 font-semibold text-slate-900 backdrop-blur",
+            compact ? "left-2 top-2 px-2 py-0.5 text-[10px] sm:left-4 sm:top-4 sm:px-3 sm:py-1 sm:text-xs" : "left-4 top-4 px-3 py-1 text-xs",
+          )}
+        >
           {tour.region}
         </Link>
         <Link href={localizePath(locale, `/traveler/tours/${tour.id}${queryString || ''}`)} className="absolute inset-0 z-0">
@@ -117,36 +128,37 @@ export function TourCard({ tour, queryString }: { tour: LandingTour, queryString
         </Link>
       </div>
 
-      <div className="flex flex-1 flex-col gap-4 p-5">
-        <Link
-          href={localizePath(locale, `/traveler/tours/${tour.id}${queryString || ''}`)}
-        >
-          <h3 className="line-clamp-2 text-lg font-semibold text-slate-900">{tour.title}</h3>
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{tour.description}</p>
+      <div className={cn("flex flex-1 flex-col", compact ? "gap-2 p-3 sm:gap-4 sm:p-5" : "gap-4 p-5")}>
+        <Link href={localizePath(locale, `/traveler/tours/${tour.id}${queryString || ''}`)}>
+          <h3 className={cn("line-clamp-2 font-semibold text-slate-900", compact ? "text-sm leading-snug sm:text-lg" : "text-lg")}>{tour.title}</h3>
+          <p className={cn("line-clamp-2 text-slate-600", compact ? "mt-1 text-xs leading-snug sm:mt-2 sm:text-sm sm:leading-6" : "mt-2 text-sm leading-6")}>{tour.description}</p>
         </Link>
-        <div className="flex items-center gap-4 text-sm text-slate-500">
-          <span className="inline-flex items-center gap-1">
-            <Clock className="h-4 w-4" />
+        <div className={cn("flex flex-wrap items-center gap-2 text-slate-500 sm:gap-4", compact ? "text-[11px] sm:text-sm" : "text-sm")}>
+          <span className="inline-flex items-center gap-0.5 sm:gap-1">
+            <Clock className={cn(compact ? "h-3 w-3 sm:h-4 sm:w-4" : "h-4 w-4")} />
             {formatDurationHours(tour.duration || 0, locale)}
           </span>
-          <span className="inline-flex items-center gap-1">
-            <Star className="h-4 w-4 fill-[#ff385c] text-[#ff385c]" />
+          <span className="inline-flex items-center gap-0.5 sm:gap-1">
+            <Star className={cn("fill-[#ff385c] text-[#ff385c]", compact ? "h-3 w-3 sm:h-4 sm:w-4" : "h-4 w-4")} />
             {tour.rating ? tour.rating.toFixed(1) : newLabel}
           </span>
         </div>
-        <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
-          <div>
-            <p className="text-sm font-semibold text-slate-900">{formatCurrencyKRW(tour.price, locale)}</p>
-            <Link 
+        <div className={cn("mt-auto flex items-center justify-between border-t border-slate-100", compact ? "pt-2 sm:pt-4" : "pt-4")}>
+          <div className="min-w-0">
+            <p className={cn("font-semibold text-slate-900", compact ? "text-xs sm:text-sm" : "text-sm")}>{formatCurrencyKRW(tour.price, locale)}</p>
+            <Link
               href={localizePath(locale, `/traveler/guides/${tour.guideId}`)}
-              className="text-xs text-slate-500 hover:text-blue-600 transition-colors underline-offset-2 hover:underline"
+              className={cn(
+                "block truncate text-slate-500 transition-colors underline-offset-2 hover:text-blue-600 hover:underline",
+                compact ? "text-[10px] sm:text-xs" : "text-xs",
+              )}
             >
               {tour.guideName}
             </Link>
           </div>
-          <Link 
+          <Link
             href={localizePath(locale, `/traveler/tours/${tour.id}${queryString || ''}`)}
-            className="text-xs font-medium text-slate-600 hover:text-blue-600 transition-colors"
+            className={cn("shrink-0 font-medium text-slate-600 transition-colors hover:text-blue-600", compact ? "text-[10px] sm:text-xs" : "text-xs")}
           >
             {card.viewDetails}
           </Link>

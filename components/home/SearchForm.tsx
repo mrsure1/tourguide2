@@ -203,6 +203,20 @@ export function SearchForm({
                   </button>
                 ))}
               </div>
+              <div className="lg:hidden border-t border-slate-100 bg-slate-50/80 p-3">
+                <Button
+                  type="button"
+                  variant="primary"
+                  disabled={!draft.destination.trim()}
+                  className="h-11 w-full rounded-2xl bg-[#ff385c] text-sm font-bold text-white hover:bg-[#e31c5f] disabled:opacity-50"
+                  onClick={() => {
+                    setIsDestinationOpen(false);
+                    setIsDatePickerOpen(true);
+                  }}
+                >
+                  {landing.search.nextStep}
+                </Button>
+              </div>
             </div>
           )}
         </div>
@@ -241,6 +255,20 @@ export function SearchForm({
                 }}
                 className="w-full sm:w-[340px] border-none mx-auto"
               />
+              <div className="lg:hidden border-t border-slate-100 p-3">
+                <Button
+                  type="button"
+                  variant="primary"
+                  disabled={!draft.startDate || !draft.endDate}
+                  className="h-11 w-full rounded-2xl bg-[#ff385c] text-sm font-bold text-white hover:bg-[#e31c5f] disabled:opacity-50"
+                  onClick={() => {
+                    setIsDatePickerOpen(false);
+                    setIsGuestPickerOpen(true);
+                  }}
+                >
+                  {landing.search.nextStep}
+                </Button>
+              </div>
             </div>
           )}
         </div>
@@ -272,6 +300,16 @@ export function SearchForm({
                   count={draft.children}
                   onChange={(next) => setDraft((prev) => ({ ...prev, children: next }))}
                 />
+              </div>
+              <div className="lg:hidden border-t border-slate-100 pt-4">
+                <Button
+                  type="button"
+                  variant="primary"
+                  className="h-11 w-full rounded-2xl bg-[#ff385c] text-sm font-bold text-white hover:bg-[#e31c5f]"
+                  onClick={() => setIsGuestPickerOpen(false)}
+                >
+                  {landing.search.doneGuests}
+                </Button>
               </div>
             </div>
           )}

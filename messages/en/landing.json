@@ -20,7 +20,9 @@
     "children": "Children",
     "adultCount": "Adults {count}",
     "childrenCount": "Children {count}",
-    "searchButton": "Search"
+    "searchButton": "Search",
+    "nextStep": "Next",
+    "doneGuests": "Done"
   },
   "hero": {
     "loggedInBadge": "{name}, explore guides and tours for your next trip",
