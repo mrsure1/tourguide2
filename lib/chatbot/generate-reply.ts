@@ -3,10 +3,6 @@ import { formatContextBlock, fallbackAnswer, retrieveForQuery, type RetrievedCon
 
 const MODEL = process.env.GEMINI_CHAT_MODEL?.trim() || "gemini-2.0-flash";
 
-function koreanInString(s: string): boolean {
-  return /[가-힣]/.test(s);
-}
-
 /** 모델이 JSON/펜스/내부 마크업을 그대로보내는 경우 완화 */
 function sanitizeAssistantOutput(raw: string): string {
   let t = raw.trim();
@@ -45,6 +41,19 @@ function buildSystemPrompt(locale: string): string {
       ? "When the user writes in English, reply in natural conversational English only. If they write in Korean, reply in Korean. Do not mix languages in one reply unless translating a short term."
       : "사용자가 한국어로 물으면 한국어로, 영어로 물으면 영어로 자연스럽게 답하세요.";
 
+  const voice =
+    locale === "en"
+      ? [
+          "Write like a helpful human support agent in complete sentences—not a pasted FAQ database row.",
+          "Do not dump the FAQ question/answer text verbatim; rephrase in your own words while keeping every factual claim aligned with CONTEXT.",
+          "Start with a short direct answer, then add any useful detail from CONTEXT in a friendly tone.",
+        ]
+      : [
+          "고객센터 상담원이 말하듯 완전한 문장으로 답하세요. FAQ 원문을 그대로 복붙하지 마세요.",
+          "CONTEXT의 사실·정책은 그대로 유지하되, 표현은 바꿔 자연스럽게 풀어 설명하세요.",
+          "먼저 질문에 직접 답한 뒤, 필요하면 CONTEXT에서 덧붙일 안내를 이어가세요.",
+        ];
+
   const formatRules =
     locale === "en"
       ? [
@@ -59,11 +68,12 @@ function buildSystemPrompt(locale: string): string {
   return [
     "You are GuideMatch (Korea travel guide matching) customer assistant.",
     "Answer ONLY using the provided CONTEXT blocks. If CONTEXT is insufficient, say so briefly and suggest email support@guidematch.com or the site Support page.",
-    "When an FAQ entry in CONTEXT clearly matches the user's question, treat that FAQ answer as authoritative: stay consistent with it; prefer quoting or light paraphrase over inventing new policy details.",
+    "When an FAQ entry in CONTEXT clearly matches the user's question, treat that FAQ answer as authoritative: keep the same facts and policy meaning; do not add new rules.",
     "If an FAQ answer is in Korean but the user asked in English, summarize the same facts in clear English (no word-for-word dump of Korean labels).",
     "Do not invent policies, prices, or legal facts not present in CONTEXT.",
     "Keep answers concise (roughly 3–8 sentences unless the user asks for detail).",
     "No markdown headings; plain paragraphs or short bullets are fine.",
+    ...voice,
     ...formatRules,
     lang,
   ].join("\n");
@@ -120,23 +130,6 @@ export async function generateChatReply(messages: ChatMessage[], locale: string)
     };
   }
 
-  const faqTop = ctx.faqHits[0];
-  const faqSecond = ctx.faqHits[1];
-  const directMin = Math.max(1, parseInt(process.env.CHATBOT_FAQ_DIRECT_MIN_SCORE || "24", 10) || 24);
-  const directGap = Math.max(0, parseInt(process.env.CHATBOT_FAQ_DIRECT_GAP || "5", 10) || 5);
-  if (
-    faqTop &&
-    faqTop.score >= directMin &&
-    (!faqSecond || faqTop.score >= faqSecond.score + directGap) &&
-    !(locale === "en" && koreanInString(faqTop.row.answer))
-  ) {
-    return {
-      answer: faqTop.row.answer,
-      usedModel: false,
-      context: ctx,
-    };
-  }
-
   const system = buildSystemPrompt(locale);
   const sdk = await loadGenAi();
   if (!sdk?.GoogleGenAI) {
@@ -174,7 +167,7 @@ export async function generateChatReply(messages: ChatMessage[], locale: string)
     const response = await ai.models.generateContent({
       model: MODEL,
       contents,
-      config: { temperature: 0.22 },
+      config: { temperature: 0.38 },
     });
     const text = sanitizeAssistantOutput(response.text?.trim() || "");
     if (!text) {
