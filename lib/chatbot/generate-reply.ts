@@ -3,19 +3,68 @@ import { formatContextBlock, fallbackAnswer, retrieveForQuery, type RetrievedCon
 
 const MODEL = process.env.GEMINI_CHAT_MODEL?.trim() || "gemini-2.0-flash";
 
+function koreanInString(s: string): boolean {
+  return /[가-힣]/.test(s);
+}
+
+/** 모델이 JSON/펜스/내부 마크업을 그대로보내는 경우 완화 */
+function sanitizeAssistantOutput(raw: string): string {
+  let t = raw.trim();
+  const fence = /^```(?:json)?\s*([\s\S]*?)```\s*$/i;
+  const fm = t.match(fence);
+  if (fm) {
+    const inner = fm[1].trim();
+    try {
+      const o = JSON.parse(inner) as Record<string, unknown>;
+      for (const key of ["answer", "response", "text", "message", "content"]) {
+        const v = o[key];
+        if (typeof v === "string" && v.trim()) return v.trim();
+      }
+    } catch {
+      /* use stripped fence content if it reads as prose */
+      if (!/^\s*[{[]/.test(inner)) return inner;
+    }
+  }
+  if (t.startsWith("{") && t.endsWith("}")) {
+    try {
+      const o = JSON.parse(t) as Record<string, unknown>;
+      for (const key of ["answer", "response", "text", "message", "content"]) {
+        const v = o[key];
+        if (typeof v === "string" && v.trim()) return v.trim();
+      }
+    } catch {
+      /* keep t */
+    }
+  }
+  return t;
+}
+
 function buildSystemPrompt(locale: string): string {
   const lang =
     locale === "en"
-      ? "Respond in natural English when the user writes in English; use Korean when they write in Korean."
+      ? "When the user writes in English, reply in natural conversational English only. If they write in Korean, reply in Korean. Do not mix languages in one reply unless translating a short term."
       : "사용자가 한국어로 물으면 한국어로, 영어로 물으면 영어로 자연스럽게 답하세요.";
+
+  const formatRules =
+    locale === "en"
+      ? [
+          "Output plain conversational text only: no JSON, no YAML, no XML, no code blocks, no keys like \"answer\":.",
+          "Do not repeat CONTEXT section titles (lines starting with ===), bracket labels like [FAQ 1], or internal file paths unless the user explicitly asks.",
+        ]
+      : [
+          "JSON·코드펜스·키-값 형태로 답하지 마세요. 자연스러운 문장만 사용하세요.",
+          "CONTEXT의 === 제목이나 [FAQ 1] 같은 표기를 그대로 복사해 출력하지 마세요.",
+        ];
 
   return [
     "You are GuideMatch (Korea travel guide matching) customer assistant.",
     "Answer ONLY using the provided CONTEXT blocks. If CONTEXT is insufficient, say so briefly and suggest email support@guidematch.com or the site Support page.",
     "When an FAQ entry in CONTEXT clearly matches the user's question, treat that FAQ answer as authoritative: stay consistent with it; prefer quoting or light paraphrase over inventing new policy details.",
+    "If an FAQ answer is in Korean but the user asked in English, summarize the same facts in clear English (no word-for-word dump of Korean labels).",
     "Do not invent policies, prices, or legal facts not present in CONTEXT.",
     "Keep answers concise (roughly 3–8 sentences unless the user asks for detail).",
     "No markdown headings; plain paragraphs or short bullets are fine.",
+    ...formatRules,
     lang,
   ].join("\n");
 }
@@ -55,10 +104,12 @@ export async function generateFaqOnlyReply(messages: ChatMessage[], locale: stri
 export async function generateChatReply(messages: ChatMessage[], locale: string): Promise<GenerateResult> {
   const query = lastUserText(messages);
   const ctx = retrieveForQuery(query, locale);
-  const formatted = formatContextBlock(ctx).trim();
+  const formatted = formatContextBlock(ctx, locale).trim();
   const contextBlock =
     formatted ||
-    "(이번 질문과 직접 일치하는 FAQ·사이트 발췌를 찾지 못했습니다. 추측하지 말고, 일반적인 안내와 고객센터 문의를 권장하세요.)";
+    (locale === "en"
+      ? "(No close FAQ or site excerpt matched this question. Do not guess; give a short reply and suggest support@guidematch.com or the Support page.)"
+      : "(이번 질문과 직접 일치하는 FAQ·사이트 발췌를 찾지 못했습니다. 추측하지 말고, 일반적인 안내와 고객센터 문의를 권장하세요.)");
 
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) {
@@ -76,7 +127,8 @@ export async function generateChatReply(messages: ChatMessage[], locale: string)
   if (
     faqTop &&
     faqTop.score >= directMin &&
-    (!faqSecond || faqTop.score >= faqSecond.score + directGap)
+    (!faqSecond || faqTop.score >= faqSecond.score + directGap) &&
+    !(locale === "en" && koreanInString(faqTop.row.answer))
   ) {
     return {
       answer: faqTop.row.answer,
@@ -101,10 +153,11 @@ export async function generateChatReply(messages: ChatMessage[], locale: string)
   history = history.slice(start);
 
   let firstUser = true;
+  const userLabel = locale === "en" ? "User message" : "사용자 메시지";
   for (const m of history) {
     if (m.role === "user") {
       const text = firstUser
-        ? `${system}\n\nCONTEXT:\n${contextBlock}\n\n사용자 메시지:\n${m.content}`
+        ? `${system}\n\nCONTEXT:\n${contextBlock}\n\n${userLabel}:\n${m.content}`
         : m.content;
       contents.push({ role: "user", parts: [{ text }] });
       firstUser = false;
@@ -123,7 +176,7 @@ export async function generateChatReply(messages: ChatMessage[], locale: string)
       contents,
       config: { temperature: 0.22 },
     });
-    const text = response.text?.trim();
+    const text = sanitizeAssistantOutput(response.text?.trim() || "");
     if (!text) {
       return { answer: fallbackAnswer(query, ctx, locale), usedModel: false, context: ctx };
     }

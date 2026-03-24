@@ -3,6 +3,10 @@ import { loadSiteCorpus } from "@/lib/chatbot/corpus";
 import { scoreText, scoreFaqRelevance, expandQueryForRetrieval } from "@/lib/chatbot/score";
 import type { FaqRow, SiteChunk } from "@/lib/chatbot/types";
 
+function hasHangul(s: string): boolean {
+  return /[가-힣]/.test(s);
+}
+
 export type RetrievedContext = {
   faqHits: { row: FaqRow; score: number }[];
   siteHits: { chunk: SiteChunk; score: number }[];
@@ -42,21 +46,43 @@ export function retrieveForQuery(query: string, locale: string): RetrievedContex
   return { faqHits: faqScored, siteHits: siteScored };
 }
 
-export function formatContextBlock(ctx: RetrievedContext): string {
+export function formatContextBlock(ctx: RetrievedContext, locale: string): string {
+  const en = locale === "en";
   const parts: string[] = [];
 
   if (ctx.faqHits.length) {
-    parts.push("=== FAQ (공식 FAQ CSV) ===");
+    parts.push(
+      en
+        ? "=== Official FAQ (reference; may be in Korean) ==="
+        : "=== FAQ (공식 FAQ CSV) ===",
+    );
     ctx.faqHits.forEach((h, i) => {
-      parts.push(`[FAQ ${i + 1}] Q: ${h.row.question}\nA: ${h.row.answer}`);
+      parts.push(
+        en
+          ? `[${i + 1}] Question: ${h.row.question}\nAnswer: ${h.row.answer}`
+          : `[FAQ ${i + 1}] Q: ${h.row.question}\nA: ${h.row.answer}`,
+      );
     });
   }
 
   if (ctx.siteHits.length) {
-    parts.push("=== 사이트 콘텐츠 (번역·랜딩·고객센터 등 추출) ===");
+    parts.push(
+      en
+        ? "=== Site copy excerpts (i18n / support / legal snippets) ==="
+        : "=== 사이트 콘텐츠 (번역·랜딩·고객센터 등 추출) ===",
+    );
     ctx.siteHits.forEach((h, i) => {
-      parts.push(`[SITE ${i + 1}] 출처: ${h.chunk.source}\n${h.chunk.text}`);
+      const srcLabel = en ? "Source" : "출처";
+      parts.push(`[${en ? "Site" : "SITE"} ${i + 1}] ${srcLabel}: ${h.chunk.source}\n${h.chunk.text}`);
     });
+  }
+
+  if (parts.length) {
+    parts.push(
+      en
+        ? "End of reference. Answer the user in natural conversational English (or Korean only if they wrote Korean). Do not paste these headers, brackets, or JSON."
+        : "위 참고만 사용하고, 사용자에게 자연스러운 문장으로 답하세요. 위 표기(===, [FAQ] 등)나 JSON 형태로 그대로 출력하지 마세요.",
+    );
   }
 
   return parts.join("\n\n");
@@ -65,7 +91,7 @@ export function formatContextBlock(ctx: RetrievedContext): string {
 export function fallbackAnswer(query: string, ctx: RetrievedContext, locale: string): string {
   const en = locale === "en";
   const bestFaq = ctx.faqHits[0];
-  if (bestFaq && bestFaq.score >= 8) {
+  if (bestFaq && bestFaq.score >= 8 && !(en && hasHangul(bestFaq.row.answer))) {
     return bestFaq.row.answer;
   }
 
@@ -79,9 +105,16 @@ export function fallbackAnswer(query: string, ctx: RetrievedContext, locale: str
     ? ["Here is what we found in the FAQ and site copy:", ""]
     : ["아래는 사이트·FAQ에서 찾은 참고 정보입니다.", ""];
   for (const h of ctx.faqHits.slice(0, 3)) {
-    lines.push(`• ${h.row.question}`, `  ${h.row.answer}`, "");
+    if (en && hasHangul(h.row.answer)) {
+      lines.push(`• (FAQ) ${h.row.question}`, `  ${h.row.answer.slice(0, 220)}${h.row.answer.length > 220 ? "…" : ""}`, "");
+    } else {
+      lines.push(`• ${h.row.question}`, `  ${h.row.answer}`, "");
+    }
   }
-  for (const h of ctx.siteHits.slice(0, 4)) {
+  const siteOrdered = en
+    ? [...ctx.siteHits.filter((h) => h.chunk.locale === "en"), ...ctx.siteHits.filter((h) => h.chunk.locale !== "en")]
+    : ctx.siteHits;
+  for (const h of siteOrdered.slice(0, 4)) {
     lines.push(`• (${h.chunk.source})`, `  ${h.chunk.text.slice(0, 280)}${h.chunk.text.length > 280 ? "…" : ""}`, "");
   }
   lines.push(
