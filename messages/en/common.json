@@ -41,5 +41,18 @@
     "copyright": "GuideMatch Inc. All rights reserved.",
     "ssl": "SSL secure server",
     "security": "Security certification mark"
+  },
+  "chatbot": {
+    "windowTitle": "GuideMatch Assistant",
+    "windowSubtitle": "Ask about trips, guides, and bookings",
+    "openLabel": "Open FAQ chat",
+    "closeLabel": "Close chat",
+    "loading": "Loading assistant…",
+    "poweredBy": "GuideMatch FAQ · AI",
+    "inputPlaceholder": "What would you like to know?",
+    "send": "Send",
+    "thinking": "Preparing an answer…",
+    "error": "We could not fetch a reply. Please try again or contact support.",
+    "disclaimer": "Answers use FAQ and on-site copy. For legal effect, follow official terms and support."
   }
 }

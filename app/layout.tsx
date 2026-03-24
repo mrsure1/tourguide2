@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import AnalyticsScripts from "@/components/analytics/AnalyticsScripts";
 import { Footer } from "@/components/layout/Footer";
 import { ChannelTalk } from "@/components/support/ChannelTalk";
 import { LocaleProvider } from "@/components/providers/LocaleProvider";
 import { getDictionary } from "@/lib/i18n/dictionary";
 import { getRequestLocale } from "@/lib/i18n/get-request-locale";
-import { toOpenGraphLocale } from "@/lib/i18n/config";
-import { localizePath } from "@/lib/i18n/routing";
-import { headers } from "next/headers";
 import "./globals.css";
 
 const siteUrl = "https://tourguide2-five.vercel.app";
@@ -25,6 +23,10 @@ export default async function RootLayout({
 }>) {
   const locale = await getRequestLocale();
   const messages = await getDictionary(locale);
+  const headerStore = await headers();
+  const internalPath = headerStore.get("x-guidematch-path") ?? "";
+  const hideGlobalChrome =
+    internalPath === "/embed/chatbot" || internalPath.startsWith("/embed/chatbot/");
 
   return (
     <html lang={locale}>
@@ -32,8 +34,8 @@ export default async function RootLayout({
         <LocaleProvider locale={locale} messages={messages}>
           <AnalyticsScripts />
           {children}
-          <Footer />
-          <ChannelTalk />
+          {!hideGlobalChrome ? <Footer /> : null}
+          {!hideGlobalChrome ? <ChannelTalk /> : null}
         </LocaleProvider>
       </body>
     </html>

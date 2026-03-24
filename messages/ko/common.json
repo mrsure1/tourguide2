@@ -41,5 +41,18 @@
     "copyright": "GuideMatch Inc. All rights reserved.",
     "ssl": "SSL 보안 서버",
     "security": "정보보호 인증 마크"
+  },
+  "chatbot": {
+    "windowTitle": "가이드매치 도우미",
+    "windowSubtitle": "여행·가이드·예약 관련 질문을 물어보세요",
+    "openLabel": "FAQ 챗봇 열기",
+    "closeLabel": "챗봇 닫기",
+    "loading": "도우미를 불러오는 중…",
+    "poweredBy": "GuideMatch FAQ · AI",
+    "inputPlaceholder": "무엇이 궁금하신가요?",
+    "send": "보내기",
+    "thinking": "답변을 준비하는 중…",
+    "error": "일시적으로 답변을 가져오지 못했습니다. 잠시 후 다시 시도하거나 고객센터로 문의해 주세요.",
+    "disclaimer": "FAQ·사이트 안내를 검색해 답합니다. 법적 효력은 공식 약관·고객센터 기준입니다."
   }
 }

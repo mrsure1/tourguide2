@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/build-chatbot-corpus.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "refresh-data": "node scripts/refresh-policy-data.js",
-    "backfill:translations": "node scripts/backfill_existing_translations.mjs"
+    "backfill:translations": "node scripts/backfill_existing_translations.mjs",
+    "chatbot:corpus": "node scripts/build-chatbot-corpus.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.46.0",
