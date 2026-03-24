@@ -6,6 +6,9 @@ import MainLandingClient, {
   type LandingTour,
 } from "@/components/home/MainLandingClient";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function getFallbackGuides(locale: "en" | "ko"): LandingGuide[] {
   if (locale === "ko") {
     return [
