@@ -75,6 +75,19 @@ export function expandQueryForRetrieval(raw: string): string {
     s += " 환불 환급 취소 전액 부분 처리 기간 카드사 은행 승인 예약취소";
   }
 
+  if (/(예약|신청)/.test(h)) {
+    s += " 예약 요청 확정 가능여부 일정 조율 마이페이지";
+  }
+  if (/(취소)/.test(h) && !/(환불|환급)/.test(h)) {
+    s += " 취소 예약내역 마이페이지 고객센터";
+  }
+  if (/(결제|카드|계좌)/.test(h)) {
+    s += " 결제 수단 카드 계좌이체 안내";
+  }
+  if (/(언어|영어|일본어|중국어|한국어)/.test(h)) {
+    s += " 언어 가능언어 맞춤 추천";
+  }
+
   return s;
 }
 
@@ -155,6 +168,32 @@ function hangulBigramJaccard(a: string, b: string): number {
   }
   const union = A.size + B.size - inter;
   return union === 0 ? 0 : inter / union;
+}
+
+/**
+ * 주제 게이트·패널티 없이 질의↔FAQ 질문·답만 어휘·2-gram으로 맞춤.
+ * 게이트 때문에 gated 점수가 전부 0에 가까워질 때 한국어 자연어 질문이 FAQ와 연결되도록 보조한다.
+ */
+export function scoreFaqLexicalOnly(query: string, question: string, answer: string): number {
+  const expanded = expandQueryForRetrieval(query);
+  const blob = `${question} ${answer}`;
+  const base = Math.max(
+    scoreText(expanded, blob),
+    scoreText(query, blob) * 1.08,
+    scoreText(expanded, question) * 1.12,
+    scoreText(query, question) * 1.05,
+    scoreText(expanded, answer) * 0.95,
+  );
+
+  let bonus = 0;
+  const qh = hangulOnly(query);
+  if (qh.length >= 2) {
+    bonus += hangulBigramJaccard(query, question) * 42;
+    bonus += hangulBigramJaccard(query, answer) * 18;
+    bonus += hangulBigramJaccard(expanded, question) * 12;
+  }
+
+  return base + bonus;
 }
 
 /**

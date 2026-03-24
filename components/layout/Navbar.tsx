@@ -45,7 +45,8 @@ export function Navbar({ profile }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isGuide = profile?.role === "guide" || profile?.role === "admin";
+  const isAdminUser = profile?.role === "admin" || profile?.isAdmin;
+  const isGuide = profile?.role === "guide" || isAdminUser;
   const isKorean = locale === "ko";
   const withLocale = (href: string) => localizePath(locale, href);
 
@@ -67,7 +68,7 @@ export function Navbar({ profile }: NavbarProps) {
         { href: withLocale("/guide/tours"), label: "내 상품 관리", icon: ShoppingBag },
         { href: withLocale("/guide/dashboard"), label: "가이드 대시보드", icon: LayoutDashboard },
         { href: withLocale("/guide/profile"), label: "마이페이지", icon: User },
-        ...(profile?.role === "admin"
+        ...(isAdminUser
           ? [{ href: withLocale("/admin/dashboard"), label: "관리자 대시보드", icon: Search }]
           : []),
       ]
@@ -76,7 +77,7 @@ export function Navbar({ profile }: NavbarProps) {
         { href: withLocale("/guide/tours"), label: "My tours", icon: ShoppingBag },
         { href: withLocale("/guide/dashboard"), label: "Guide dashboard", icon: LayoutDashboard },
         { href: withLocale("/guide/profile"), label: "My page", icon: User },
-        ...(profile?.role === "admin"
+        ...(isAdminUser
           ? [{ href: withLocale("/admin/dashboard"), label: "Admin dashboard", icon: Search }]
           : []),
       ];

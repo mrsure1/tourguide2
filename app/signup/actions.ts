@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
+import { getSiteOriginFromHeaders } from '@/lib/site-origin'
 import { trackServerConversion } from '@/lib/analytics/server'
 
 export async function signup(formData: FormData) {
@@ -24,20 +25,8 @@ export async function signup(formData: FormData) {
         return redirect('/signup?message=Passwords do not match')
     }
 
-    // 현재 요청의 호스트(Host)를 사용하여 리다이렉트 URL 생성 (더 신뢰할 수 있는 방식)
     const headersList = await headers();
-    const host = headersList.get('x-forwarded-host') || headersList.get('host');
-    const protocol = host?.includes('localhost') ? 'http' : 'https';
-    const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
-    
-    // URL 파싱으로 scheme+host만 안전하게 추출
-    let cleanOrigin: string;
-    try {
-        const parsed = new URL(siteOrigin);
-        cleanOrigin = parsed.origin;
-    } catch {
-        cleanOrigin = siteOrigin.replace(/\/$/, "");
-    }
+    const cleanOrigin = getSiteOriginFromHeaders(headersList);
     const redirectTo = `${cleanOrigin}/auth/callback`;
 
     // 1. 회원가입
@@ -94,17 +83,7 @@ export async function signup(formData: FormData) {
 export async function resendConfirmation(email: string) {
     const supabase = await createClient();
     const headersList = await headers();
-    const host = headersList.get('x-forwarded-host') || headersList.get('host');
-    const protocol = host?.includes('localhost') ? 'http' : 'https';
-    const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
-    
-    let cleanOrigin: string;
-    try {
-        const parsed = new URL(siteOrigin);
-        cleanOrigin = parsed.origin;
-    } catch {
-        cleanOrigin = siteOrigin.replace(/\/$/, "");
-    }
+    const cleanOrigin = getSiteOriginFromHeaders(headersList);
     const redirectTo = `${cleanOrigin}/auth/callback`;
 
     const { error } = await supabase.auth.resend({

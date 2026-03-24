@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Mail, ArrowRight, X, Loader2 } from "lucide-react";
 import { Button } from "./Button";
 import { Input } from "./Input";
-import { createClient } from "@/lib/supabase/client";
+import { requestPasswordReset } from "@/app/auth/password-reset-actions";
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -39,38 +39,28 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
     setErrorMessage("");
 
     try {
-      const supabase = createClient();
-      if (!supabase) throw new Error("Supabase client is not available");
+      const result = await requestPasswordReset(email);
 
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-      const redirectTo = `${siteUrl.replace(/\/$/, "")}/auth/callback?next=/update-password`;
-      
-      console.log("[ForgotPassword] Requesting reset for:", email, "Redirecting to:", redirectTo);
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectTo,
-      });
-
-      if (error) {
-        console.error("[ForgotPassword] Error from Supabase:", error);
-        throw error;
+      if (!result.success) {
+        setStatus("error");
+        let msg = "비밀번호 재설정 이메일 전송에 실패했습니다.";
+        if (result.status === 429) {
+          msg = "이메일 발송 한도를 초과했습니다. 잠시 후 다시 시도해주세요. (시간당 최대 3회)";
+        } else if (result.message?.includes("Email not found")) {
+          msg = "가입되지 않은 이메일 주소입니다.";
+        } else if (result.message) {
+          msg = result.message;
+        }
+        setErrorMessage(msg);
+        return;
       }
 
-      console.log("[ForgotPassword] Reset email sent successfully");
       setStatus("success");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Password reset error:", error);
       setStatus("error");
-      
-      // 구체적인 에러 메시지 제공
-      let msg = "비밀번호 재설정 이메일 전송에 실패했습니다.";
-      if (error.status === 429) {
-        msg = "이메일 발송 한도를 초과했습니다. 잠시 후 다시 시도해주세요. (시간당 최대 3회)";
-      } else if (error.message?.includes("Email not found")) {
-        msg = "가입되지 않은 이메일 주소입니다.";
-      } else {
-        msg = error.message || msg;
-      }
+      const msg =
+        error instanceof Error ? error.message : "비밀번호 재설정 이메일 전송에 실패했습니다.";
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);

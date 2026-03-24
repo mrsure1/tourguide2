@@ -17,6 +17,16 @@ export default async function AdminLayout({
             .eq('id', user.id)
             .single();
         profile = data;
+
+        if (profile && user.email) {
+            const adminEmails = (process.env.ADMIN_EMAILS || '')
+                .split(',')
+                .map((email) => email.trim().toLowerCase())
+                .filter(Boolean);
+            if (adminEmails.includes(user.email.toLowerCase())) {
+                (profile as any).isAdmin = true;
+            }
+        }
     }
 
     return (

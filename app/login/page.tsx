@@ -29,8 +29,7 @@ function LoginForm() {
             document.cookie = `oauth_role=${role}; path=/; max-age=3600; samesite=lax`;
 
             // Use a stable callback URL. Passing arbitrary query strings can trigger invalid path errors.
-            const appOrigin = (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, "");
-            const callbackUrl = `${appOrigin}/auth/callback`;
+            const callbackUrl = `${window.location.origin.replace(/\/$/, "")}/auth/callback`;
 
             await supabase.auth.signInWithOAuth({
                 provider: provider,

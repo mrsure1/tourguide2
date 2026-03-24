@@ -43,7 +43,7 @@ function SignupForm() {
                 provider: provider,
                 options: {
                     // Keep callback URL stable to avoid provider path validation issues.
-                    redirectTo: `${(process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, "")}/auth/callback`,
+                    redirectTo: `${window.location.origin.replace(/\/$/, "")}/auth/callback`,
                 }
             });
         }

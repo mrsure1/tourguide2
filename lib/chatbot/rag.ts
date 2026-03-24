@@ -1,6 +1,11 @@
 import { loadFaqRows } from "@/lib/chatbot/faq";
 import { loadSiteCorpus } from "@/lib/chatbot/corpus";
-import { scoreText, scoreFaqRelevance, expandQueryForRetrieval } from "@/lib/chatbot/score";
+import {
+  scoreText,
+  scoreFaqRelevance,
+  scoreFaqLexicalOnly,
+  expandQueryForRetrieval,
+} from "@/lib/chatbot/score";
 import type { FaqRow, SiteChunk } from "@/lib/chatbot/types";
 
 function hasHangul(s: string): boolean {
@@ -34,28 +39,80 @@ export type RetrievedContext = {
 const TOP_FAQ = 8;
 const TOP_SITE = 8;
 
+/**
+ * UI 로케일과 질문 언어가 다를 때(예: /en 에서 한국어 질문) 올바른 FAQ CSV를 쓴다.
+ */
+function selectFaqCorpusForQuery(query: string, uiLocale: string): FaqRow[] {
+  const q = query.trim();
+  const hasHangul = /[가-힣]/.test(q);
+  const hasEnoughLatin = /[a-zA-Z]{4,}/.test(q);
+
+  if (uiLocale === "en" && hasHangul) {
+    return loadFaqRows("ko");
+  }
+  if (uiLocale === "ko" && hasEnoughLatin && !hasHangul) {
+    return loadFaqRows("en");
+  }
+  return loadFaqRows(uiLocale);
+}
+
+function rankFaqByLexical(query: string, faqs: FaqRow[]) {
+  return faqs
+    .map((row) => ({ row, score: scoreFaqLexicalOnly(query, row.question, row.answer) }))
+    .sort((a, b) => b.score - a.score);
+}
+
 export function retrieveForQuery(query: string, locale: string): RetrievedContext {
-  const faqs = loadFaqRows(locale);
+  const faqs = selectFaqCorpusForQuery(query, locale);
   const corpus = loadSiteCorpus();
 
-  let faqScored = faqs
-    .map((row) => {
-      const score = scoreFaqRelevance(query, row.question, row.answer);
-      return { row, score };
-    })
-    .filter((x) => x.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, TOP_FAQ);
+  const combined = faqs.map((row) => {
+    const gated = scoreFaqRelevance(query, row.question, row.answer);
+    const lexical = scoreFaqLexicalOnly(query, row.question, row.answer);
+    const score = Math.max(gated, lexical * 0.94);
+    return { row, score };
+  });
 
-  if (faqScored.length === 0 && faqs.length > 0) {
-    faqScored = faqs.slice(0, TOP_FAQ).map((row) => ({ row, score: 0.01 }));
+  combined.sort((a, b) => b.score - a.score);
+  const maxScore = combined[0]?.score ?? 0;
+
+  let faqScored: { row: FaqRow; score: number }[];
+  if (maxScore <= 0 && faqs.length > 0) {
+    faqScored = rankFaqByLexical(query, faqs).slice(0, TOP_FAQ).filter((x) => x.score > 0);
+    if (faqScored.length === 0) {
+      faqScored = rankFaqByLexical(query, faqs).slice(0, Math.min(5, faqs.length));
+    }
+  } else {
+    const floor =
+      maxScore > 0
+        ? Math.min(maxScore * 0.42, Math.max(0.035, maxScore * 0.052))
+        : 0;
+    faqScored = combined.filter((x) => x.score >= floor).slice(0, TOP_FAQ);
+    if (faqScored.length === 0 && combined.length > 0) {
+      faqScored = combined.slice(0, TOP_FAQ);
+    }
+    if (faqScored.length < 3 && maxScore > 0) {
+      const seen = new Set(faqScored.map((x) => x.row.question));
+      for (const x of combined) {
+        if (faqScored.length >= TOP_FAQ) break;
+        if (!seen.has(x.row.question)) {
+          seen.add(x.row.question);
+          faqScored.push(x);
+        }
+      }
+    }
   }
 
   const qx = expandQueryForRetrieval(query);
+  const queryPrefersKo = /[가-힣]/.test(query);
+  const siteLocaleForBoost = queryPrefersKo ? "ko" : locale;
+
   const siteScored = corpus
     .map((chunk) => {
       let score = Math.max(scoreText(qx, chunk.text), scoreText(query, chunk.text) * 0.92);
-      if (chunk.locale && chunk.locale === locale) score *= 1.08;
+      if (chunk.locale && (chunk.locale === locale || chunk.locale === siteLocaleForBoost)) {
+        score *= 1.06;
+      }
       return { chunk, score };
     })
     .filter((x) => x.score > 0)

@@ -22,7 +22,17 @@ export default async function GuideLayout({
         .eq('id', user.id)
         .single();
 
-    if (profile?.role !== 'guide' && profile?.role !== 'admin') {
+    if (profile && user.email) {
+        const adminEmails = (process.env.ADMIN_EMAILS || '')
+            .split(',')
+            .map((email) => email.trim().toLowerCase())
+            .filter(Boolean);
+        if (adminEmails.includes(user.email.toLowerCase())) {
+            (profile as any).isAdmin = true;
+        }
+    }
+
+    if (profile?.role !== 'guide' && profile?.role !== 'admin' && !profile?.isAdmin) {
         console.log(`[GuideLayout] Access denied for user ${user.id}. Role: ${profile?.role}. Redirecting to selection.`);
         redirect('/role-selection');
     }
