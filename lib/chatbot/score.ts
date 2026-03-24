@@ -50,6 +50,68 @@ function hangulOnly(s: string): string {
   return s.replace(/[^가-힣]/g, "");
 }
 
+/**
+ * 검색·매칭 질의를 FAQ 표현(매칭/추천/어떻게 등)과 맞추기 위한 확장 + 영어/차용어 정규화.
+ */
+export function expandQueryForRetrieval(raw: string): string {
+  let s = raw.trim();
+  s = s.replace(/\bsearch\b/gi, "검색").replace(/서치/gi, "검색");
+
+  const h = hangulOnly(s);
+  const hasGuide = /가이드/.test(h);
+  const discovery =
+    hasGuide &&
+    /(검색|매칭|찾기|추천|찾을|고르|선택|리스트|목록|서치)/.test(h + s.toLowerCase());
+  const howTo = /(어떻게|방법|하나요|해\?|해요|되나요|할 수|하는법)/.test(h);
+
+  if (discovery) {
+    s += " 가이드매칭 매칭진행 지역날짜인원 입력 조건 추천 선택 순차";
+  }
+  if (hasGuide && (discovery || howTo)) {
+    s += " 어떻게진행 진행되나요";
+  }
+
+  return s;
+}
+
+/** 가이드 찾기/매칭 질문인데 연락 문제 FAQ가 끼어드는 것을 줄이기 */
+function guideDiscoveryMismatchPenalty(query: string, question: string, answer: string): number {
+  const qh = hangulOnly(query);
+  const searchIntent =
+    /(검색|매칭|찾기|추천|찾을|고르|선택|리스트|목록)/.test(qh) || /search/i.test(query);
+  const troubleIntent = /(연락|메시지|소통|안돼|안 돼|연결안|연결이 안|안 나타|나타나지|언어소통)/.test(
+    qh.replace(/\s/g, ""),
+  );
+
+  if (!searchIntent || troubleIntent) return 1;
+
+  const blob = `${question}\n${answer}`;
+  if (
+    /가이드와 연락이/.test(blob) ||
+    /가이드와 언어 소통이/.test(blob) ||
+    /가이드가 안 나타나/.test(blob) ||
+    /플랫폼 메시지와 등록된 연락처/.test(blob)
+  ) {
+    return 0.2;
+  }
+  return 1;
+}
+
+/** 가이드 매칭·검색·추천 흐름 FAQ 가중 */
+function guideDiscoveryBoost(query: string, question: string, answer: string): number {
+  const qh = hangulOnly(query);
+  const qx = expandQueryForRetrieval(query);
+  const discovery =
+    /(검색|매칭|찾기|추천|찾을|고르|선택|리스트|목록)/.test(qh) || /search|서치/i.test(query + qx);
+  if (!/가이드/.test(qh) || !discovery) return 1;
+
+  const blob = `${question}\n${answer}`;
+  if (/(매칭|추천|선택|입력|조건에 맞|순차|지역.*날짜|날짜.*인원)/.test(blob)) {
+    return 1.45;
+  }
+  return 1;
+}
+
 /** 질문↔FAQ 제목 간 2-gram 자카드 (0~1) */
 function hangulBigramJaccard(a: string, b: string): number {
   const ah = hangulOnly(a);
@@ -71,10 +133,14 @@ function hangulBigramJaccard(a: string, b: string): number {
  * FAQ 한 행에 대한 검색 점수 (질문 표현이 달라도 비슷한 의미로 잡히도록 강화).
  */
 export function scoreFaqRelevance(query: string, question: string, answer: string): number {
+  const expanded = expandQueryForRetrieval(query);
+
   const base = Math.max(
-    scoreText(query, question) * 1.2,
-    scoreText(query, answer) * 0.88,
-    scoreText(query, `${question} ${answer}`),
+    scoreText(expanded, question) * 1.2,
+    scoreText(expanded, answer) * 0.88,
+    scoreText(expanded, `${question} ${answer}`),
+    scoreText(query, question) * 1.05,
+    scoreText(query, answer) * 0.82,
   );
 
   const qh = hangulOnly(query);
@@ -84,6 +150,7 @@ export function scoreFaqRelevance(query: string, question: string, answer: strin
     if (qq.includes(qh) || qh.includes(qq)) bonus += 28;
     bonus += hangulBigramJaccard(query, question) * 34;
     bonus += hangulBigramJaccard(query, answer) * 12;
+    bonus += hangulBigramJaccard(expanded, question) * 10;
   }
 
   const cq = query.toLowerCase().replace(/\s+/g, "");
@@ -92,5 +159,9 @@ export function scoreFaqRelevance(query: string, question: string, answer: strin
     bonus += 14;
   }
 
-  return base + bonus;
+  let score = base + bonus;
+  score *= guideDiscoveryMismatchPenalty(query, question, answer);
+  score *= guideDiscoveryBoost(query, question, answer);
+
+  return score;
 }

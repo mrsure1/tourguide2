@@ -1,6 +1,6 @@
 import { loadFaqRows } from "@/lib/chatbot/faq";
 import { loadSiteCorpus } from "@/lib/chatbot/corpus";
-import { scoreText, scoreFaqRelevance } from "@/lib/chatbot/score";
+import { scoreText, scoreFaqRelevance, expandQueryForRetrieval } from "@/lib/chatbot/score";
 import type { FaqRow, SiteChunk } from "@/lib/chatbot/types";
 
 export type RetrievedContext = {
@@ -28,9 +28,10 @@ export function retrieveForQuery(query: string, locale: string): RetrievedContex
     faqScored = faqs.slice(0, TOP_FAQ).map((row) => ({ row, score: 0.01 }));
   }
 
+  const qx = expandQueryForRetrieval(query);
   const siteScored = corpus
     .map((chunk) => {
-      let score = scoreText(query, chunk.text);
+      let score = Math.max(scoreText(qx, chunk.text), scoreText(query, chunk.text) * 0.92);
       if (chunk.locale && chunk.locale === locale) score *= 1.08;
       return { chunk, score };
     })
