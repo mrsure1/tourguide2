@@ -53,6 +53,7 @@ function stripRagLeakage(text: string): string {
     if (/^(Question|Answer|Q|A):\s*$/i.test(s)) continue;
     if (/^Source:\s*messages\//i.test(s)) continue;
     if (/^"?answer"?\s*:\s*"/i.test(s)) continue;
+    if (/^\[시스템/.test(s) || /^\[System:/i.test(s)) continue;
     kept.push(line);
   }
   const out = kept.join("\n").trim();
@@ -114,6 +115,41 @@ function lastUserText(messages: ChatMessage[]): string {
   return "";
 }
 
+/** 질문 정규화(유니코드 NFC) — 검색·매칭 일관성 */
+function normalizedLastQuery(messages: ChatMessage[]): string {
+  return lastUserText(messages).normalize("NFC").trim();
+}
+
+/**
+ * 상위 1건 FAQ를 모델이 반드시 보도록 사용자 턴에 삽입 (한글 질문-답 불일치 완화).
+ */
+function primaryFaqAnchor(ctx: RetrievedContext, query: string, locale: string): string {
+  const best = ctx.faqHits[0];
+  if (!best) return "";
+  const hangul = /[가-힣]/.test(query);
+  const minScore = hangul ? 9 : 16;
+  if (best.score < minScore) return "";
+
+  if (locale === "en" && !hangul) {
+    return (
+      "\n\n---\n[System: The FAQ block below is the strongest match. Base your reply on Answer A; paraphrase in clear English.]\n" +
+      `Q. ${best.row.question}\nA. ${best.row.answer}\n---\n`
+    );
+  }
+
+  if (locale === "en" && hangul) {
+    return (
+      "\n\n---\n[System: Strongest-matching official FAQ (text may be Korean). Reflect every fact from A in natural Korean.]\n" +
+      `Q. ${best.row.question}\nA. ${best.row.answer}\n---\n`
+    );
+  }
+
+  return (
+    "\n\n---\n[시스템 지시: 아래 1건이 질문과 가장 잘 맞는 공식 FAQ입니다. A의 사실·정책을 반드시 반영해 자연스러운 한국어 문장으로 답하세요. 다른 FAQ는 보조 참고만 하세요.]\n" +
+    `Q. ${best.row.question}\nA. ${best.row.answer}\n---\n`
+  );
+}
+
 export type GenerateResult = {
   answer: string;
   usedModel: boolean;
@@ -122,7 +158,7 @@ export type GenerateResult = {
 
 /** Gemini 없이 FAQ·사이트 RAG 폴백만 (레이트 리밋 등) */
 export async function generateFaqOnlyReply(messages: ChatMessage[], locale: string): Promise<GenerateResult> {
-  const query = lastUserText(messages);
+  const query = normalizedLastQuery(messages);
   const ctx = retrieveForQuery(query, locale);
   return {
     answer: fallbackAnswer(query, ctx, locale),
@@ -132,10 +168,11 @@ export async function generateFaqOnlyReply(messages: ChatMessage[], locale: stri
 }
 
 export async function generateChatReply(messages: ChatMessage[], locale: string): Promise<GenerateResult> {
-  const query = lastUserText(messages);
+  const query = normalizedLastQuery(messages);
   const ctx = retrieveForQuery(query, locale);
   const smallTalk = isSmallTalkOnly(query);
   const formatted = smallTalk ? "" : formatContextBlock(ctx, locale).trim();
+  const faqAnchor = smallTalk ? "" : primaryFaqAnchor(ctx, query, locale);
   const contextBlock = smallTalk
     ? locale === "en"
       ? "(The user only greeted or sent a short thanks. Reply warmly in 2–4 sentences. Do NOT list FAQs or paste site copy.)"
@@ -190,7 +227,7 @@ export async function generateChatReply(messages: ChatMessage[], locale: string)
     if (m.role === "user") {
       const text =
         i === lastUserIdx
-          ? `${refLabel}:\n${contextBlock}\n\n${userLabel}:\n${m.content}`
+          ? `${refLabel}:\n${contextBlock}${faqAnchor}\n\n${userLabel}:\n${m.content}`
           : m.content;
       contents.push({ role: "user", parts: [{ text }] });
     } else {

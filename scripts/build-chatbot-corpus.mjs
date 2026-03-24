@@ -121,4 +121,50 @@ function main() {
   console.info(`[chatbot-corpus] wrote ${deduped.length} chunks -> ${path.relative(root, outPath)}`);
 }
 
+/** @param {string} raw */
+function parseFaqCsv(raw) {
+  const lines = raw.replace(/^\uFEFF/, "").split(/\r?\n/);
+  /** @type {{ question: string; answer: string }[]} */
+  const out = [];
+  for (let li = 0; li < lines.length; li++) {
+    const line = lines[li].trim();
+    if (!line || (li === 0 && line.startsWith("Question,"))) continue;
+    const quoted = line.match(/^(.+),"(.*)"$/);
+    let q;
+    let a;
+    if (quoted) {
+      q = quoted[1].trim();
+      a = quoted[2].replace(/""/g, '"').trim();
+    } else {
+      const idx = line.indexOf(",");
+      if (idx === -1) continue;
+      q = line.slice(0, idx).trim();
+      a = line.slice(idx + 1).trim();
+    }
+    if (q.length >= 2 && a.length >= 2) out.push({ question: q, answer: a });
+  }
+  return out;
+}
+
+function writeFaqBundles() {
+  const libChatbot = path.join(root, "lib", "chatbot");
+  fs.mkdirSync(libChatbot, { recursive: true });
+  const bundles = [
+    ["faq-bundled-ko.json", "ChatBot/faq_data.csv"],
+    ["faq-bundled-en.json", "ChatBot/faq_data_english.csv"],
+  ];
+  for (const [name, relCsv] of bundles) {
+    const fp = path.join(root, relCsv);
+    if (!fs.existsSync(fp)) {
+      console.warn(`[chatbot-faq] skip ${name}: missing ${relCsv}`);
+      continue;
+    }
+    const parsed = parseFaqCsv(fs.readFileSync(fp, "utf8"));
+    const outFile = path.join(libChatbot, name);
+    fs.writeFileSync(outFile, JSON.stringify(parsed));
+    console.info(`[chatbot-faq] wrote ${parsed.length} rows -> ${path.relative(root, outFile)}`);
+  }
+}
+
 main();
+writeFaqBundles();

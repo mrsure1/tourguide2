@@ -63,12 +63,13 @@ function rankFaqByLexical(query: string, faqs: FaqRow[]) {
 }
 
 export function retrieveForQuery(query: string, locale: string): RetrievedContext {
-  const faqs = selectFaqCorpusForQuery(query, locale);
+  const q = query.normalize("NFC").trim();
+  const faqs = selectFaqCorpusForQuery(q, locale);
   const corpus = loadSiteCorpus();
 
   const combined = faqs.map((row) => {
-    const gated = scoreFaqRelevance(query, row.question, row.answer);
-    const lexical = scoreFaqLexicalOnly(query, row.question, row.answer);
+    const gated = scoreFaqRelevance(q, row.question, row.answer);
+    const lexical = scoreFaqLexicalOnly(q, row.question, row.answer);
     const score = Math.max(gated, lexical * 0.94);
     return { row, score };
   });
@@ -78,9 +79,9 @@ export function retrieveForQuery(query: string, locale: string): RetrievedContex
 
   let faqScored: { row: FaqRow; score: number }[];
   if (maxScore <= 0 && faqs.length > 0) {
-    faqScored = rankFaqByLexical(query, faqs).slice(0, TOP_FAQ).filter((x) => x.score > 0);
+    faqScored = rankFaqByLexical(q, faqs).slice(0, TOP_FAQ).filter((x) => x.score > 0);
     if (faqScored.length === 0) {
-      faqScored = rankFaqByLexical(query, faqs).slice(0, Math.min(5, faqs.length));
+      faqScored = rankFaqByLexical(q, faqs).slice(0, Math.min(5, faqs.length));
     }
   } else {
     const floor =
@@ -103,13 +104,13 @@ export function retrieveForQuery(query: string, locale: string): RetrievedContex
     }
   }
 
-  const qx = expandQueryForRetrieval(query);
-  const queryPrefersKo = /[가-힣]/.test(query);
+  const qx = expandQueryForRetrieval(q);
+  const queryPrefersKo = /[가-힣]/.test(q);
   const siteLocaleForBoost = queryPrefersKo ? "ko" : locale;
 
   const siteScored = corpus
     .map((chunk) => {
-      let score = Math.max(scoreText(qx, chunk.text), scoreText(query, chunk.text) * 0.92);
+      let score = Math.max(scoreText(qx, chunk.text), scoreText(q, chunk.text) * 0.92);
       if (chunk.locale && (chunk.locale === locale || chunk.locale === siteLocaleForBoost)) {
         score *= 1.06;
       }
@@ -170,7 +171,9 @@ export function fallbackAnswer(query: string, ctx: RetrievedContext, locale: str
   }
   const en = locale === "en";
   const bestFaq = ctx.faqHits[0];
-  if (bestFaq && bestFaq.score >= 8 && !(en && hasHangul(bestFaq.row.answer))) {
+  const hangulQuery = hasHangul(query);
+  const directMin = hangulQuery ? 6 : 9;
+  if (bestFaq && bestFaq.score >= directMin && !(en && hasHangul(bestFaq.row.answer))) {
     return bestFaq.row.answer;
   }
 
