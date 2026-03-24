@@ -123,26 +123,8 @@ export function fallbackAnswer(query: string, ctx: RetrievedContext, locale: str
       : "관련된 안내 문구를 찾지 못했습니다. 고객센터(support@guidematch.com) 또는 사이트의 1:1 문의로 연락해 주세요.";
   }
 
-  const lines: string[] = en
-    ? ["Here is what we found in the FAQ and site copy:", ""]
-    : ["아래는 사이트·FAQ에서 찾은 참고 정보입니다.", ""];
-  for (const h of ctx.faqHits.slice(0, 3)) {
-    if (en && hasHangul(h.row.answer)) {
-      lines.push(`• (FAQ) ${h.row.question}`, `  ${h.row.answer.slice(0, 220)}${h.row.answer.length > 220 ? "…" : ""}`, "");
-    } else {
-      lines.push(`• ${h.row.question}`, `  ${h.row.answer}`, "");
-    }
-  }
-  const siteOrdered = en
-    ? [...ctx.siteHits.filter((h) => h.chunk.locale === "en"), ...ctx.siteHits.filter((h) => h.chunk.locale !== "en")]
-    : ctx.siteHits;
-  for (const h of siteOrdered.slice(0, 4)) {
-    lines.push(`• (${h.chunk.source})`, `  ${h.chunk.text.slice(0, 280)}${h.chunk.text.length > 280 ? "…" : ""}`, "");
-  }
-  lines.push(
-    en
-      ? "For binding terms, check the booking flow and Terms of Service on the site."
-      : "정확한 조건은 예약·결제 단계 안내와 이용약관을 함께 확인해 주세요.",
-  );
-  return lines.join("\n");
+  // FAQ 직답 점수 미달·LLM 실패·모호한 질문 등 — 긴 불릿 나열 대신 짧게 안내
+  return en
+    ? "I couldn’t match that to a clear topic. Try asking about guide matching, bookings, payments, or cancellations with a bit more detail — or use the Support page / support@guidematch.com."
+    : "질문을 정확히 이해하기 어렵습니다. 가이드 매칭·예약·결제·취소 등 구체적으로 다시 물어봐 주시거나, 고객센터·support@guidematch.com으로 문의해 주세요.";
 }
