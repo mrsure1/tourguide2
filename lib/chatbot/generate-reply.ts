@@ -7,7 +7,7 @@ const MODEL = process.env.GEMINI_CHAT_MODEL?.trim() || "gemini-2.0-flash";
 /** 모델이 JSON/펜스/내부 마크업을 그대로보내는 경우 완화 */
 function sanitizeAssistantOutput(raw: string): string {
   let t = raw.trim();
-  const fence = /^```(?:json)?\s*([\s\S]*?)```\s*$/i;
+  const fence = /^```(?:json)?\s*([\s\S]*?)```\s*$/im;
   const fm = t.match(fence);
   if (fm) {
     const inner = fm[1].trim();
@@ -34,6 +34,23 @@ function sanitizeAssistantOutput(raw: string): string {
     }
   }
   return t;
+}
+
+/** 답변에 RAG/JSON 누출이 있으면 제거 (모델이 CONTEXT를 그대로 출력한 경우) */
+function stripRagLeakage(text: string): string {
+  const lines = text.split(/\r?\n/);
+  const kept: string[] = [];
+  for (const line of lines) {
+    const s = line.trim();
+    if (/^===\s*.+===?\s*$/.test(s)) continue;
+    if (/^\[(FAQ|SITE|Site)\s*\d+\]/i.test(s)) continue;
+    if (/^(Question|Answer|Q|A):\s*$/i.test(s)) continue;
+    if (/^Source:\s*messages\//i.test(s)) continue;
+    if (/^"?answer"?\s*:\s*"/i.test(s)) continue;
+    kept.push(line);
+  }
+  const out = kept.join("\n").trim();
+  return out.length >= 8 ? out : text.trim();
 }
 
 function buildSystemPrompt(locale: string): string {
@@ -68,12 +85,13 @@ function buildSystemPrompt(locale: string): string {
 
   return [
     "You are GuideMatch (Korea travel guide matching) customer assistant.",
-    "Answer ONLY using the provided CONTEXT blocks. If CONTEXT is insufficient, say so briefly and suggest email support@guidematch.com or the site Support page.",
-    "When an FAQ entry in CONTEXT clearly matches the user's question, treat that FAQ answer as authoritative: keep the same facts and policy meaning; do not add new rules.",
+    "Answer ONLY using the provided REFERENCE blocks in the user message. If REFERENCE is insufficient, say so briefly and suggest email support@guidematch.com or the site Support page.",
+    "When an FAQ entry in REFERENCE clearly matches the user's question, treat that FAQ answer as authoritative: keep the same facts and policy meaning; do not add new rules.",
     "If an FAQ answer is in Korean but the user asked in English, summarize the same facts in clear English (no word-for-word dump of Korean labels).",
-    "Do not invent policies, prices, or legal facts not present in CONTEXT.",
+    "Do not invent policies, prices, or legal facts not present in REFERENCE.",
     "Keep answers concise (roughly 3–8 sentences unless the user asks for detail).",
     "No markdown headings; plain paragraphs or short bullets are fine.",
+    "Your reply must be ONLY what you would show the customer — never repeat the REFERENCE block, never output JSON objects, YAML, or key-value dumps.",
     ...voice,
     ...formatRules,
     lang,
@@ -133,15 +151,29 @@ export async function generateChatReply(messages: ChatMessage[], locale: string)
   while (start < history.length && history[start].role === "assistant") start += 1;
   history = history.slice(start);
 
-  let firstUser = true;
-  const userLabel = locale === "en" ? "User message" : "사용자 메시지";
-  for (const m of history) {
+  let lastUserIdx = -1;
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].role === "user") {
+      lastUserIdx = i;
+      break;
+    }
+  }
+
+  const refLabel =
+    locale === "en"
+      ? "REFERENCE (internal — do not copy headings or brackets into your reply)"
+      : "참고 자료(내부용 — 제목·대괄호 표기를 답변에 복사하지 마세요)";
+
+  const userLabel = locale === "en" ? "Current user question" : "현재 사용자 질문";
+
+  for (let i = 0; i < history.length; i++) {
+    const m = history[i];
     if (m.role === "user") {
-      const text = firstUser
-        ? `${system}\n\nCONTEXT:\n${contextBlock}\n\n${userLabel}:\n${m.content}`
-        : m.content;
+      const text =
+        i === lastUserIdx
+          ? `${refLabel}:\n${contextBlock}\n\n${userLabel}:\n${m.content}`
+          : m.content;
       contents.push({ role: "user", parts: [{ text }] });
-      firstUser = false;
     } else {
       contents.push({ role: "model", parts: [{ text: m.content }] });
     }
@@ -155,10 +187,14 @@ export async function generateChatReply(messages: ChatMessage[], locale: string)
     const response = await ai.models.generateContent({
       model: MODEL,
       contents,
-      config: { temperature: 0.38 },
+      config: {
+        temperature: 0.38,
+        systemInstruction: system,
+        responseMimeType: "text/plain",
+      },
     });
     const rawText = response.text ?? "";
-    const text = sanitizeAssistantOutput(rawText.trim());
+    const text = stripRagLeakage(sanitizeAssistantOutput(rawText.trim()));
     if (!text) {
       const c0 = (response as { candidates?: Array<{ finishReason?: string }> }).candidates?.[0];
       const pf = (response as { promptFeedback?: { blockReason?: string } }).promptFeedback;

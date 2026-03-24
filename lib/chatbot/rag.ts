@@ -80,8 +80,8 @@ export function formatContextBlock(ctx: RetrievedContext, locale: string): strin
   if (parts.length) {
     parts.push(
       en
-        ? "End of reference. Answer the user in natural conversational English (or Korean only if they wrote Korean). Do not paste these headers, brackets, or JSON."
-        : "위 참고만 사용하고, 사용자에게 자연스러운 문장으로 답하세요. 위 표기(===, [FAQ] 등)나 JSON 형태로 그대로 출력하지 마세요.",
+        ? "End of REFERENCE. Reply in natural conversational prose only. Never paste the above structure, file paths, or JSON."
+        : "위는 참고(REFERENCE)입니다. 고객에게 보여줄 말만 자연스러운 문장으로 답하세요. 위 표기·파일 경로·JSON을 출력하지 마세요.",
     );
   }
 
