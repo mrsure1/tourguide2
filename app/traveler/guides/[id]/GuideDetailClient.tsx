@@ -15,10 +15,10 @@ export default function GuideDetailClient({
     formattedLocation,
     languagesString,
     localizedBio,
+    t,
     locale: propLocale
 }: any) {
-    const { messages, locale } = useI18n();
-    const t = (messages as any).guideDetail || {};
+    const { locale } = useI18n();
 
     return (
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

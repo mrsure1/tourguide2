@@ -3,6 +3,7 @@ import { getRequestLocale } from "@/lib/i18n/get-request-locale"
 import { getDictionary } from "@/lib/i18n/dictionary"
 import { localizeLanguageList, localizeLocationLabel } from "@/lib/i18n/display"
 import { getGuideData, getGuideReviews } from "@/app/traveler/guides/actions"
+import { translateBioToEnglish } from "@/lib/i18n/translate-bio"
 import GuideDetailClient from "./GuideDetailClient"
 import Link from "next/link"
 
@@ -62,9 +63,20 @@ export default async function GuideDetail({ params }: { params: Promise<{ id: st
             reviews = await getGuideReviews(id)
         }
 
-        const localizedBio = locale === "ko"
-            ? gd.bio_i18n?.ko || gd.bio
-            : gd.bio_i18n?.en || gd.bio || (locale === "en" ? "A local guide who knows the route well." : "로컬 가이드입니다.")
+        let localizedBio = gd.bio;
+        if (locale === "ko") {
+            localizedBio = gd.bio_i18n?.ko || gd.bio;
+        } else if (locale === "en") {
+            if (gd.bio_i18n?.en) {
+                localizedBio = gd.bio_i18n.en;
+            } else if (gd.bio && !isFallback) {
+                localizedBio = await translateBioToEnglish(gd.bio);
+            } else if (isFallback) {
+                localizedBio = gd.bio;
+            } else {
+                localizedBio = "A local guide who knows the route well.";
+            }
+        }
 
         const languagesList = localizeLanguageList(gd.languages, locale)
         const languagesString = languagesList.length > 0 ? languagesList.join(", ") : (locale === "en" ? "Korean" : "한국어")
