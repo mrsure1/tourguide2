@@ -6,6 +6,7 @@ import { User, Settings, Heart, History, Shield, Bell, ChevronRight, LogOut } fr
 import Link from "next/link";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { DeleteAccountButton } from "@/components/auth/DeleteAccountButton";
+import { applyAdminProfileOverride } from "@/lib/auth/admin";
 
 export default async function TravelerProfile() {
     const supabase = await createClient();
@@ -21,6 +22,9 @@ export default async function TravelerProfile() {
         .eq("id", user.id)
         .single();
 
+    const effectiveProfile = applyAdminProfileOverride(profile, user.email);
+    const role = (effectiveProfile as any)?.role || 'traveler';
+
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-8 animate-fade-in">
             {/* Profile Header */}
@@ -29,18 +33,24 @@ export default async function TravelerProfile() {
 
                 <div className="relative z-10 w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden ring-4 ring-white shadow-xl">
                     <img
-                        src={profile?.avatar_url || `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(profile?.full_name || 'User')}`}
+                        src={effectiveProfile?.avatar_url || `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(effectiveProfile?.full_name || 'User')}`}
                         alt="Profile"
                         className="w-full h-full object-cover"
                     />
                 </div>
 
                 <div className="relative z-10 flex-1 text-center md:text-left">
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">{profile?.full_name || '사용자'}님</h1>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">{effectiveProfile?.full_name || '사용자'}님</h1>
                     <p className="text-slate-500 font-medium mt-1">{user.email}</p>
                     <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
-                        <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold border border-blue-100 uppercase">Traveler</span>
-                        <span className="px-3 py-1 rounded-full bg-slate-50 text-slate-500 text-xs font-bold border border-slate-100">가입일: {new Date(profile?.created_at).toLocaleDateString()}</span>
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold border uppercase ${
+                            role === 'admin' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                            role === 'guide' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                            'bg-blue-50 text-blue-600 border-blue-100'
+                        }`}>
+                            {role === 'admin' ? 'Administrator' : role === 'guide' ? 'Guide' : 'Traveler'}
+                        </span>
+                        <span className="px-3 py-1 rounded-full bg-slate-50 text-slate-500 text-xs font-bold border border-slate-100">가입일: {new Date(effectiveProfile?.created_at).toLocaleDateString()}</span>
                     </div>
                 </div>
 

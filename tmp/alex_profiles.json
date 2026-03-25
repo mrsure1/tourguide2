@@ -1,0 +1,45 @@
+﻿[dotenv@17.2.4] injecting env (15) from .env.local -- tip: ?봽 add secrets lifecycle management: https://dotenvx.com/ops
+[
+  {
+    "id": "90c0b41b-bcb9-4e4a-b46d-3509a255605f",
+    "full_name": "Alex_Lee",
+    "role": "admin",
+    "updated_at": "2026-03-25T01:27:56.6888+00:00",
+    "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKS0VDby7zvgP9ft6NuwAoOPcoJKQ2oMrTSR5tlgbkGMBRddOvBAg=s96-c"
+  },
+  {
+    "id": "333e83dc-e901-4ea0-b221-bf3e4a34a052",
+    "full_name": "Alex_Lee",
+    "role": "traveler",
+    "updated_at": "2026-03-24T11:18:06.845871+00:00",
+    "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKS0VDby7zvgP9ft6NuwAoOPcoJKQ2oMrTSR5tlgbkGMBRddOvBAg=s96-c"
+  },
+  {
+    "id": "3fcb167f-3288-4189-8c33-bfae2f7e39ed",
+    "full_name": "Alex_Lee",
+    "role": "traveler",
+    "updated_at": "2026-03-24T11:19:23.243231+00:00",
+    "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKS0VDby7zvgP9ft6NuwAoOPcoJKQ2oMrTSR5tlgbkGMBRddOvBAg=s96-c"
+  },
+  {
+    "id": "f1ad3503-797a-46fb-8f43-b0d3718a4436",
+    "full_name": "Alex",
+    "role": "guide",
+    "updated_at": "2026-03-24T13:08:13.553593+00:00",
+    "avatar_url": null
+  },
+  {
+    "id": "1e73090e-09b0-4791-8981-360c571b5bc7",
+    "full_name": "Alex_Lee",
+    "role": "traveler",
+    "updated_at": "2026-03-24T14:22:21.264959+00:00",
+    "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKS0VDby7zvgP9ft6NuwAoOPcoJKQ2oMrTSR5tlgbkGMBRddOvBAg=s96-c"
+  },
+  {
+    "id": "5c9635e4-4485-4bbb-a9e3-3439eebd78e9",
+    "full_name": "Alex_Lee",
+    "role": "traveler",
+    "updated_at": "2026-03-24T15:02:39.324977+00:00",
+    "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKS0VDby7zvgP9ft6NuwAoOPcoJKQ2oMrTSR5tlgbkGMBRddOvBAg=s96-c"
+  }
+]
