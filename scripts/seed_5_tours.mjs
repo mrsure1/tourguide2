@@ -100,8 +100,14 @@ const tours = [
 async function seed() {
     console.log("Starting to seed 5 new tours...");
     
-    // Find a guide to link these tours to (using Alex)
-    const { data: guide } = await supabase.from('profiles').select('id').ilike('full_name', '%Alex%').limit(1).single();
+    // Find a guide to link these tours to (using the verified Alex guide)
+    const { data: guide } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('full_name', 'Alex')
+        .eq('role', 'guide')
+        .limit(1)
+        .single();
     if (!guide) {
         console.error("Alex guide not found. Seeding failed.");
         return;
