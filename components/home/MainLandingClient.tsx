@@ -68,10 +68,21 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
     const list = [...guides];
     if (!criteria || !criteria.destination.trim()) return list;
     const query = resolveDestinationSearchValue(criteria.destination).toLowerCase();
-    return list.filter((guide) => {
-      const fields = [guide.location, guide.name, guide.bio, ...(guide.languages || [])];
-      return fields.some(field => field && field.toLowerCase().includes(query));
-    }).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    
+    return list
+      .filter((guide) => {
+        const fields = [guide.location, guide.name, guide.bio, ...(guide.languages || [])];
+        return fields.some(field => field && field.toLowerCase().includes(query));
+      })
+      .sort((a, b) => {
+        // 이름이 검색어로 시작하는 경우 최상단으로 (가이드 검색 강화)
+        const aNameMatch = a.name.toLowerCase().startsWith(query);
+        const bNameMatch = b.name.toLowerCase().startsWith(query);
+        if (aNameMatch && !bNameMatch) return -1;
+        if (!aNameMatch && bNameMatch) return 1;
+        
+        return (b.rating ?? 0) - (a.rating ?? 0);
+      });
   }, [criteria, guides]);
 
   const filteredTours = useMemo(() => {
@@ -127,6 +138,7 @@ export default function MainLandingClient({ guideHref, guides, tours, userName, 
 
         {criteria && (
           <div className="space-y-10 animate-in slide-in-from-bottom-4 fade-in duration-500 mb-0">
+            {/* 가이드 리스트가 항상 투어상품보다 위에 출력되도록 고정 */}
             {filteredGuides.length > 0 && (
               <section className="container mx-auto px-4 pt-4 relative border-t border-slate-100">
                 <div className="mb-4 mt-[3px]">

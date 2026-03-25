@@ -9,8 +9,8 @@
   "search": {
     "datePlaceholder": "날짜 추가",
     "invalidDateRange": "날짜 선택",
-    "destinationLabel": "여행지",
-    "destinationPlaceholder": "어디로 떠날까요?",
+    "destinationLabel": "지역명 또는 가이드",
+    "destinationPlaceholder": "지역명 또는 가이드명",
     "recommendedDestinations": "추천 여행지",
     "destinationOptionFallback": "투어/가이드 제공 지역",
     "dateLabel": "날짜",

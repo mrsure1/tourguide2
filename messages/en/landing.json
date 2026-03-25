@@ -9,8 +9,8 @@
   "search": {
     "datePlaceholder": "Add dates",
     "invalidDateRange": "Select dates",
-    "destinationLabel": "Destination",
-    "destinationPlaceholder": "Where do you want to go?",
+    "destinationLabel": "Destination or Guide",
+    "destinationPlaceholder": "Location or guide name",
     "recommendedDestinations": "Suggested destinations",
     "destinationOptionFallback": "Tour and guide coverage area",
     "dateLabel": "Dates",
