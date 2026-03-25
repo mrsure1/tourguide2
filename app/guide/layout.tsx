@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { Navbar } from "@/components/layout/Navbar";
 import { GuideNav } from "@/components/layout/GuideNav";
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { applyAdminProfileOverride } from "@/lib/auth/admin";
 
 export default async function GuideLayout({
     children,
@@ -22,17 +23,9 @@ export default async function GuideLayout({
         .eq('id', user.id)
         .single();
 
-    if (profile && user.email) {
-        const adminEmails = (process.env.ADMIN_EMAILS || '')
-            .split(',')
-            .map((email) => email.trim().toLowerCase())
-            .filter(Boolean);
-        if (adminEmails.includes(user.email.toLowerCase())) {
-            (profile as any).isAdmin = true;
-        }
-    }
+    const effectiveProfile = applyAdminProfileOverride(profile, user.email);
 
-    if (profile?.role !== 'guide' && profile?.role !== 'admin' && !profile?.isAdmin) {
+    if ((effectiveProfile as any)?.role !== 'guide' && (effectiveProfile as any)?.role !== 'admin' && !(effectiveProfile as any)?.isAdmin) {
         console.log(`[GuideLayout] Access denied for user ${user.id}. Role: ${profile?.role}. Redirecting to selection.`);
         redirect('/role-selection');
     }
@@ -40,7 +33,7 @@ export default async function GuideLayout({
     return (
         <div className="flex flex-col h-screen bg-slate-50 overflow-hidden">
             {/* Top Navigation */}
-            <Navbar profile={profile} />
+            <Navbar profile={effectiveProfile} />
 
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar Navigation - Desktop */}
@@ -53,13 +46,13 @@ export default async function GuideLayout({
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm">
                                 <img
-                                    src={profile?.avatar_url || `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(profile?.full_name || 'User')}`}
+                                    src={(effectiveProfile as any)?.avatar_url || `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent((effectiveProfile as any)?.full_name || 'User')}`}
                                     alt="Profile"
                                     className="w-full h-full object-cover"
                                 />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-slate-900 truncate">{profile?.full_name || '가이드'}</p>
+                                <p className="text-sm font-bold text-slate-900 truncate">{(effectiveProfile as any)?.full_name || '가이드'}</p>
                                 <p className="text-[10px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded w-fit uppercase">Guide Mode</p>
                             </div>
                             <LogoutButton variant="ghost" className="p-2 text-slate-400 hover:text-red-500" showText={false} />

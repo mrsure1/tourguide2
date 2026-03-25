@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { isAdminProfile } from "@/lib/auth/admin";
 
 export default async function AdminChatbotLogsPage() {
   const supabase = await createClient();
@@ -11,7 +12,7 @@ export default async function AdminChatbotLogsPage() {
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (!profile || profile.role !== "admin") redirect("/");
+  if (!isAdminProfile(profile, user.email)) redirect("/");
 
   const { data: convos, error } = await supabase
     .from("chatbot_conversations")

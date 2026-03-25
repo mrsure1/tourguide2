@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Users, ShieldCheck, CreditCard, ChevronRight, MessageSquare } from "lucide-react";
+import { isAdminProfile } from "@/lib/auth/admin";
 
 export default async function AdminDashboardPage() {
     const supabase = await createClient();
@@ -18,7 +19,7 @@ export default async function AdminDashboardPage() {
         .eq('id', session.user.id)
         .single();
 
-    if (!profile || profile.role !== 'admin') {
+    if (!isAdminProfile(profile, session.user.email)) {
         redirect('/'); // 권한이 없으면 메인으로
     }
 

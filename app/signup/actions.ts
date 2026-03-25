@@ -6,6 +6,7 @@ import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { getSiteOriginFromHeaders } from '@/lib/site-origin'
 import { trackServerConversion } from '@/lib/analytics/server'
+import { isAdminEmail } from '@/lib/auth/admin'
 
 export async function signup(formData: FormData) {
     const supabase = await createClient()
@@ -30,8 +31,7 @@ export async function signup(formData: FormData) {
     const redirectTo = `${cleanOrigin}/auth/callback`;
 
     // 관리자 이메일 가입 차단
-    const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase());
-    if (adminEmails.includes(email.toLowerCase())) {
+    if (isAdminEmail(email)) {
         return redirect('/signup?message=' + encodeURIComponent('관리자 이메일로는 일반 회원가입을 할 수 없습니다. 제한된 이메일입니다.'));
     }
 
@@ -118,6 +118,11 @@ export async function switchRole(role: string) {
 
     if (!user) {
         return redirect('/login')
+    }
+
+    if (isAdminEmail(user.email)) {
+        revalidatePath('/', 'layout')
+        return redirect('/admin/dashboard')
     }
 
     // 역할 업데이트

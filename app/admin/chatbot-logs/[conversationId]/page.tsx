@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
+import { isAdminProfile } from "@/lib/auth/admin";
 
 type Props = { params: Promise<{ conversationId: string }> };
 
@@ -13,7 +14,7 @@ export default async function AdminChatbotLogDetailPage({ params }: Props) {
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (!profile || profile.role !== "admin") redirect("/");
+  if (!isAdminProfile(profile, user.email)) redirect("/");
 
   const { data: convo, error: cErr } = await supabase
     .from("chatbot_conversations")

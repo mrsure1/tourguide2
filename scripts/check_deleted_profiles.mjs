@@ -17,16 +17,16 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function check() {
-  const { data, error } = await supabase
+  const { data: profiles, error } = await supabase
     .from('profiles')
-    .select('id, full_name, role, avatar_url')
-    .eq('role', 'guide');
+    .select('*, guides_detail(*)');
     
   if (error) {
     console.error('Error querying profiles:', error);
   } else {
-    console.log('Found profiles:');
-    console.log(JSON.stringify(data, null, 2));
+    console.log('Total profiles:', profiles.length);
+    const guides = profiles.filter(p => p.role === 'guide');
+    console.log('Guide Profiles:', JSON.stringify(guides, null, 2));
   }
 }
 

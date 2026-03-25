@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import PaymentsClient from "./PaymentsClient";
+import { isAdminProfile } from "@/lib/auth/admin";
 
 export default async function AdminPaymentsPage() {
     const supabase = await createClient();
@@ -17,7 +18,7 @@ export default async function AdminPaymentsPage() {
         .eq('id', user.id)
         .single();
 
-    if (!profile || profile.role !== 'admin') {
+    if (!isAdminProfile(profile, user.email)) {
         redirect('/');
     }
 

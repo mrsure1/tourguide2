@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers';
 import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, detectLocaleFromAcceptLanguage, isSupportedLocale } from '@/lib/i18n/config';
 import { localizePath } from '@/lib/i18n/routing';
+import { isAdminEmail } from '@/lib/auth/admin';
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
@@ -34,12 +35,7 @@ export async function GET(request: Request) {
             const metadata = session.user.user_metadata;
             const userEmail = session.user.email?.toLowerCase() || '';
 
-            const adminEmails = (process.env.ADMIN_EMAILS || '')
-                .split(',')
-                .map((email) => email.trim().toLowerCase())
-                .filter(Boolean);
-            const adminAllowlistEnabled = adminEmails.length > 0;
-            const isAdminEmail = !!userEmail && adminEmails.includes(userEmail);
+            const isPrivilegedAdminEmail = isAdminEmail(userEmail);
 
             const sanitizeRole = (value?: string | null) =>
                 value === 'guide' || value === 'traveler' ? value : null;
@@ -57,7 +53,7 @@ export async function GET(request: Request) {
             // 역할 결정 우선순위: 요청(role) > 기존 프로필 > 메타데이터 > 기본값
             let userRole = safeRequestedRole || existingProfile?.role || safeMetadataRole || 'traveler';
 
-            if (isAdminEmail) {
+            if (isPrivilegedAdminEmail) {
                 userRole = 'admin';
             }
 

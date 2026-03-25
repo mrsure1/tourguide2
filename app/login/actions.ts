@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { isAdminEmail } from '@/lib/auth/admin'
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
@@ -32,12 +33,7 @@ export async function login(formData: FormData) {
         .eq('id', user.id)
         .maybeSingle();
 
-    const adminEmails = (process.env.ADMIN_EMAILS || '')
-        .split(',')
-        .map((email) => email.trim().toLowerCase())
-        .filter(Boolean);
-    const adminAllowlistEnabled = adminEmails.length > 0;
-    const isAdminEmail = !!user.email && adminEmails.includes(user.email.toLowerCase());
+    const isPrivilegedAdminEmail = isAdminEmail(user.email);
 
     const selectedRoleRaw = formData.get('role') as string;
     const selectedRole =
@@ -46,7 +42,7 @@ export async function login(formData: FormData) {
     // 최종 역할 결정: 명시적으로 선택된 역할이 있으면 우선 적용, 없으면 기존 프로필 역할 사용
     let targetRole = selectedRole || profile?.role || 'traveler';
 
-    if (isAdminEmail) {
+    if (isPrivilegedAdminEmail) {
         targetRole = 'admin';
     }
 

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getRequestLocale } from "@/lib/i18n/get-request-locale";
 import { localizeLanguageList, localizeLocationLabel } from "@/lib/i18n/display";
+import { applyAdminProfileOverride } from "@/lib/auth/admin";
 import MainLandingClient, {
   type LandingGuide,
   type LandingTour,
@@ -78,17 +79,10 @@ export default async function Home() {
     : null;
 
   let profile = profileResult?.data ? { ...profileResult.data } : null;
-
-  const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase());
-  const isAdminEmail = !!user?.email && adminEmails.includes(user.email.toLowerCase());
-
-  if (isAdminEmail) {
-    if (!profile) {
-      profile = { full_name: user?.user_metadata?.full_name || "Admin", role: "admin" } as any;
-    } else {
-      profile.role = "admin";
-    }
-  }
+  profile = applyAdminProfileOverride(
+    profile || (user ? ({ full_name: user.user_metadata?.full_name || "Admin", role: null } as any) : null),
+    user?.email,
+  ) as any;
 
   const { data: rawGuides } = await supabase
     .from("profiles")
@@ -100,8 +94,7 @@ export default async function Home() {
       guides_detail (*)
     `,
     )
-    .in("role", ["guide", "admin"])
-    .limit(10);
+    .in("role", ["guide", "admin"]);
 
   const { data: rawTours } = await supabase
     .from("tours")
@@ -132,8 +125,7 @@ export default async function Home() {
     `,
     )
     .eq("is_active", true)
-    .order("created_at", { ascending: false })
-    .limit(6);
+    .order("created_at", { ascending: false });
 
   const dbGuides: LandingGuide[] =
     (rawGuides as GuideRow[] | null)
@@ -233,5 +225,4 @@ export default async function Home() {
     />
   );
 }
-
 

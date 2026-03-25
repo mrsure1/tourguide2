@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { isAdminProfile } from "@/lib/auth/admin"
 
 /**
  * 사용자 권한(Role) 변경
@@ -19,7 +20,7 @@ export async function updateUserRole(userId: string, newRole: string) {
         .eq('id', user.id)
         .single()
 
-    if (!adminProfile || adminProfile.role !== 'admin') {
+    if (!isAdminProfile(adminProfile, user.email)) {
         return { error: '권한이 없습니다.' }
     }
 

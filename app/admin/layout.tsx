@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/Navbar";
+import { applyAdminProfileOverride } from "@/lib/auth/admin";
 
 export default async function AdminLayout({
     children,
@@ -18,15 +19,7 @@ export default async function AdminLayout({
             .single();
         profile = data;
 
-        if (profile && user.email) {
-            const adminEmails = (process.env.ADMIN_EMAILS || '')
-                .split(',')
-                .map((email) => email.trim().toLowerCase())
-                .filter(Boolean);
-            if (adminEmails.includes(user.email.toLowerCase())) {
-                (profile as any).isAdmin = true;
-            }
-        }
+        profile = applyAdminProfileOverride(profile, user.email);
     }
 
     return (
